@@ -26,7 +26,10 @@ it('has a footer link to the About page', async () => {
 });
 
 it('shows AI Latest at / and the section overview at /sections', async () => {
-  server.use(sectionsHandler);
+  server.use(
+    sectionsHandler,
+    http.get(`${API}/api/v1/stories`, () => HttpResponse.json({ data: [], nextCursor: null })),
+  );
   const { unmount } = renderAt(<AppRoutes />, '/');
   expect(screen.getByRole('heading', { level: 1, name: 'AI Latest' })).toBeInTheDocument();
   unmount();

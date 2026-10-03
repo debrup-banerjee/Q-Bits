@@ -40,6 +40,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `LatestPage` with heading, updated line, infinite list with Load more fallback, skeleton feed cards, empty state with "Browse by section", error with retry.
 - **Tests:** `LatestPage.test.tsx` (lists `hours=24` stories, loads more with cursor, empty state, error and retry).
 - **Done when:** all pass.
+- **Status:** done
 
 ## T6 — New stories button
 - **Covers:** R5.1–R5.5

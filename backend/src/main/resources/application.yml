@@ -9,6 +9,10 @@ spring:
     virtual:
       enabled: true
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
 management:
   endpoints:
     web:
@@ -21,6 +25,8 @@ management:
 qbits:
   sources-file: ${QBITS_SOURCES_FILE:../config/sources.yml}
   contact-email: debrup28.nitdgp@gmail.com
+  web:
+    allowed-origins: ${QBITS_WEB_ORIGINS:http://localhost:5173}
   ingestion:
     tick: PT5M
     default-interval: PT30M

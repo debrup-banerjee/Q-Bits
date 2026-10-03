@@ -12,7 +12,8 @@ The backend's `catalog` package serves read-only JSON from `items` joined to `st
 | `CursorCodec` | `catalog.domain` | Opaque base64url cursor of `(publishedAt, id)`. | R2.1 |
 | `CatalogController` | `api` | `/api/v1/sections`, `/stories`, `/stories/{id}`, `/sources`; cache headers. | R1–R3 |
 | `ProblemAdvice` | `api` | RFC 9457 errors with `code`. | R2.5, R2.6 |
-| `CorsConfig` | `api` | Allow configured web origins, GET only. | — |
+| `WebConfig` | `api` | Allow configured web origins, GET only; expose `X-Data-As-Of`. | — |
+| `GET /api/v1/site` | `api` | Site name and contact email for the About page. *Added during implementation:* the web app has no other way to read `qbits.contact-email`. | R7.3 |
 
 ### Section descriptions (served by API)
 - **Global AI Tech** — "New AI models, products and what they can do."

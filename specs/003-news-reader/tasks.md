@@ -16,6 +16,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `SectionCatalog`, `CatalogController`, `ProblemAdvice`, cache headers, `X-Data-As-Of`, CORS, springdoc; commit `openapi.json` and a contract test.
 - **Tests:** `CatalogControllerIT`, `OpenApiContractTest`.
 - **Done when:** all endpoints match the design examples.
+- **Status:** done
 
 ## T3 — Web workspace and API client
 - **Covers:** non-functional (client-only access)

@@ -24,6 +24,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `V1__ingestion.sql` as in design; repositories for `items`, `sources_state`, `source_fetch_log`, `robots_cache`.
 - **Tests:** `ItemRepositoryIT` (insert/find, unique URL, excerpt > 300 chars rejected by DB).
 - **Done when:** migration applies cleanly; constraints proven by tests.
+- **Status:** done
 
 ## T4 — Item normaliser
 - **Covers:** R4.2, R4.3, R4.4, R4.5, R9.1

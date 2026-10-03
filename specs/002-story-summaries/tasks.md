@@ -40,6 +40,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `StoryJob` with ShedLock, newest-first batch, parallelism, backoff; `DailyBudget`; 72 h expiry.
 - **Tests:** `StoryJobIT` with `FakeStoryWriter` and fixed `Clock`: order, expiry, cap stops the day, parallel limit, writer down leaves ingestion working.
 - **Done when:** all pass.
+- **Status:** done
 
 ## T6 — Operator commands
 - **Covers:** R10.2

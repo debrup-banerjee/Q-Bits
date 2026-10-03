@@ -94,6 +94,29 @@ public class ItemRepository {
         .optional();
   }
 
+  /** Visible PENDING items published at or after {@code since}, newest first (spec 002 R1.1). */
+  public java.util.List<Item> findPendingNewestFirst(Instant since, int limit) {
+    return jdbc.sql(
+            """
+            select * from items
+            where story_status = 'PENDING' and not hidden and published_at >= :since
+            order by published_at desc, id desc
+            limit :limit
+            """)
+        .param("since", Timestamp.from(since))
+        .param("limit", limit)
+        .query(ItemRepository::map)
+        .list();
+  }
+
+  /** Marks PENDING items older than the cut-off as EXPIRED (spec 002 R9.3). */
+  public int expirePendingBefore(Instant cutoff) {
+    return jdbc.sql(
+            "update items set story_status = 'EXPIRED' where story_status = 'PENDING' and published_at < :cutoff")
+        .param("cutoff", Timestamp.from(cutoff))
+        .update();
+  }
+
   public long countBySource(String sourceId) {
     return jdbc.sql("select count(*) from items where source_id = :sourceId")
         .param("sourceId", sourceId)

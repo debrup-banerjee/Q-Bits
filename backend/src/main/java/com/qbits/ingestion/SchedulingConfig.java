@@ -41,10 +41,17 @@ class SchedulingConfig {
 
     private final IngestionJob ingestion;
     private final RetentionJob retention;
+    private final com.qbits.stories.StoryJob stories;
 
-    Triggers(IngestionJob ingestion, RetentionJob retention) {
+    Triggers(IngestionJob ingestion, RetentionJob retention, com.qbits.stories.StoryJob stories) {
       this.ingestion = ingestion;
       this.retention = retention;
+      this.stories = stories;
+    }
+
+    @Scheduled(fixedDelayString = "${qbits.story-writer.tick}", initialDelayString = "PT60S")
+    void writeStories() {
+      stories.runOnce();
     }
 
     @Scheduled(fixedDelayString = "${qbits.ingestion.tick}", initialDelayString = "PT30S")

@@ -40,6 +40,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `StoryCard`, `WordsToKnow`, `ExternalLink`, `RelativeTime`.
 - **Tests:** `StoryCard.test.tsx` (all fields, "about" for estimated dates, link attrs and label, no `<img>`), `WordsToKnow.test.tsx` (collapsed on phone width).
 - **Done when:** all pass.
+- **Status:** done
 
 ## T6 — Home page
 - **Covers:** R4.1, R4.2, R8.1, R8.2

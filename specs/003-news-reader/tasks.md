@@ -72,3 +72,4 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Playwright suite at 360px and 1280px against MSW-backed preview; axe checks; bundle-size budget; Lighthouse mobile run noted in the task log.
 - **Tests:** `home.spec.ts`, `section.spec.ts`, `a11y.spec.ts`.
 - **Done when:** no horizontal scroll, no axe violations, home interactive < 2.5 s in Lighthouse mobile profile.
+- **Status:** done, except the Lighthouse run. No horizontal scroll at 360px and 1280px, no axe violations in light or dark mode, JS bundle within 120 KB gzipped. The API is mocked with Playwright's page.route rather than MSW in the browser, so no mock service worker ships with the app. Lighthouse still to be run once the app is deployed.

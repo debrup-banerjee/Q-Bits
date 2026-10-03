@@ -1,6 +1,9 @@
 package com.qbits.ingestion;
 
 import com.qbits.ingestion.domain.RawEntry;
+import com.qbits.resources.domain.FoundLink;
+import com.qbits.resources.domain.LinkOrigin;
+import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndLink;
@@ -9,16 +12,25 @@ import com.rometools.rome.io.XmlReader;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
 /**
- * Reads RSS and Atom with Rome. Takes only title, link, dates and the description/summary. Full
- * content elements (such as {@code content:encoded}) are deliberately ignored (principles: never
- * store article bodies).
+ * Reads RSS and Atom with Rome. Takes only title, link, dates and the description/summary, plus the
+ * URLs of links found in the entry (spec 005). Text from full content elements (such as {@code
+ * content:encoded}) is never kept: only link targets are read from them (principles).
  */
 @Component
 public class FeedParser {
+
+  static final int MAX_LINKS = 50;
+  private static final Pattern PLAIN_URL = Pattern.compile("https?://[^\\s<>\"')\\]]+");
 
   /** The feed could not be parsed. */
   public static class FeedParseException extends RuntimeException {
@@ -46,7 +58,49 @@ public class FeedParser {
         link(e),
         description,
         instant(e.getPublishedDate()),
-        instant(e.getUpdatedDate()));
+        instant(e.getUpdatedDate()),
+        links(e, description));
+  }
+
+  /**
+   * URLs in the entry, in priority order: its own links, then the description (anchors and plain
+   * URLs), then the content element (anchors only). Content text is parsed and dropped here; only
+   * URLs leave this method (spec 005 R1.2).
+   */
+  static List<FoundLink> links(SyndEntry e, String descriptionHtml) {
+    Map<String, FoundLink> found = new LinkedHashMap<>();
+    if (e.getLink() != null) {
+      add(found, e.getLink(), LinkOrigin.ENTRY_LINK);
+    }
+    for (SyndLink l : e.getLinks()) {
+      add(found, l.getHref(), LinkOrigin.ENTRY_LINK);
+    }
+    if (descriptionHtml != null && !descriptionHtml.isBlank()) {
+      Document doc = Jsoup.parseBodyFragment(descriptionHtml);
+      doc.select("a[href]").forEach(a -> add(found, a.attr("href"), LinkOrigin.DESCRIPTION));
+      Matcher m = PLAIN_URL.matcher(doc.text());
+      while (m.find()) {
+        add(found, m.group(), LinkOrigin.DESCRIPTION);
+      }
+    }
+    for (SyndContent c : e.getContents()) {
+      if (c.getValue() != null) {
+        Jsoup.parseBodyFragment(c.getValue())
+            .select("a[href]")
+            .forEach(a -> add(found, a.attr("href"), LinkOrigin.CONTENT));
+      }
+    }
+    return List.copyOf(found.values());
+  }
+
+  private static void add(Map<String, FoundLink> found, String url, LinkOrigin origin) {
+    if (url == null || found.size() >= MAX_LINKS) {
+      return;
+    }
+    String trimmed = url.trim().replaceAll("[.,;:]+$", "");
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      found.putIfAbsent(trimmed, new FoundLink(trimmed, origin));
+    }
   }
 
   private static String link(SyndEntry e) {

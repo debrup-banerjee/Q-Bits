@@ -14,6 +14,7 @@ import com.qbits.ingestion.persistence.FetchLogRepository;
 import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.ingestion.persistence.SourceStateRepository;
 import com.qbits.relevance.domain.RelevancePreFilter;
+import com.qbits.resources.ResourceCollector;
 import com.qbits.sources.domain.Source;
 import java.time.Clock;
 import java.time.Duration;
@@ -50,6 +51,7 @@ public class SourceIngestor {
   private final FetchLogRepository fetchLog;
   private final SourceHealthTracker health;
   private final IngestionProperties props;
+  private final ResourceCollector resourceCollector;
   private final Clock clock;
   private final ItemNormaliser normaliser;
 
@@ -64,6 +66,7 @@ public class SourceIngestor {
       FetchLogRepository fetchLog,
       SourceHealthTracker health,
       IngestionProperties props,
+      ResourceCollector resourceCollector,
       Clock clock) {
     this.robots = robots;
     this.fetcher = fetcher;
@@ -75,6 +78,7 @@ public class SourceIngestor {
     this.fetchLog = fetchLog;
     this.health = health;
     this.props = props;
+    this.resourceCollector = resourceCollector;
     this.clock = clock;
     this.normaliser = new ItemNormaliser(props.maxAge());
   }
@@ -168,7 +172,7 @@ public class SourceIngestor {
             notAi++;
           } else if (deduplicator.isDuplicate(source.id(), e, now)) {
             duplicate++;
-          } else if (items.insertIfNew(toItem(source, e, relevance.score(), now))) {
+          } else if (insert(source, e, raw, relevance.score(), now)) {
             fresh++;
           } else {
             duplicate++;
@@ -177,6 +181,16 @@ public class SourceIngestor {
       }
     }
     return new Counts(fresh, duplicate, notAi, malformed, tooOld);
+  }
+
+  private boolean insert(
+      Source source, NormalisedEntry e, RawEntry raw, double score, Instant now) {
+    Item item = toItem(source, e, score, now);
+    if (!items.insertIfNew(item)) {
+      return false;
+    }
+    resourceCollector.collect(item.id(), raw.links(), e.title(), e.excerpt(), now); // spec 005
+    return true;
   }
 
   private void finish(

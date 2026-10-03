@@ -46,6 +46,23 @@ class FeedParserTest {
   }
 
   @Test
+  void collectsLinksFromEntryDescriptionAndContentWithoutText() { // 005 R1.1, R1.2
+    RawEntry entry = parser.parse(fixture("rss-links.xml")).getFirst();
+
+    assertThat(entry.links())
+        .extracting(l -> l.url() + " " + l.origin())
+        .containsExactly(
+            "https://lab.example.org/kestrel ENTRY_LINK",
+            "https://huggingface.co/kestrel-ai/Kestrel-70B DESCRIPTION",
+            "https://arxiv.org/abs/2410.01234v2 DESCRIPTION",
+            "https://github.com/kestrel-ai/kestrel/tree/main CONTENT",
+            "https://github.com/newsco CONTENT",
+            "https://github.com/newsco/share-widgets CONTENT",
+            "https://huggingface.co/blog/kestrel CONTENT");
+    assertThat(entry.toString()).doesNotContain("FULL ARTICLE");
+  }
+
+  @Test
   void rejectsNonFeedContent() {
     assertThatThrownBy(() -> parser.parse("<html><body>hi</body></html>".getBytes()))
         .isInstanceOf(FeedParser.FeedParseException.class);

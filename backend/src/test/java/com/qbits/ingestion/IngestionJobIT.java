@@ -57,6 +57,8 @@ class IngestionJobIT extends IntegrationTest {
   @Autowired SourceHealthTracker health;
   @Autowired IngestionProperties props;
   @Autowired LockingTaskExecutor locks;
+  @Autowired com.qbits.resources.ResourceCollector resourceCollector;
+  @Autowired com.qbits.resources.persistence.ItemResourceRepository itemResources;
 
   private MutableClock clock;
 
@@ -199,6 +201,34 @@ class IngestionJobIT extends IntegrationTest {
   }
 
   @Test
+  void storesOpenSourceCandidatesAndNeverTheContentText() { // 005 R1.3, R1.2, R2, R3
+    stubFeed("/links/rss.xml", "rss-links.xml");
+
+    job(List.of(source("links-lab", "/links/rss.xml", SourceType.RSS, true))).runOnce();
+
+    java.util.UUID item =
+        jdbc.queryForObject(
+            "select id from items where source_id = 'links-lab'", java.util.UUID.class);
+    assertThat(itemResources.findByItem(item))
+        .extracting(r -> r.type() + " " + r.url() + " " + r.origin() + " " + r.status())
+        .containsExactly(
+            "MODEL https://huggingface.co/kestrel-ai/Kestrel-70B DESCRIPTION PENDING",
+            "PAPER https://arxiv.org/abs/2410.01234 DESCRIPTION PENDING",
+            "CODE https://github.com/kestrel-ai/kestrel CONTENT PENDING");
+    Long leaks =
+        jdbc.queryForObject(
+            """
+            select count(*) from (
+              select row_to_json(t)::text j from items t
+              union all select row_to_json(t)::text from item_resources t
+              union all select row_to_json(t)::text from source_fetch_log t) x
+            where j like '%FULL ARTICLE%'
+            """,
+            Long.class);
+    assertThat(leaks).isZero();
+  }
+
+  @Test
   void twoInstancesFetchEachSourceOnce() throws Exception { // 001 R2.5
     IngestionJob first = job(sources());
     IngestionJob second = job(sources());
@@ -226,6 +256,7 @@ class IngestionJobIT extends IntegrationTest {
             fetchLog,
             health,
             props,
+            resourceCollector,
             clock);
     SourceRegistry registry = new SourceRegistry(sources);
     return new IngestionJob(registry, ingestor, locks, new SourceVisibility(registry, items));

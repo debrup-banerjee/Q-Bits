@@ -24,6 +24,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `FoundLink` and `RawEntry.links`; `FeedParser` extracts anchors and plain URLs, discarding text; `SourceIngestor` stores candidates for new items.
 - **Tests:** `FeedParserTest` with a fixture whose description and `content:encoded` contain links; `IngestionJobIT` asserts candidates stored as `PENDING` and that no content text exists in any table.
 - **Done when:** fixture run stores exactly the expected candidates.
+- **Status:** done
 
 ## T4 — Host API checks
 - **Covers:** R4.1–R4.3, R4.6, R4.7

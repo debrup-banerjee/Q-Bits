@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Example Lab</title>
+    <link>https://lab.example.org/</link>
+    <description>Lab news</description>
+    <item>
+      <title>Kestrel 70B open model matches closed models on coding tests</title>
+      <link>https://lab.example.org/kestrel</link>
+      <description><![CDATA[<p>The model is on <a href="https://huggingface.co/kestrel-ai/Kestrel-70B">Hugging Face</a>. Paper: https://arxiv.org/abs/2410.01234v2</p>]]></description>
+      <content:encoded><![CDATA[<p>FULL ARTICLE BODY THAT MUST NEVER BE STORED. Code at <a href="https://github.com/kestrel-ai/kestrel/tree/main">GitHub</a>.
+        Follow us on <a href="https://github.com/newsco">GitHub</a> and try our <a href="https://github.com/newsco/share-widgets">widgets</a>.
+        Read <a href="https://huggingface.co/blog/kestrel">our blog</a>.</p>]]></content:encoded>
+      <pubDate>Sat, 03 Oct 2026 05:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

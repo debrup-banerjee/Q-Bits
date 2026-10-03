@@ -48,6 +48,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `HomePage` with four section grids (5 newest each), "last 72 hours" line, "Updated …", skeletons, error state.
 - **Tests:** `HomePage.test.tsx` with MSW: data, loading, error with retry.
 - **Done when:** all states render correctly.
+- **Status:** done
 
 ## T7 — Section page and story page
 - **Covers:** R5.1, R5.2, R6.6, R8

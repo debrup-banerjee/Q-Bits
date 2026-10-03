@@ -32,6 +32,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Pure `ItemNormaliser` with Jsoup excerpt cleanup, word-boundary truncation, canonical URL, date fallback, malformed and too-old checks.
 - **Tests:** `ItemNormaliserTest` (table-driven, one case per criterion).
 - **Done when:** all cases pass; no Spring dependency in the class.
+- **Status:** done
 
 ## T5 — Relevance pre-filter
 - **Covers:** R5.1–R5.5

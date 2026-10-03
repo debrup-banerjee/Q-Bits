@@ -6,6 +6,7 @@ import { RelativeTime } from '../../components/RelativeTime';
 import { useNow } from '../../hooks/useNow';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
+import { NewStoriesButton } from './NewStoriesButton';
 
 /** AI Latest: every story from the last 24 hours, newest first, as a timeline (spec 004 R3). */
 export function LatestPage() {
@@ -44,6 +45,8 @@ export function LatestPage() {
           )}
         </p>
       </div>
+
+      {firstPage && <NewStoriesButton firstPage={firstPage} loadedAt={feed.dataUpdatedAt} />}
 
       {feed.isError && <ErrorState onRetry={() => void feed.refetch()} />}
       {feed.isPending && <FeedSkeleton />}

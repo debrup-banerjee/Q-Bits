@@ -48,6 +48,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `NewStoriesButton` in a polite live region; wire `useNewStories`; apply = reload from top and scroll up.
 - **Tests:** `LatestPage.test.tsx` new-stories flow with fake timers: no button at first; after a newer story appears at the next check, "1 new story" shows; clicking it puts the story at the top; list never changes before the click.
 - **Done when:** all pass.
+- **Status:** done
 
 ## T7 — End-to-end and accessibility
 - **Covers:** R2.2, R4.5, non-functional

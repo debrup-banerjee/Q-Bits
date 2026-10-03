@@ -16,6 +16,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `SourceRegistry` loading `config/sources.yml` into records with validation.
 - **Tests:** `SourceRegistryTest`: valid file loads; missing field, duplicate id, bad URL, enabled-without-terms each fail with entry id and field.
 - **Done when:** app refuses to start on each bad fixture with a clear message.
+- **Status:** done
 
 ## T3 — Schema
 - **Covers:** R4.1, R7.2, non-functional (no body column)

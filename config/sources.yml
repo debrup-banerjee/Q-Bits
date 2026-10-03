@@ -15,6 +15,7 @@
 #   aiNative:     true if the feed covers only AI (skips the keyword pre-filter)
 #   region:       global | india   (a hint for the India AI section, not a rule)
 #   sectionHint:  optional default section; the summary step can override it
+#   intervalMinutes: optional fetch interval override, 15 or more (default 30)
 #
 # Deliberately not listed: Reuters, Bloomberg, Financial Times, Wall Street Journal, The Information
 # (no public RSS, paywalled, or terms that forbid aggregation). Revisit only through a licensed API.

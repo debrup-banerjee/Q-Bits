@@ -48,6 +48,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `RobotsPolicy` with crawler-commons, DB cache 24 h, Crawl-delay handling, 404/5xx rules.
 - **Tests:** `RobotsPolicyIT` with WireMock: allow, disallow, crawl-delay, 404, 500, cache hit.
 - **Done when:** all six cases pass.
+- **Status:** done
 
 ## T7 — Feed fetcher and parser
 - **Covers:** R2.2, R2.3, R2.4, R7.1

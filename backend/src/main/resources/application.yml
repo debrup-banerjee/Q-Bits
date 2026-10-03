@@ -21,6 +21,19 @@ management:
 qbits:
   sources-file: ${QBITS_SOURCES_FILE:../config/sources.yml}
   contact-email: debrup28.nitdgp@gmail.com
+  ingestion:
+    tick: PT5M
+    default-interval: PT30M
+    min-interval: PT15M
+    timeout: PT10S
+    retries: 2
+    retry-backoff: PT2S
+    max-age: PT72H
+    retention: P7D
+    robots-cache-ttl: PT24H
+    degraded-after-failures: 5
+    robots-agent-name: QBits
+    user-agent: "QBits/0.1 (+mailto:debrup28.nitdgp@gmail.com)"
   relevance:
     threshold: 1.0
     keywords:

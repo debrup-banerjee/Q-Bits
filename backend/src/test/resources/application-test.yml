@@ -1,7 +1,5 @@
 qbits:
   sources-file: src/test/resources/sources/valid.yml
-spring:
-  task:
-    scheduling:
-      pool:
-        size: 1
+  ingestion:
+    timeout: PT2S
+    retry-backoff: PT0.05S

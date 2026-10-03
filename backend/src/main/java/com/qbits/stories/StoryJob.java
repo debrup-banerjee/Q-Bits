@@ -101,10 +101,15 @@ public class StoryJob {
     List<Future<Outcome>> futures = new ArrayList<>();
     try (ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor()) {
       for (Item item : batch) {
+        try {
+          slots.acquire(); // taken here so items start in newest-first order
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          break;
+        }
         futures.add(
             pool.submit(
                 () -> {
-                  slots.acquire();
                   try {
                     if (unavailable.get()) {
                       return null; // stop the batch once the service is down

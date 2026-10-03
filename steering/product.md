@@ -6,6 +6,8 @@
 ## What it is
 Q-Bits shows the AI news that happened in the **last 72 hours, anywhere in the world**, explained in plain words. It gathers headlines from well-known, trusted news outlets and official company and research blogs, writes a short, story-style summary of each in its own words, sorts them into four sections, and links every story to the original article.
 
+It opens on **AI Latest**: a fast, scrollable feed of every AI headline from the **last 24 hours**, newest first, like a social media timeline. When a story is about something open source, it also links straight to the code, model or paper.
+
 The promise to the reader: *"In ten minutes, understand what happened in AI in the last three days, even if you're not a techie, and learn the words that matter along the way."*
 
 ## Who uses it
@@ -14,6 +16,23 @@ The promise to the reader: *"In ten minutes, understand what happened in AI in t
 - **First user:** the owner and his team. A public release is a later decision and will trigger a fresh legal review.
 
 The writing must work for both groups at once: simple enough for the first, accurate and complete enough that the second never feels talked down to.
+
+## Tabs
+The first tab is **AI Latest**, and the app opens on it. The four section tabs follow it.
+
+| Tab | What it shows |
+|---|---|
+| **AI Latest** (first, default) | Every published story from the last 24 hours, across all four sections, newest first, as a scrolling social-style feed. It is a view, not a fifth section: each story still belongs to exactly one section and shows that section's label. |
+| Global AI Tech · World Business · India AI · Innovations & Research | One section each, last 72 hours. |
+
+The section-by-section overview (each section's five newest stories) moves from the home page to `/sections`, linked from the bottom of the feed.
+
+### What "social-style" means here
+- Compact cards in one column, newest at the top, endless scroll.
+- Each card leads with the source (a coloured letter badge, never a logo), the time ("12 min ago") and the section label, then the headline.
+- The summary shows its first three lines; "Show more" expands it in place, with the words to know.
+- While you read, new stories don't jump in. A "N new stories" button appears at the top; tapping it adds them and scrolls up.
+- No likes, comments, shares or images, and no tracking. This is the feel of a timeline, not a social network.
 
 ## Sections
 Each story appears in exactly one section. **India first:** if a story has a real India angle it goes to India AI, whatever its topic. A passing mention (India as one of twenty launch countries) does not count.
@@ -31,12 +50,15 @@ Each story appears in exactly one section. **India first:** if a story has a rea
 - **Key terms**: important AI or tech words that appear in the story, each with a one-line, everyday explanation (for example *"Context window — how much text the AI can read and keep in mind at once"*).
 - Source name, publish time, and a prominent **"Read the full story at <Source>"** link.
 - A small note that the summary was written from the publisher's headline and teaser.
+- **Open-source links**, when the story is about something with public code, model weights, a dataset or a paper: up to three links such as "Code on GitHub", "Model on Hugging Face" or "Paper on arXiv". These come only from links the publisher put in its feed, and each one is checked to exist before it is shown. Q-Bits never guesses a link.
 
 ## Core jobs
-1. "Tell me what happened in AI in the last three days, in words I understand."
-2. "Let me look at just one area": Global AI Tech, World Business, India AI, or Innovations & Research.
-3. "Teach me the important terms so I can follow AI conversations."
-4. "Get me to the original article in one tap when I want more."
+1. "Show me what's happening in AI right now": the last 24 hours, as a feed I can scroll in a minute.
+2. "Tell me what happened in AI in the last three days, in words I understand."
+3. "Let me look at just one area": Global AI Tech, World Business, India AI, or Innovations & Research.
+4. "Teach me the important terms so I can follow AI conversations."
+5. "Get me to the original article in one tap when I want more."
+6. "If it's open source, take me to the code or the model."
 
 ## Platforms
 - **Now:** responsive web app that works well on phone, tablet and desktop.
@@ -47,10 +69,10 @@ Each story appears in exactly one section. **India first:** if a story has a rea
 - **Not a full-article summariser.** The app never fetches or reads article pages.
 - **Not a reader view.** No iframes, in-app web views, extracted article text or "read here" mode.
 - **Not a scraper.** Only feeds and official APIs from an approved list. No page scraping, no paywall or login workarounds.
-- **Not an archive.** Only the last 72 hours are shown.
+- **Not an archive.** AI Latest shows the last 24 hours; the section tabs show the last 72 hours.
 - **Not a general news app.** Non-AI stories are filtered out.
 - **Not opinion.** Summaries explain; they do not take sides, predict markets or give investment advice.
-- **Not social.** No comments, likes or user-submitted links in v1.
+- **Not a social network.** AI Latest looks like a timeline, but there are no comments, likes, shares, followers or user-submitted links.
 - **Not an image gallery.** No hosted images or publisher logos.
 - **Not collecting personal data in v1.** No accounts, no tracking beyond basic server logs.
 

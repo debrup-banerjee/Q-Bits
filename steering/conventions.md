@@ -49,6 +49,15 @@
 - API and URL slugs: `global-ai-tech`, `world-business`, `india-ai`, `innovations-research`.
 - Display names: "Global AI Tech", "World Business", "India AI", "Innovations & Research". Defined once in the backend and returned by `GET /api/v1/sections`; clients never hard-code them.
 
+## Tabs and windows
+- AI Latest is not a `Section` value. It is a 24-hour view over all sections: `GET /api/v1/stories?hours=24`.
+- `hours` accepts 1–72; the default is 72. The backend owns both windows; clients only pass the parameter.
+
+## Open-source links
+- Type enum `ResourceType`: `CODE`, `MODEL`, `DATASET`, `PAPER`. API values in lower case.
+- Canonical URL forms: `https://github.com/{owner}/{repo}`, `https://gitlab.com/{group}/{project}`, `https://huggingface.co/{org}/{model}`, `https://huggingface.co/datasets/{org}/{name}`, `https://huggingface.co/spaces/{org}/{name}` (type `CODE`), `https://arxiv.org/abs/{id}`.
+- Labels are fixed strings built from type and host ("Code on GitHub", "Model on Hugging Face", "Paper on arXiv"), never generated text.
+
 ## Summary service calls
 - Only through the `StoryWriter` interface. No other code calls the provider SDK.
 - Prompt text lives in `backend/src/main/resources/prompts/` as versioned files (`story-writer.v1.md`). Each stored story records the prompt version and model name.

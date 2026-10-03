@@ -32,6 +32,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** App shell, header, footer with About link, `SectionNav` (sticky tabs on phones, top bar on wide), light/dark tokens, routes.
 - **Tests:** `SectionNav.test.tsx` (active state, keyboard), router test for unknown routes.
 - **Done when:** nav works at 360px and 1280px.
+- **Status:** done
 
 ## T5 — Story card and words to know
 - **Covers:** R6.1–R6.5

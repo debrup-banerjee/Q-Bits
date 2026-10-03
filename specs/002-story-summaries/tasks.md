@@ -8,6 +8,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `V2__stories.sql`; `Section` enum; `StoryInput`, `StoryDraft`, `KeyTerm` records; `StoryRepository`.
 - **Tests:** `StoryRepositoryIT` (save/load key terms JSON, section check constraint).
 - **Done when:** migration applies on top of V1.
+- **Status:** done
 
 ## T2 — Story validator
 - **Covers:** R4.1, R4.2, R4.4, R5.1, R5.3, R6.1, R7.1, R7.2, R8.1

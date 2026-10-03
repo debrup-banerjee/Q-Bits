@@ -67,7 +67,8 @@ class ItemRepositoryIT extends IntegrationTest {
             "fetched_at",
             "prefilter_score",
             "story_status",
-            "hidden");
+            "hidden",
+            "story_note");
   }
 
   @Test

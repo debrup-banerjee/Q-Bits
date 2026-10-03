@@ -77,6 +77,23 @@ public class ItemRepository {
         .optional();
   }
 
+  /** Moves an item to a new story status with an optional note (spec 002). */
+  public void updateStoryStatus(UUID id, StoryStatus status, String note) {
+    String trimmed = note != null && note.length() > 300 ? note.substring(0, 300) : note;
+    jdbc.sql("update items set story_status = :status, story_note = :note where id = :id")
+        .param("status", status.name())
+        .param("note", trimmed)
+        .param("id", id)
+        .update();
+  }
+
+  public java.util.Optional<String> findStoryNote(UUID id) {
+    return jdbc.sql("select story_note from items where id = :id")
+        .param("id", id)
+        .query(String.class)
+        .optional();
+  }
+
   public long countBySource(String sourceId) {
     return jdbc.sql("select count(*) from items where source_id = :sourceId")
         .param("sourceId", sourceId)

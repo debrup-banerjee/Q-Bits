@@ -7,6 +7,7 @@ const idle = 'text-muted hover:bg-chip hover:text-ink';
 const active = 'bg-accent text-accent-ink';
 
 /**
+ * Tabs: AI Latest first (a fixed label; spec 004 R2.1), then the sections from the API.
  * Section navigation. A sticky, scrollable tab bar on phones; an inline bar on wider screens
  * (spec 003 R4.3). Names come from the API, never hard-coded.
  */
@@ -20,7 +21,7 @@ export function SectionNav() {
       <ul className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:flex-wrap sm:overflow-visible sm:px-0 sm:py-0">
         <li>
           <NavLink to="/" end className={({ isActive }) => `${base} ${isActive ? active : idle}`}>
-            All
+            AI Latest
           </NavLink>
         </li>
         {sections.data?.data.map((s) => (

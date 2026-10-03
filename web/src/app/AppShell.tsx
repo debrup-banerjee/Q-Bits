@@ -31,9 +31,20 @@ export function AppShell() {
       <footer className="border-t border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-muted sm:flex-row sm:justify-between">
           <p>Every story links to its original publisher.</p>
-          <Link to="/about" className="font-medium text-accent underline-offset-4 hover:underline">
-            How Q-Bits works
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              to="/sections"
+              className="font-medium text-accent underline-offset-4 hover:underline"
+            >
+              Browse by section
+            </Link>
+            <Link
+              to="/about"
+              className="font-medium text-accent underline-offset-4 hover:underline"
+            >
+              How Q-Bits works
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

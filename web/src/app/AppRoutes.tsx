@@ -1,7 +1,8 @@
 import { Route, Routes } from 'react-router';
 import { AppShell } from './AppShell';
 import { NotFoundPage } from './NotFoundPage';
-import { HomePage } from '../features/sections/HomePage';
+import { SectionsOverviewPage } from '../features/sections/SectionsOverviewPage';
+import { LatestPage } from '../features/latest/LatestPage';
 import { SectionPage } from '../features/sections/SectionPage';
 import { StoryPage } from '../features/stories/StoryPage';
 import { AboutPage } from '../features/about/AboutPage';
@@ -11,7 +12,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route index element={<HomePage />} />
+        <Route index element={<LatestPage />} />
+        <Route path="sections" element={<SectionsOverviewPage />} />
         <Route path="section/:slug" element={<SectionPage />} />
         <Route path="story/:id" element={<StoryPage />} />
         <Route path="about" element={<AboutPage />} />

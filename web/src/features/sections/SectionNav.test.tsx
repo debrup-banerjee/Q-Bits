@@ -16,12 +16,22 @@ it('lists the sections from the API in order', async () => {
     .getAllByRole('link')
     .map((a) => a.textContent);
   expect(names).toEqual([
-    'All',
+    'AI Latest',
     'Global AI Tech',
     'World Business',
     'India AI',
     'Innovations & Research',
   ]);
+});
+
+it('marks AI Latest as current on the home page', async () => {
+  renderAt(<AppRoutes />, '/');
+
+  const nav = (await screen.findAllByRole('navigation', { name: 'Sections' }))[0]!;
+  expect(within(nav).getByRole('link', { name: 'AI Latest' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
 });
 
 it('marks the current section as active', async () => {
@@ -30,7 +40,7 @@ it('marks the current section as active', async () => {
   const nav = (await screen.findAllByRole('navigation', { name: 'Sections' }))[0]!;
   const link = await within(nav).findByRole('link', { name: 'India AI' });
   expect(link).toHaveAttribute('aria-current', 'page');
-  expect(within(nav).getByRole('link', { name: 'All' })).not.toHaveAttribute('aria-current');
+  expect(within(nav).getByRole('link', { name: 'AI Latest' })).not.toHaveAttribute('aria-current');
 });
 
 it('is reachable by keyboard', async () => {
@@ -41,5 +51,5 @@ it('is reachable by keyboard', async () => {
   await user.tab(); // skip link
   await user.tab(); // logo
   await user.tab();
-  expect(document.activeElement).toHaveTextContent('All');
+  expect(document.activeElement).toHaveTextContent('AI Latest');
 });

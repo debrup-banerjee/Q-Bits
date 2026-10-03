@@ -10,22 +10,22 @@ import { StoryCard } from '../stories/StoryCard';
 const PER_SECTION = 5;
 const GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3';
 
-/** Home: the four sections, each with its newest stories (spec 003 R4). */
-export function HomePage() {
+/** Browse by section: the four sections, each with its newest stories (003 R4, moved by 004 R2.3). */
+export function SectionsOverviewPage() {
   const sections = useSections();
   const now = useNow();
 
   return (
     <div className="flex flex-col gap-10">
       <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">AI news from the last 72 hours</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">Browse by section</h1>
         <p className="mt-1 text-sm text-muted">
           {sections.data?.dataAsOf ? (
             <>
               Updated <RelativeTime iso={sections.data.dataAsOf} now={now} />
             </>
           ) : (
-            'Explained in plain words, with links to every original story.'
+            'AI news from the last 72 hours, sorted into four sections.'
           )}
         </p>
       </div>

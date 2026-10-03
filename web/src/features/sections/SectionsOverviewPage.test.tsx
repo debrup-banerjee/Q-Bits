@@ -4,7 +4,7 @@ import { http, HttpResponse, delay } from 'msw';
 import { page, sectionsHandler, story } from '../../test/fixtures';
 import { API, renderAt } from '../../test/render';
 import { server } from '../../test/server';
-import { HomePage } from './HomePage';
+import { SectionsOverviewPage } from './SectionsOverviewPage';
 
 function storiesHandler() {
   return http.get(`${API}/api/v1/stories`, ({ request }) => {
@@ -36,11 +36,9 @@ function storiesHandler() {
 
 it('shows the four sections with their newest stories', async () => {
   server.use(sectionsHandler, storiesHandler());
-  renderAt(<HomePage />);
+  renderAt(<SectionsOverviewPage />);
 
-  expect(
-    screen.getByRole('heading', { level: 1, name: 'AI news from the last 72 hours' }),
-  ).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: 'Browse by section' })).toBeInTheDocument();
   const india = await screen.findByRole('region', { name: 'India AI' });
   expect(await within(india).findByRole('heading', { name: story().headline })).toBeInTheDocument();
   expect(within(india).getByRole('link', { name: 'See all India AI' })).toHaveAttribute(
@@ -54,7 +52,7 @@ it('shows the four sections with their newest stories', async () => {
 
 it('shows an empty message for a quiet section', async () => {
   server.use(sectionsHandler, storiesHandler());
-  renderAt(<HomePage />);
+  renderAt(<SectionsOverviewPage />);
 
   const research = await screen.findByRole('region', { name: 'Innovations & Research' });
   expect(
@@ -66,7 +64,7 @@ it('shows an empty message for a quiet section', async () => {
 
 it('says when the news was last updated', async () => {
   server.use(sectionsHandler, storiesHandler());
-  renderAt(<HomePage />);
+  renderAt(<SectionsOverviewPage />);
 
   expect(await screen.findByText(/^Updated/)).toBeInTheDocument();
 });
@@ -78,7 +76,7 @@ it('shows skeleton cards while loading', async () => {
       return HttpResponse.json([]);
     }),
   );
-  renderAt(<HomePage />);
+  renderAt(<SectionsOverviewPage />);
 
   expect(screen.getByRole('status', { name: 'Loading news' })).toBeInTheDocument();
   expect(screen.getAllByTestId('skeleton-card').length).toBeGreaterThan(0);
@@ -91,7 +89,7 @@ it('shows a plain error with a working retry', async () => {
       fail ? HttpResponse.json({ code: 'INTERNAL' }, { status: 500 }) : HttpResponse.json([]),
     ),
   );
-  renderAt(<HomePage />);
+  renderAt(<SectionsOverviewPage />);
 
   const alert = await screen.findByRole('alert');
   expect(alert).toHaveTextContent("We couldn't load the news. Try again.");
@@ -99,6 +97,6 @@ it('shows a plain error with a working retry', async () => {
 
   fail = false;
   await userEvent.click(within(alert).getByRole('button', { name: 'Try again' }));
-  await screen.findByText('Explained in plain words, with links to every original story.');
+  await screen.findByText('AI news from the last 72 hours, sorted into four sections.');
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

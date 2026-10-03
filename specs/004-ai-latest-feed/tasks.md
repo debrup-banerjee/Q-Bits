@@ -24,6 +24,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Move `HomePage` to `/sections` as `SectionsOverviewPage`; `/` renders a placeholder `LatestPage`; "AI Latest" first in `SectionNav`; footer link "Browse by section".
 - **Tests:** `SectionNav.test.tsx` (order, AI Latest current on `/`, section tab current on `/section/india-ai`); `AppRoutes.test.tsx` (`/sections` renders the overview; old routes still work).
 - **Done when:** all existing web tests pass with the new routes.
+- **Status:** done
 
 ## T4 — Feed card, source badge and clamped text
 - **Covers:** R4.1–R4.5

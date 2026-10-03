@@ -117,6 +117,14 @@ public class ItemRepository {
         .update();
   }
 
+  public java.util.List<UUID> findIdsBySourceAndStatus(String sourceId, StoryStatus status) {
+    return jdbc.sql("select id from items where source_id = :sourceId and story_status = :status")
+        .param("sourceId", sourceId)
+        .param("status", status.name())
+        .query(UUID.class)
+        .list();
+  }
+
   public long countBySource(String sourceId) {
     return jdbc.sql("select count(*) from items where source_id = :sourceId")
         .param("sourceId", sourceId)

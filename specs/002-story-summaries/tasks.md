@@ -48,6 +48,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `--rewrite-story=<id>` and `--rewrite-source=<id>` under `admin` profile.
 - **Tests:** `StoryAdminIT`.
 - **Done when:** rewrite replaces story and records new prompt version.
+- **Status:** done
 
 ## T7 — Live sample and editorial check
 - **Covers:** R4.3, R4.5, R5.2, R5.4, R6.2 (human-judged), non-functional publish time

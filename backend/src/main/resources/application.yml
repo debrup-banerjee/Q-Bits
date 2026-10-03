@@ -52,6 +52,23 @@ qbits:
     timeout: PT30S
     tick: PT2M
     max-backoff: PT30M
+  resources:
+    tick: PT5M
+    batch-size: 30
+    max-per-story: 3
+    cache-ttl: PT24H
+    retry-delays: [PT10M, PT1H, PT6H]
+    github-token: ${GITHUB_TOKEN:}
+    base-urls:
+      GITHUB: https://api.github.com
+      GITLAB: https://gitlab.com
+      HUGGINGFACE: https://huggingface.co
+      ARXIV: https://export.arxiv.org
+    rate-limits:
+      GITHUB: { per-hour: 50, min-spacing: PT1S }
+      GITLAB: { per-hour: 100, min-spacing: PT1S }
+      HUGGINGFACE: { per-hour: 100, min-spacing: PT1S }
+      ARXIV: { per-hour: 300, min-spacing: PT3S }
   relevance:
     threshold: 1.0
     keywords:

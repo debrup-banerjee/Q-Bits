@@ -32,6 +32,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `HostApis` for GitHub, GitLab, Hugging Face, arXiv with per-host limiters, base URLs from config, optional GitHub token, shared User-Agent.
 - **Tests:** `HostApisIT` with WireMock: found, missing, GitHub rename, 403/429, timeout, token header present only when configured, arXiv spacing.
 - **Done when:** all pass with no network access.
+- **Status:** done
 
 ## T5 — Check job, cache and retries
 - **Covers:** R4.4, R4.5, non-functional

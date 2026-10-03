@@ -16,6 +16,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Pure `ResourceLinkNormaliser` and `ResourceRelevance` per the design tables.
 - **Tests:** `ResourceLinkNormaliserTest` (every table row and edge case); `ResourceRelevanceTest`.
 - **Done when:** all rows pass; no Spring dependency.
+- **Status:** done
 
 ## T3 — Collect links at ingestion
 - **Covers:** R1.1–R1.3

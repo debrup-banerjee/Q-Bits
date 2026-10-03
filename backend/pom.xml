@@ -26,6 +26,7 @@
     <wiremock.version>3.13.2</wiremock.version>
     <spotless.version>3.10.3</spotless.version>
     <anthropic-java.version>2.68.0</anthropic-java.version>
+    <live.tests.exclude>**/*LiveIT.java</live.tests.exclude>
   </properties>
 
   <dependencies>
@@ -54,6 +55,14 @@
     <dependency><groupId>org.wiremock</groupId><artifactId>wiremock-standalone</artifactId><version>${wiremock.version}</version><scope>test</scope></dependency>
   </dependencies>
 
+  <profiles>
+    <!-- Opt-in live calls to the summary service: mvn verify -Plive -Dit.test=StoryWriterLiveIT -->
+    <profile>
+      <id>live</id>
+      <properties><live.tests.exclude>none</live.tests.exclude></properties>
+    </profile>
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
@@ -68,7 +77,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration><argLine>-Duser.timezone=UTC</argLine></configuration>
+        <configuration>
+          <argLine>-Duser.timezone=UTC</argLine>
+          <excludes><exclude>${live.tests.exclude}</exclude></excludes>
+        </configuration>
         <executions>
           <execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution>
         </executions>

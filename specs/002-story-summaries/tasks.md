@@ -56,3 +56,4 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Opt-in `StoryWriterLiveIT` on 20 fixture items (5 per section); write outputs to `build/live-samples.md`; run with two model sizes and record cost per 100 stories.
 - **Tests:** the live suite itself (excluded from the default build).
 - **Done when:** owner reviews the samples against `steering/editorial-style.md` and picks the model; prompt adjusted only as a new version file if needed.
+- **Status:** built; waiting for the owner to run it with an API key and review `backend/target/live-samples.md`. Run: `ANTHROPIC_API_KEY=... QBITS_STORY_MODEL=... mvn -f backend/pom.xml verify -Plive -Dit.test=StoryWriterLiveIT`

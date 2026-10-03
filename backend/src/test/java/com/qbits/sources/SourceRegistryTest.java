@@ -3,7 +3,6 @@ package com.qbits.sources;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.qbits.config.QBitsProperties;
 import com.qbits.sources.domain.SourceConfigException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +18,7 @@ class SourceRegistryTest {
     Path file = dir.resolve("sources.yml");
     Files.writeString(file, "sources:\n  - id: bad\n");
 
-    assertThatThrownBy(() -> new SourceRegistry(props(file)))
+    assertThatThrownBy(() -> SourceRegistry.load(file))
         .isInstanceOf(SourceConfigException.class)
         .hasMessageContaining("source 'bad': field 'name' is required");
   }
@@ -38,14 +37,10 @@ class SourceRegistryTest {
              type: rss, aiNative: false, region: global, enabled: false}
         """);
 
-    SourceRegistry registry = new SourceRegistry(props(file));
+    SourceRegistry registry = SourceRegistry.load(file);
 
     assertThat(registry.all()).hasSize(2);
     assertThat(registry.enabled()).extracting("id").containsExactly("on-one");
     assertThat(registry.find("off-one")).isPresent();
-  }
-
-  private static QBitsProperties props(Path file) {
-    return new QBitsProperties(file.toString(), "test@example.com");
   }
 }

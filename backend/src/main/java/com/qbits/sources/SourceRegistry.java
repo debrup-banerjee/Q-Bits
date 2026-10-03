@@ -1,6 +1,5 @@
 package com.qbits.sources;
 
-import com.qbits.config.QBitsProperties;
 import com.qbits.sources.domain.Source;
 import com.qbits.sources.domain.SourcesFileParser;
 import java.io.IOException;
@@ -9,32 +8,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-/** Loads the approved sources at startup. An invalid file stops the application (R1.2, R1.4). */
-@Service
+/** The approved sources. Loaded once at startup; an invalid file stops the app (R1.2, R1.4). */
 public class SourceRegistry {
-
-  private static final Logger log = LoggerFactory.getLogger(SourceRegistry.class);
 
   private final List<Source> sources;
 
-  public SourceRegistry(QBitsProperties properties) {
-    Path file = Path.of(properties.sourcesFile());
+  public SourceRegistry(List<Source> sources) {
+    this.sources = List.copyOf(sources);
+  }
+
+  /** Reads and validates the sources file. */
+  public static SourceRegistry load(Path file) {
     String text;
     try {
       text = Files.readString(file);
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot read sources file " + file.toAbsolutePath(), e);
     }
-    this.sources = new SourcesFileParser().parse(text);
-    log.info(
-        "sources loaded file={} total={} enabled={}",
-        file,
-        sources.size(),
-        sources.stream().filter(Source::enabled).count());
+    return new SourceRegistry(new SourcesFileParser().parse(text));
   }
 
   public List<Source> all() {

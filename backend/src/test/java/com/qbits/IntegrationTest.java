@@ -26,7 +26,8 @@ public abstract class IntegrationTest {
         """
         do $$ declare r record; begin
           for r in select tablename from pg_tables
-                   where schemaname = 'public' and tablename <> 'flyway_schema_history' loop
+                   where schemaname = 'public'
+                     and tablename not in ('flyway_schema_history', 'shedlock') loop
             execute 'truncate table ' || quote_ident(r.tablename) || ' restart identity cascade';
           end loop;
         end $$;

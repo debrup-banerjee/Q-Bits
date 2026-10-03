@@ -3,3 +3,5 @@ qbits:
   ingestion:
     timeout: PT2S
     retry-backoff: PT0.05S
+  scheduling:
+    enabled: false

@@ -64,6 +64,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `Deduplicator`, `IngestionJob` with due-source selection, virtual-thread fan-out, ShedLock, fetch-log writes; items inserted as `PENDING`.
 - **Tests:** `IngestionJobIT`: end-to-end on fixtures; re-run creates nothing; failing source isolated; two job instances fetch each source once.
 - **Done when:** a fixture run produces the expected rows and log counts.
+- **Status:** done
 
 ## T9 — Health, disable, purge, retention
 - **Covers:** R7.4, R7.5, R8.1, R8.2, R9.2

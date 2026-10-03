@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example AI Lab</title>
+  <id>urn:example:lab</id>
+  <updated>2026-10-03T05:00:00Z</updated>
+  <entry>
+    <title>Robots learn to fold laundry with machine learning</title>
+    <id>urn:example:1</id>
+    <link rel="alternate" href="https://lab.example.org/robots-laundry"/>
+    <updated>2026-10-03T05:00:00Z</updated>
+    <summary>Researchers trained a robot arm using machine learning.</summary>
+    <content type="html">FULL ARTICLE BODY THAT MUST NEVER BE STORED.</content>
+  </entry>
+</feed>

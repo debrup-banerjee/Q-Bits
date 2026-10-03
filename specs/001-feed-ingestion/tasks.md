@@ -56,6 +56,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `FeedFetcher` (RestClient, timeout, retries with backoff, User-Agent, ETag/Last-Modified) and `FeedParser` (Rome).
 - **Tests:** `FeedFetcherIT` (WireMock: 200, 304 with conditional headers asserted, timeout then success, 500 ×3 → failure, UA header); `FeedParserTest` on RSS and Atom fixtures.
 - **Done when:** tests pass with no network access.
+- **Status:** done
 
 ## T8 — De-duplication and ingestion job
 - **Covers:** R2.1, R2.5, R6.1–R6.3, R7.2, R7.3

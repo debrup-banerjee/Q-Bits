@@ -8,6 +8,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `V4__item_resources.sql`; `ResourceType`, `ResourceHost`, `LinkOrigin`, `Candidate`, `ResourceStatus`; `ItemResourceRepository`, `LinkCheckCacheRepository`.
 - **Tests:** `ItemResourceRepositoryIT` (insert once per item and URL, due query, status updates, cascade delete with item); `LinkCheckCacheRepositoryIT`.
 - **Done when:** migration applies on top of V3.
+- **Status:** done
 
 ## T2 — Link normaliser and relevance guard
 - **Covers:** R2.1–R2.4, R3.1, R3.2

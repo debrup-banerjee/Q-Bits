@@ -13,8 +13,8 @@ function startsOpen(): boolean {
  * Key terms with plain meanings. Collapsed to the term names on phones, open on wider screens,
  * one tap to expand (spec 003 R6.2).
  */
-export function WordsToKnow({ terms }: { terms: KeyTerm[] }) {
-  const [open, setOpen] = useState(startsOpen);
+export function WordsToKnow({ terms, defaultOpen }: { terms: KeyTerm[]; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(() => defaultOpen ?? startsOpen());
   if (terms.length === 0) {
     return null;
   }

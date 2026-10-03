@@ -10,6 +10,15 @@
   --color-accent: oklch(0.48 0.18 262);
   --color-accent-ink: oklch(1 0 0);
   --color-chip: oklch(0.95 0.03 262);
+  /* Source badge colours: all dark enough for white text (AA) in light and dark mode. */
+  --color-badge-1: oklch(0.5 0.17 262);
+  --color-badge-2: oklch(0.5 0.1 195);
+  --color-badge-3: oklch(0.5 0.13 145);
+  --color-badge-4: oklch(0.5 0.12 60);
+  --color-badge-5: oklch(0.52 0.18 25);
+  --color-badge-6: oklch(0.5 0.18 340);
+  --color-badge-7: oklch(0.5 0.17 300);
+  --color-badge-8: oklch(0.47 0.03 260);
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 

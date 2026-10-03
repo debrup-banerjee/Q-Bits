@@ -23,7 +23,7 @@ GET /api/v1/stories?hours=0          → 400 { "code": "INVALID_HOURS" }
 - `StoriesQuery` gains `hours?: number`.
 - `useStories(section?, limit, hours?)` adds `hours` to the query key.
 - New `useLatestFeed()` = `useStories(undefined, 20, 24)` with `refetchOnWindowFocus: false` (the new-stories hook handles freshness so the list never jumps).
-- New `useNewStories(topId: string | undefined)`:
+- New `useNewStories(firstPage, loadedAt)` (*as built*: takes the feed's first page so the first check waits 2 minutes instead of firing at once):
   - `useQuery(['stories','latest-check'], () => api.stories({ hours: 24, limit: 20 }), { refetchInterval: 120_000, refetchIntervalInBackground: false })`
   - Returns the stories in that page that come before `topId` (by position). Count = their number; at 20 it shows "20+".
   - `apply()` = invalidate `['stories','all',20,24]` so the feed reloads from the top, then scroll to the top.
@@ -40,7 +40,7 @@ web/src/features/sections/
   HomePage.tsx        → renamed SectionsOverviewPage, route /sections
   SectionNav.tsx      first link "AI Latest" → "/", end match
 web/src/components/
-  ClampedText.tsx     three-line clamp with Show more / Show less (aria-expanded, aria-controls)
+  (clamp lives inside FeedCard: it also controls Words to know, so a separate ClampedText added nothing)
 ```
 - Feed card layout: badge (40 px) left; right column with "Source · time · Section" line, headline (`text-[17px] font-semibold` on phones, 18 px at `sm`), clamped summary (`line-clamp-3`), actions row with the link out. Cards separated by a 1 px divider rather than boxed, to read as a timeline; max width `36rem`, centred.
 - Words to know render only when expanded (R4.2), reusing `WordsToKnow` with `startsOpen=true`.

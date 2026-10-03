@@ -32,6 +32,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `SourceBadge` with 8 contrast-checked colour tokens; `ClampedText`; `FeedCard`.
 - **Tests:** `FeedCard.test.tsx` (part order, badge letter and stable colour, Show more/Show less with `aria-expanded`, Words to know only when expanded, link-out attributes, no `img`/`iframe`/social buttons); `SourceBadge.test.tsx` (same name → same colour).
 - **Done when:** all pass.
+- **Status:** done
 
 ## T5 — AI Latest page
 - **Covers:** R3.1–R3.4

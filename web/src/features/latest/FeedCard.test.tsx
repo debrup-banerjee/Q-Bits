@@ -1,0 +1,69 @@
+import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { story } from '../../test/fixtures';
+import { renderAt } from '../../test/render';
+import { FeedCard } from './FeedCard';
+
+const NOW = new Date('2026-10-03T04:12:00Z');
+
+it('shows the parts in timeline order', () => {
+  renderAt(<FeedCard story={story()} now={NOW} />);
+
+  const card = screen.getByRole('article');
+  const text = card.textContent ?? '';
+  const order = ['T', 'The Hindu', '12 minutes ago', 'India AI', story().headline].map((part) =>
+    text.indexOf(part),
+  );
+  expect(order).toEqual([...order].sort((a, b) => a - b));
+  expect(within(card).getByRole('link', { name: 'India AI' })).toHaveAttribute(
+    'href',
+    '/section/india-ai',
+  );
+  expect(within(card).getByRole('link', { name: story().headline })).toHaveAttribute(
+    'href',
+    `/story/${story().id}`,
+  );
+});
+
+it('clamps the summary and expands it with the words to know', async () => {
+  renderAt(<FeedCard story={story()} now={NOW} />);
+  const button = screen.getByRole('button', { name: 'Show more' });
+
+  expect(screen.getByTestId('feed-summary')).toHaveClass('line-clamp-3');
+  expect(button).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.queryByText('Words to know')).not.toBeInTheDocument();
+
+  await userEvent.click(button);
+
+  expect(screen.getByTestId('feed-summary')).not.toHaveClass('line-clamp-3');
+  expect(screen.getByRole('button', { name: 'Show less' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  expect(screen.getByText(/A chip that does many small sums at once/)).toBeVisible();
+
+  await userEvent.click(screen.getByRole('button', { name: 'Show less' }));
+  expect(screen.getByTestId('feed-summary')).toHaveClass('line-clamp-3');
+});
+
+it('links out safely and shows the attribution', () => {
+  renderAt(<FeedCard story={story()} now={NOW} />);
+
+  const out = screen.getByRole('link', {
+    name: 'Read the full story at The Hindu (opens in a new tab)',
+  });
+  expect(out).toHaveAttribute('target', '_blank');
+  expect(out).toHaveAttribute('rel', 'noopener noreferrer');
+  expect(
+    screen.getByText("Summary written from The Hindu's headline and teaser"),
+  ).toBeInTheDocument();
+});
+
+it('has no images, embeds or social buttons', () => {
+  const { container } = renderAt(<FeedCard story={story()} now={NOW} />);
+
+  expect(container.querySelector('img, iframe, video, embed, object')).toBeNull();
+  for (const name of [/like/i, /share/i, /comment/i, /follow/i]) {
+    expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+  }
+});

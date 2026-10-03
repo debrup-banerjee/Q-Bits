@@ -5,3 +5,5 @@ qbits:
     retry-backoff: PT0.05S
   scheduling:
     enabled: false
+  story-writer:
+    model: test-model

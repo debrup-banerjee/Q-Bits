@@ -32,6 +32,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Add `com.anthropic:anthropic-java`; `AnthropicStoryWriter` with prompt file `story-writer.v1.md`, forced `write_story` tool, token counts, error mapping; config record.
 - **Tests:** `AnthropicStoryWriterTest` against WireMock base URL: request contains only allowed fields, tool forced, model from config; 429/500/timeout → `WriterUnavailable`; 400 → `WriterRejected`.
 - **Done when:** tests pass with no real key.
+- **Status:** done
 
 ## T5 — Story job, budget, expiry
 - **Covers:** R1.1, R1.3, R9.1–R9.4

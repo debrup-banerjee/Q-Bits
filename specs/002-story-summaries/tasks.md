@@ -24,6 +24,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `StoryWriter`, `FakeStoryWriter`, `StoryService` (write → validate → retry with feedback → save/status).
 - **Tests:** `StoryServiceTest` (publish, NOT_AI with reason, retry pass, retry reject with rule, unavailable leaves PENDING).
 - **Done when:** all status transitions proven.
+- **Status:** done
 
 ## T4 — Anthropic writer
 - **Covers:** R1.2, R3.2–R3.6, R4.3, R4.5, R5.2, R5.4, R6.2 (via prompt), R10.1

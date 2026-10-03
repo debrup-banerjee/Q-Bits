@@ -35,6 +35,17 @@ qbits:
     degraded-after-failures: 5
     robots-agent-name: QBits
     user-agent: "QBits/0.1 (+mailto:debrup28.nitdgp@gmail.com)"
+  story-writer:
+    provider: anthropic
+    model: ${QBITS_STORY_MODEL:}
+    prompt-version: v1
+    max-output-tokens: 800
+    daily-call-cap: 500
+    parallelism: 4
+    batch-size: 20
+    timeout: PT30S
+    tick: PT2M
+    max-backoff: PT30M
   relevance:
     threshold: 1.0
     keywords:

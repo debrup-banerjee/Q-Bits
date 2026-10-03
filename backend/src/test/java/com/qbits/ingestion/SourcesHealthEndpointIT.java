@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestClient;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "qbits.sources-file=src/test/resources/sources/one-enabled.yml")
 @ActiveProfiles("test")
+@Import(com.qbits.TestBeans.class)
 class SourcesHealthEndpointIT {
 
   @DynamicPropertySource

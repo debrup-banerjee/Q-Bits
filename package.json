@@ -1,0 +1,16 @@
+{
+  "name": "qbits",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "web"
+  ],
+  "scripts": {
+    "verify": "npm run verify --workspaces --if-present",
+    "generate:api": "npm run generate --workspace @qbits/api-client"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "prettier": "3.9.9"
+  }
+}

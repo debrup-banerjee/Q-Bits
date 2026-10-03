@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+
+/* Design tokens, defined once. Light by default; dark follows the system setting. */
+@theme {
+  --color-page: oklch(0.985 0.002 250);
+  --color-surface: oklch(1 0 0);
+  --color-ink: oklch(0.22 0.02 260);
+  --color-muted: oklch(0.45 0.02 260);
+  --color-line: oklch(0.9 0.01 260);
+  --color-accent: oklch(0.48 0.18 262);
+  --color-accent-ink: oklch(1 0 0);
+  --color-chip: oklch(0.95 0.03 262);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: oklch(0.17 0.01 260);
+    --color-surface: oklch(0.22 0.015 260);
+    --color-ink: oklch(0.95 0.005 260);
+    --color-muted: oklch(0.75 0.015 260);
+    --color-line: oklch(0.32 0.015 260);
+    --color-accent: oklch(0.75 0.13 262);
+    --color-accent-ink: oklch(0.17 0.01 260);
+    --color-chip: oklch(0.3 0.04 262);
+  }
+}
+
+html {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

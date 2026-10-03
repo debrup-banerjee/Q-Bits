@@ -24,6 +24,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** npm workspaces at repo root; `packages/api-client` generated from `openapi.json` (`openapi-typescript` + `openapi-fetch`) with query hooks; `web/` Vite + React + TS strict + Tailwind + ESLint/Prettier + Vitest + MSW; `npm run verify`.
 - **Tests:** `api-client` smoke test against MSW; empty app renders.
 - **Done when:** `npm run verify --workspace web` passes.
+- **Status:** done
 
 ## T4 — Layout, theme and section navigation
 - **Covers:** R4.3, R9.1, R9.3 (theme, focus)

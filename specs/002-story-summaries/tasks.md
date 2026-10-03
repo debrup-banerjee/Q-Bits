@@ -16,6 +16,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Pure `StoryValidator` implementing the rule table.
 - **Tests:** `StoryValidatorTest`, a pass and a fail case per rule id, including "1,000" vs "1000" and the 40-word short-excerpt case.
 - **Done when:** all rules covered; no Spring dependency.
+- **Status:** done
 
 ## T3 — Writer interface, fake and service
 - **Covers:** R2.1, R2.2, R8.2, R8.3, R8.4

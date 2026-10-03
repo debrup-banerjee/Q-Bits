@@ -28,7 +28,8 @@ export class ApiError extends Error {
   }
 }
 
-export type StoriesQuery = { section?: string; cursor?: string; limit?: number };
+/** `hours` limits the window (1–72, default 72). AI Latest uses 24. */
+export type StoriesQuery = { section?: string; cursor?: string; limit?: number; hours?: number };
 
 /** Typed access to the Q-Bits read API. Shared by the web app and, later, the mobile app. */
 export interface QBitsApi {
@@ -69,9 +70,7 @@ export function createQBitsApi(baseUrl: string, fetchImpl?: typeof fetch): QBits
   return {
     sections: () => unwrap(client.GET('/api/v1/sections')),
     stories: (query = {}) =>
-      unwrap(client.GET('/api/v1/stories', { params: { query } })) as Promise<
-        WithAsOf<StoryPage>
-      >,
+      unwrap(client.GET('/api/v1/stories', { params: { query } })) as Promise<WithAsOf<StoryPage>>,
     story: (id) =>
       unwrap(client.GET('/api/v1/stories/{id}', { params: { path: { id } } })) as Promise<
         WithAsOf<StoryView>

@@ -16,6 +16,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `hours` in `StoriesQuery` and `useStories`; `useLatestFeed`; `useNewStories(topId)` with 2-minute polling paused when hidden.
 - **Tests:** `client.test.ts` (sends `hours`); `useNewStories.test.tsx` with MSW and fake timers (count, "20+", no polling while hidden, one check on becoming visible).
 - **Done when:** `npm run verify --workspace @qbits/api-client` passes.
+- **Status:** done
 
 ## T3 — Routes and tab order
 - **Covers:** R2.1–R2.4

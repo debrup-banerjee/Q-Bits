@@ -80,6 +80,53 @@ class CatalogControllerIT extends ApiTest {
   }
 
   @Test
+  void hoursLimitsTheWindow() { // 004 R1.1
+    UUID recent = seed.published("example-lab", Section.INDIA_AI, now.minus(Duration.ofHours(23)));
+    UUID older = seed.published("example-lab", Section.INDIA_AI, now.minus(Duration.ofHours(25)));
+
+    JsonNode latest = get("/api/v1/stories?hours=24").body.get("data");
+    JsonNode all = get("/api/v1/stories").body.get("data");
+
+    assertThat(latest.findValuesAsString("id")).containsExactly(recent.toString());
+    assertThat(all.findValuesAsString("id")).containsExactly(recent.toString(), older.toString());
+  }
+
+  @Test
+  void hoursCombinesWithSectionAndCursor() { // 004 R1.3
+    for (int i = 0; i < 3; i++) {
+      seed.published("example-lab", Section.WORLD_BUSINESS, now.minus(Duration.ofHours(i + 1)));
+    }
+    seed.published("example-lab", Section.INDIA_AI, now.minus(Duration.ofMinutes(30)));
+    seed.published("example-lab", Section.WORLD_BUSINESS, now.minus(Duration.ofHours(30)));
+
+    Result first = get("/api/v1/stories?hours=24&section=world-business&limit=2");
+    Result second =
+        get(
+            "/api/v1/stories?hours=24&section=world-business&limit=2&cursor="
+                + first.body.get("nextCursor").asString());
+
+    assertThat(first.body.get("data")).hasSize(2);
+    assertThat(second.body.get("data")).hasSize(1);
+    assertThat(second.body.get("nextCursor").isNull()).isTrue();
+  }
+
+  @Test
+  void invalidHoursIsProblem400() { // 004 R1.2
+    for (String bad : new String[] {"0", "73", "abc", "1.5"}) {
+      Result r = get("/api/v1/stories?hours=" + bad);
+      assertThat(r.status).as(bad).isEqualTo(400);
+      assertThat(r.body.get("code").asString()).isEqualTo("INVALID_HOURS");
+    }
+  }
+
+  @Test
+  void sectionCountsStay72Hours() { // 004 R1.4
+    seed.published("example-lab", Section.INDIA_AI, now.minus(Duration.ofHours(30)));
+
+    assertThat(get("/api/v1/sections").body.get(2).get("storyCount").asLong()).isEqualTo(1);
+  }
+
+  @Test
   void unknownSectionIsProblem400() { // 003 R2.5
     Result r = get("/api/v1/stories?section=business");
 

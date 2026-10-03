@@ -8,6 +8,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `hours` param with validation in `CatalogController`; window passed through `CatalogService`; update `openapi.json` with `-Dqbits.updateOpenApi=true`; regenerate the client.
 - **Tests:** `CatalogControllerIT` cases for the 24 h boundary, combination with `section` and `cursor`, `INVALID_HOURS` (0, 73, `abc`); `OpenApiContractIT`.
 - **Done when:** `GET /api/v1/stories?hours=24` returns only the last 24 hours and the contract test passes.
+- **Status:** done
 
 ## T2 — Client: `hours`, latest feed and new-stories hooks
 - **Covers:** R3.2, R5.1, R5.2, R5.4

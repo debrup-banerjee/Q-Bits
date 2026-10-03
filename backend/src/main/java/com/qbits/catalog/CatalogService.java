@@ -35,9 +35,16 @@ public class CatalogService {
   }
 
   public StoryPage list(Optional<Section> section, Optional<Cursor> after, int limit) {
+    return list(section, after, limit, WINDOW);
+  }
+
+  /** Stories inside the given window (at most 72 hours), newest first (spec 004 R1.1). */
+  public StoryPage list(
+      Optional<Section> section, Optional<Cursor> after, int limit, Duration window) {
+    Duration capped = window.compareTo(WINDOW) > 0 ? WINDOW : window;
     List<Row> rows =
         queries.list(
-            windowStart(),
+            clock.instant().minus(capped),
             section,
             after.map(Cursor::publishedAt),
             after.map(Cursor::id),

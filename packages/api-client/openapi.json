@@ -221,6 +221,16 @@
             "format" : "int32",
             "type" : "integer"
           }
+        }, {
+          "description" : "Window in hours, 1–72. Default 72.",
+          "in" : "query",
+          "name" : "hours",
+          "required" : false,
+          "schema" : {
+            "maximum" : 72,
+            "minimum" : 1,
+            "type" : "integer"
+          }
         } ],
         "responses" : {
           "200" : {

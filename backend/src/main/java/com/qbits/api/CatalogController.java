@@ -11,6 +11,8 @@ import com.qbits.catalog.domain.StoryView;
 import com.qbits.common.AppException;
 import com.qbits.config.QBitsProperties;
 import com.qbits.stories.domain.Section;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +36,7 @@ public class CatalogController {
   static final String DATA_AS_OF = "X-Data-As-Of";
   private static final int DEFAULT_LIMIT = 20;
   private static final int MAX_LIMIT = 100;
+  private static final int MAX_HOURS = 72;
 
   private final CatalogService catalog;
   private final QBitsProperties props;
@@ -57,7 +60,12 @@ public class CatalogController {
   public ResponseEntity<StoryPage> stories(
       @RequestParam(required = false) String section,
       @RequestParam(required = false) String cursor,
-      @RequestParam(required = false) Integer limit) {
+      @RequestParam(required = false) Integer limit,
+      @Parameter(
+              description = "Window in hours, 1–72. Default 72.",
+              schema = @Schema(type = "integer", minimum = "1", maximum = "72"))
+          @RequestParam(required = false)
+          String hours) {
     Optional<Section> s =
         section == null || section.isBlank()
             ? Optional.empty()
@@ -85,7 +93,26 @@ public class CatalogController {
           HttpStatus.BAD_REQUEST,
           "limit must be between 1 and " + MAX_LIMIT + ".");
     }
-    return ok(catalog.list(s, c, size));
+    return ok(catalog.list(s, c, size, Duration.ofHours(hours(hours))));
+  }
+
+  /** Window in hours, 1–72, default 72 (spec 004 R1.1, R1.2). */
+  private static int hours(String value) {
+    if (value == null || value.isBlank()) {
+      return MAX_HOURS;
+    }
+    try {
+      int h = Integer.parseInt(value.trim());
+      if (h >= 1 && h <= MAX_HOURS) {
+        return h;
+      }
+    } catch (NumberFormatException e) {
+      // reported below
+    }
+    throw new AppException(
+        "INVALID_HOURS",
+        HttpStatus.BAD_REQUEST,
+        "hours must be a whole number from 1 to " + MAX_HOURS + ".");
   }
 
   @GetMapping("/stories/{id}")

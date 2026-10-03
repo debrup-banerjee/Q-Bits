@@ -208,6 +208,8 @@ export interface operations {
                 section?: string;
                 cursor?: string;
                 limit?: number;
+                /** @description Window in hours, 1–72. Default 72. */
+                hours?: number;
             };
             header?: never;
             path?: never;

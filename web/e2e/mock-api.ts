@@ -22,7 +22,7 @@ const SECTIONS = [
   },
 ];
 
-function story(id: string, slug: string, name: string, headline: string) {
+function story(id: string, slug: string, name: string, headline: string, hoursAgo = 3) {
   return {
     id,
     section: { slug, name },
@@ -35,7 +35,7 @@ function story(id: string, slug: string, name: string, headline: string) {
     ],
     source: { name: 'The Hindu', homepage: 'https://www.thehindu.com/' },
     originalUrl: `https://www.thehindu.com/sci-tech/${id}`,
-    publishedAt: new Date(Date.now() - 3 * 3600_000).toISOString(),
+    publishedAt: new Date(Date.now() - hoursAgo * 3600_000).toISOString(),
     dateEstimated: false,
     attribution: "Summary written from The Hindu's headline and teaser",
   };
@@ -85,8 +85,16 @@ const json = (body: unknown) => ({
   body: JSON.stringify(body),
 });
 
-/** Serves a small, fixed news set for every /api/v1 call. */
-export async function mockApi(page: Page) {
+export const BREAKING = story(
+  '0192f0c4-0000-7000-8000-000000000099',
+  'global-ai-tech',
+  'Global AI Tech',
+  'Breaking: a lab shares a new open model',
+  0,
+);
+
+/** Serves a small, fixed news set for every /api/v1 call. Set `state.breaking` to add a newer story. */
+export async function mockApi(page: Page, state: { breaking: boolean } = { breaking: false }) {
   await page.route('**/api/v1/**', async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;
@@ -97,7 +105,12 @@ export async function mockApi(page: Page) {
       return route.fulfill(json({ name: 'Q-Bits', contactEmail: 'debrup28.nitdgp@gmail.com' }));
     if (path === '/api/v1/stories') {
       const section = url.searchParams.get('section');
-      const data = section ? (STORIES[section] ?? []) : Object.values(STORIES).flat();
+      const hours = Number(url.searchParams.get('hours') ?? '72');
+      const cutoff = Date.now() - hours * 3600_000;
+      const all = [...(state.breaking ? [BREAKING] : []), ...Object.values(STORIES).flat()];
+      const data = (section ? all.filter((s) => s.section.slug === section) : all)
+        .filter((s) => Date.parse(s.publishedAt) >= cutoff)
+        .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
       return route.fulfill(json({ data, nextCursor: null }));
     }
     const match = path.match(/^\/api\/v1\/stories\/(.+)$/);

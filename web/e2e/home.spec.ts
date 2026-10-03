@@ -10,12 +10,10 @@ async function expectNoHorizontalScroll(page: import('@playwright/test').Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
-test('home shows the four sections without horizontal scrolling', async ({ page }) => {
-  await page.goto('/');
+test('section overview shows the four sections without horizontal scrolling', async ({ page }) => {
+  await page.goto('/sections');
 
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'AI news from the last 72 hours' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Browse by section' })).toBeVisible();
   for (const name of ['Global AI Tech', 'World Business', 'India AI', 'Innovations & Research']) {
     await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
   }
@@ -26,8 +24,8 @@ test('home shows the four sections without horizontal scrolling', async ({ page 
   await expectNoHorizontalScroll(page);
 });
 
-test('home → section → the link out to the publisher', async ({ page }) => {
-  await page.goto('/');
+test('overview → section → the link out to the publisher', async ({ page }) => {
+  await page.goto('/sections');
   await page.getByRole('link', { name: 'See all India AI' }).click();
 
   await expect(page).toHaveURL(/\/section\/india-ai$/);

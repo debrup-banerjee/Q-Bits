@@ -56,3 +56,4 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Update e2e mock API for `hours`; `latest.spec.ts` at 360 px and 1280 px; update `home.spec.ts` and `a11y.spec.ts` for `/` and `/sections`; keep the bundle budget.
 - **Tests:** the Playwright suite.
 - **Done when:** no horizontal scroll, no axe violations in light and dark, budget met.
+- **Status:** done. Also fixed a 003 bug found here: on phones the tab bar scrolled away because only the inner nav was sticky; the wrapper now sticks, with a browser test.

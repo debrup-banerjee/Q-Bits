@@ -5,7 +5,8 @@ import { FIRST_INDIA_STORY, mockApi } from './mock-api';
 test.beforeEach(async ({ page }) => mockApi(page));
 
 for (const [name, path, ready] of [
-  ['home', '/', 'AI news from the last 72 hours'],
+  ['AI Latest', '/', 'AI Latest'],
+  ['overview', '/sections', 'Browse by section'],
   ['section', '/section/india-ai', 'India AI'],
   ['story', `/story/${FIRST_INDIA_STORY.id}`, FIRST_INDIA_STORY.headline],
   ['about', '/about', 'How Q-Bits works'],

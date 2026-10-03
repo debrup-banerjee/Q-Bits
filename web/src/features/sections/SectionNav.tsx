@@ -16,7 +16,7 @@ export function SectionNav() {
   return (
     <nav
       aria-label="Sections"
-      className="sticky top-0 z-10 border-b border-line bg-page/95 backdrop-blur sm:static sm:border-0 sm:bg-transparent"
+      className="sticky top-0 z-10 border-b border-line bg-page sm:static sm:border-0 sm:bg-transparent"
     >
       <ul className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:flex-wrap sm:overflow-visible sm:px-0 sm:py-0">
         <li>

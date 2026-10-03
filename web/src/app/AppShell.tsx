@@ -22,7 +22,8 @@ export function AppShell() {
           </div>
         </div>
       </header>
-      <div className="sm:hidden">
+      {/* The wrapper is what sticks: a sticky child only sticks inside its own parent. */}
+      <div className="sticky top-0 z-20 sm:hidden">
         <SectionNav />
       </div>
       <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">

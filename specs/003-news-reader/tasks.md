@@ -56,6 +56,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `SectionPage` with infinite scroll, empty state; `StoryPage`.
 - **Tests:** `SectionPage.test.tsx` (paging, empty), `StoryPage.test.tsx` (404 → friendly message).
 - **Done when:** all pass.
+- **Status:** done
 
 ## T8 — About page
 - **Covers:** R7.1–R7.3

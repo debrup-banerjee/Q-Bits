@@ -15,9 +15,9 @@ export function StoryCard({
 }: {
   story: StoryView;
   now?: Date;
-  headingLevel?: 2 | 3;
+  headingLevel?: 1 | 2 | 3;
 }) {
-  const Heading = headingLevel === 2 ? 'h2' : 'h3';
+  const Heading = (['h1', 'h2', 'h3'] as const)[headingLevel - 1]!;
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-wide text-muted">

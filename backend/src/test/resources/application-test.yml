@@ -1,0 +1,7 @@
+qbits:
+  sources-file: src/test/resources/sources/valid.yml
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 1

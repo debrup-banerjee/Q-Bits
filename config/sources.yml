@@ -1,0 +1,302 @@
+# Approved sources for Q-Bits.
+#
+# STATUS: all 24 sources approved by the owner on 2026-10-03 and enabled.
+# Still to do before the first real run, per source:
+#   1. confirm feedUrl is a working RSS/Atom feed (URLs are best-known and not yet tested; some may have moved),
+#   2. read the publisher's feed/RSS terms and fill termsUrl,
+#   3. set termsReviewedOn to the review date (YYYY-MM-DD).
+# The app refuses to start while an enabled source lacks termsUrl or termsReviewedOn (spec 001, R1.4).
+# To start without a source, set it to enabled: false.
+#
+# Note on terms: many publishers allow feed use only with attribution and/or for non-commercial use.
+# That fits the current personal/team use. Re-review every source before any public or paid launch.
+#
+# Fields
+#   aiNative:     true if the feed covers only AI (skips the keyword pre-filter)
+#   region:       global | india   (a hint for the India AI section, not a rule)
+#   sectionHint:  optional default section; the summary step can override it
+#
+# Deliberately not listed: Reuters, Bloomberg, Financial Times, Wall Street Journal, The Information
+# (no public RSS, paywalled, or terms that forbid aggregation). Revisit only through a licensed API.
+
+sources:
+
+  # ── AI labs and big-tech official blogs (Global AI Tech) ──────────────────
+  - id: openai-news
+    name: OpenAI
+    homepage: https://openai.com/news/
+    feedUrl: https://openai.com/news/rss.xml
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: global-ai-tech
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: google-deepmind-blog
+    name: Google DeepMind
+    homepage: https://deepmind.google/discover/blog/
+    feedUrl: https://deepmind.google/blog/rss.xml
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: global-ai-tech
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: google-ai-blog
+    name: Google AI (The Keyword)
+    homepage: https://blog.google/technology/ai/
+    feedUrl: https://blog.google/technology/ai/rss/
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: global-ai-tech
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: microsoft-ai-blog
+    name: Microsoft AI Blog
+    homepage: https://blogs.microsoft.com/ai/
+    feedUrl: https://blogs.microsoft.com/ai/feed/
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: global-ai-tech
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: nvidia-blog
+    name: NVIDIA Blog
+    homepage: https://blogs.nvidia.com/
+    feedUrl: https://blogs.nvidia.com/feed/
+    type: rss
+    aiNative: false
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: huggingface-blog
+    name: Hugging Face
+    homepage: https://huggingface.co/blog
+    feedUrl: https://huggingface.co/blog/feed.xml
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: global-ai-tech
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  # ── Major tech press (Global AI Tech / World Business) ──────────────────────────
+  - id: the-verge-ai
+    name: The Verge
+    homepage: https://www.theverge.com/ai-artificial-intelligence
+    feedUrl: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+    type: atom
+    aiNative: true
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: techcrunch-ai
+    name: TechCrunch
+    homepage: https://techcrunch.com/category/artificial-intelligence/
+    feedUrl: https://techcrunch.com/category/artificial-intelligence/feed/
+    type: rss
+    aiNative: true
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: mit-tech-review-ai
+    name: MIT Technology Review
+    homepage: https://www.technologyreview.com/topic/artificial-intelligence/
+    feedUrl: https://www.technologyreview.com/topic/artificial-intelligence/feed
+    type: rss
+    aiNative: true
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: wired-ai
+    name: WIRED
+    homepage: https://www.wired.com/tag/ai/
+    feedUrl: https://www.wired.com/feed/tag/ai/latest/rss
+    type: rss
+    aiNative: true
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: ars-technica
+    name: Ars Technica
+    homepage: https://arstechnica.com/
+    feedUrl: https://feeds.arstechnica.com/arstechnica/technology-lab
+    type: rss
+    aiNative: false
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: venturebeat-ai
+    name: VentureBeat
+    homepage: https://venturebeat.com/category/ai/
+    feedUrl: https://venturebeat.com/category/ai/feed/
+    type: rss
+    aiNative: true
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  # ── Global news, technology/business desks (World Business) ────────────────────
+  - id: bbc-technology
+    name: BBC News
+    homepage: https://www.bbc.com/news/technology
+    feedUrl: https://feeds.bbci.co.uk/news/technology/rss.xml
+    type: rss
+    aiNative: false
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: guardian-ai
+    name: The Guardian
+    homepage: https://www.theguardian.com/technology/artificialintelligenceai
+    feedUrl: https://www.theguardian.com/technology/artificialintelligenceai/rss
+    type: rss
+    aiNative: true
+    region: global
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: cnbc-technology
+    name: CNBC
+    homepage: https://www.cnbc.com/technology/
+    feedUrl: https://www.cnbc.com/id/19854910/device/rss/rss.html
+    type: rss
+    aiNative: false
+    region: global
+    sectionHint: world-business
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  # ── India (India AI) ─────────────────────────────────────────────────────
+  - id: et-tech
+    name: The Economic Times (ETtech)
+    homepage: https://economictimes.indiatimes.com/tech
+    feedUrl: https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms
+    type: rss
+    aiNative: false
+    region: india
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: mint-technology
+    name: Mint
+    homepage: https://www.livemint.com/technology
+    feedUrl: https://www.livemint.com/rss/technology
+    type: rss
+    aiNative: false
+    region: india
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: the-hindu-technology
+    name: The Hindu
+    homepage: https://www.thehindu.com/sci-tech/technology/
+    feedUrl: https://www.thehindu.com/sci-tech/technology/feeder/default.rss
+    type: rss
+    aiNative: false
+    region: india
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: inc42
+    name: Inc42
+    homepage: https://inc42.com/
+    feedUrl: https://inc42.com/feed/
+    type: rss
+    aiNative: false
+    region: india
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: pib-meity
+    name: Press Information Bureau (Govt. of India)
+    homepage: https://pib.gov.in/
+    feedUrl: https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3
+    type: rss
+    aiNative: false
+    region: india
+    sectionHint: india-ai
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  # ── Research (Innovations & Research) ────────────────────────────────────
+  - id: mit-news-ai
+    name: MIT News
+    homepage: https://news.mit.edu/topic/artificial-intelligence2
+    feedUrl: https://news.mit.edu/rss/topic/artificial-intelligence2
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: innovations-research
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: google-research-blog
+    name: Google Research
+    homepage: https://research.google/blog/
+    feedUrl: https://research.google/blog/rss/
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: innovations-research
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: nature-machine-learning
+    name: Nature
+    homepage: https://www.nature.com/subjects/machine-learning
+    feedUrl: https://www.nature.com/subjects/machine-learning.rss
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: innovations-research
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true
+
+  - id: sciencedaily-ai
+    name: ScienceDaily
+    homepage: https://www.sciencedaily.com/news/computers_math/artificial_intelligence/
+    feedUrl: https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml
+    type: rss
+    aiNative: true
+    region: global
+    sectionHint: innovations-research
+    termsUrl: null
+    termsReviewedOn: null
+    enabled: true

@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: qbits
+  datasource:
+    url: ${QBITS_DB_URL:jdbc:postgresql://localhost:5432/qbits}
+    username: ${QBITS_DB_USER:qbits}
+    password: ${QBITS_DB_PASSWORD:qbits}
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+qbits:
+  sources-file: ${QBITS_SOURCES_FILE:../config/sources.yml}
+  contact-email: debrup28.nitdgp@gmail.com

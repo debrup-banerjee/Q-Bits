@@ -19,7 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
  * response except the status and, for GitHub, the canonical owner/repo (R4.7).
  */
 @Component
-public class HostApis {
+public class HostApis implements LinkChecker {
 
   private static final Logger log = LoggerFactory.getLogger(HostApis.class);
 
@@ -36,6 +36,7 @@ public class HostApis {
     this.limiter = new HostLimiter(props.rateLimits(), clock);
   }
 
+  @Override
   public CheckResult check(Candidate c) {
     if (!limiter.tryAcquire(c.host())) {
       return new CheckResult.Throttled();

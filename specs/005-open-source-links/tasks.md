@@ -40,6 +40,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `ResourceCheckJob` with ShedLock, cache reuse, retry delays, give-up after 3, skip items older than 72 hours; add trigger to `SchedulingConfig`.
 - **Tests:** `ResourceCheckJobIT` (fixed clock: cache shared across two items, retry timing, give-up, limiter stops the batch).
 - **Done when:** all pass.
+- **Status:** done
 
 ## T6 — Resources in the API
 - **Covers:** R5.1, R5.2

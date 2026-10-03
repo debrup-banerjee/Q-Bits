@@ -42,11 +42,22 @@ class SchedulingConfig {
     private final IngestionJob ingestion;
     private final RetentionJob retention;
     private final com.qbits.stories.StoryJob stories;
+    private final com.qbits.resources.ResourceCheckJob links;
 
-    Triggers(IngestionJob ingestion, RetentionJob retention, com.qbits.stories.StoryJob stories) {
+    Triggers(
+        IngestionJob ingestion,
+        RetentionJob retention,
+        com.qbits.stories.StoryJob stories,
+        com.qbits.resources.ResourceCheckJob links) {
       this.ingestion = ingestion;
       this.retention = retention;
       this.stories = stories;
+      this.links = links;
+    }
+
+    @Scheduled(fixedDelayString = "${qbits.resources.tick}", initialDelayString = "PT90S")
+    void checkLinks() {
+      links.runOnce();
     }
 
     @Scheduled(fixedDelayString = "${qbits.story-writer.tick}", initialDelayString = "PT60S")

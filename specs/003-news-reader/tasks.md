@@ -8,6 +8,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `StoryQueryRepository` (keyset SQL with 72 h window), `CursorCodec`, `StoryView` mapping.
 - **Tests:** `StoryQueryRepositoryIT` (window boundary, exclusions, ordering, paging); `CursorCodecTest`.
 - **Done when:** queries proven against Testcontainers Postgres.
+- **Status:** done
 
 ## T2 — Catalog API and errors
 - **Covers:** R1.1, R2.3, R2.5, R2.6, R2.7, R3.1

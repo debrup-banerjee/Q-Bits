@@ -40,6 +40,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Pure `RelevancePreFilter` with configurable weighted keywords and whole-word, case-insensitive matching.
 - **Tests:** `RelevancePreFilterTest` ("AI chips" matches; "said", "Thailand" don't; aiNative → 1.0; threshold edge).
 - **Done when:** tests pass; keyword list read from config.
+- **Status:** done
 
 ## T6 — robots.txt policy
 - **Covers:** R3.1–R3.4

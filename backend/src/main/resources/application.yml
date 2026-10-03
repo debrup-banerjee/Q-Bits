@@ -21,3 +21,43 @@ management:
 qbits:
   sources-file: ${QBITS_SOURCES_FILE:../config/sources.yml}
   contact-email: debrup28.nitdgp@gmail.com
+  relevance:
+    threshold: 1.0
+    keywords:
+      - { term: "artificial intelligence", weight: 1.0 }
+      - { term: "AI", weight: 0.6 }
+      - { term: "A.I.", weight: 0.6 }
+      - { term: "machine learning", weight: 1.0 }
+      - { term: "deep learning", weight: 1.0 }
+      - { term: "neural network", weight: 1.0 }
+      - { term: "large language model", weight: 1.0 }
+      - { term: "language model", weight: 0.8 }
+      - { term: "LLM", weight: 1.0 }
+      - { term: "LLMs", weight: 1.0 }
+      - { term: "generative", weight: 0.6 }
+      - { term: "chatbot", weight: 0.6 }
+      - { term: "ChatGPT", weight: 1.0 }
+      - { term: "GPT", weight: 0.8 }
+      - { term: "OpenAI", weight: 1.0 }
+      - { term: "Anthropic", weight: 1.0 }
+      - { term: "Claude", weight: 0.6 }
+      - { term: "DeepMind", weight: 1.0 }
+      - { term: "Gemini", weight: 0.6 }
+      - { term: "Copilot", weight: 0.6 }
+      - { term: "Hugging Face", weight: 1.0 }
+      - { term: "Mistral", weight: 0.6 }
+      - { term: "Llama", weight: 0.4 }
+      - { term: "NVIDIA", weight: 0.5 }
+      - { term: "GPU", weight: 0.5 }
+      - { term: "GPUs", weight: 0.5 }
+      - { term: "semiconductor", weight: 0.5 }
+      - { term: "chip", weight: 0.3 }
+      - { term: "chips", weight: 0.3 }
+      - { term: "data centre", weight: 0.4 }
+      - { term: "data center", weight: 0.4 }
+      - { term: "robotics", weight: 0.5 }
+      - { term: "autonomous", weight: 0.4 }
+      - { term: "computer vision", weight: 1.0 }
+      - { term: "IndiaAI", weight: 1.0 }
+      - { term: "deepfake", weight: 1.0 }
+      - { term: "AGI", weight: 1.0 }

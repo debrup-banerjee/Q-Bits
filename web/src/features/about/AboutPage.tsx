@@ -26,7 +26,12 @@ export function AboutPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">The four sections</h2>
+        <h2 className="text-lg font-semibold">AI Latest and the four sections</h2>
+        <p>
+          <strong>AI Latest</strong> shows every story from the last 24 hours, newest first, and is
+          updated through the day. Each story also belongs to one of four sections, which cover the
+          last 72 hours:
+        </p>
         <ul className="list-disc space-y-1 pl-5">
           <li>
             <strong>Global AI Tech</strong>: new AI models and products, and what they can do.

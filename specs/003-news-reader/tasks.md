@@ -64,6 +64,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `AboutPage` with plain-language explanation, live source list, takedown contact from config.
 - **Tests:** `AboutPage.test.tsx`.
 - **Done when:** sources list renders from API.
+- **Status:** done
 
 ## T9 — End-to-end, accessibility and performance
 - **Covers:** R9.1–R9.3, non-functional

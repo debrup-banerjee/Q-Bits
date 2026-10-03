@@ -32,6 +32,7 @@ class StoryQueryRepositoryIT extends IntegrationTest {
   @Autowired StoryQueryRepository queries;
   @Autowired ItemRepository items;
   @Autowired StoryRepository stories;
+  @Autowired com.qbits.resources.ResourceQueries resourceQueries;
 
   private CatalogFixtures seed;
   private CatalogService catalog;
@@ -41,7 +42,10 @@ class StoryQueryRepositoryIT extends IntegrationTest {
     seed = new CatalogFixtures(items, stories);
     catalog =
         new CatalogService(
-            queries, new SourceRegistry(List.of()), Clock.fixed(NOW, ZoneOffset.UTC));
+            queries,
+            new SourceRegistry(List.of()),
+            Clock.fixed(NOW, ZoneOffset.UTC),
+            resourceQueries);
   }
 
   @Test

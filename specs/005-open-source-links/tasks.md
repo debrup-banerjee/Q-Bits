@@ -48,6 +48,7 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** Query verified resources per story (single extra query per page, no N+1), order and limit, labels; update `openapi.json`; regenerate the client.
 - **Tests:** `CatalogControllerIT` (only verified, order, max 3, labels and names, empty list); `OpenApiContractIT`.
 - **Done when:** contract updated and tests pass.
+- **Status:** done
 
 ## T7 — Open-source row on cards
 - **Covers:** R6.1–R6.4

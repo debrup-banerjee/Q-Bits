@@ -1,5 +1,6 @@
 package com.qbits.catalog.domain;
 
+import com.qbits.resources.domain.ResourceLink;
 import com.qbits.stories.domain.KeyTerm;
 import java.time.Instant;
 import java.util.List;
@@ -19,7 +20,8 @@ public record StoryView(
     String originalUrl,
     Instant publishedAt,
     boolean dateEstimated,
-    String attribution) {
+    String attribution,
+    List<ResourceLink> resources) {
 
   /** Section slug and display name. */
   public record SectionRef(String slug, String name) {}

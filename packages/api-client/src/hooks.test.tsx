@@ -31,6 +31,7 @@ function story(id: string): StoryView {
     publishedAt: '2026-10-03T04:00:00Z',
     dateEstimated: false,
     attribution: 'A',
+    resources: [],
   };
 }
 

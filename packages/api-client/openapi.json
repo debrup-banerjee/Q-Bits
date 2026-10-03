@@ -12,6 +12,23 @@
         },
         "type" : "object"
       },
+      "ResourceLink" : {
+        "properties" : {
+          "label" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "SectionRef" : {
         "properties" : {
           "name" : {
@@ -115,6 +132,12 @@
           "publishedAt" : {
             "format" : "date-time",
             "type" : "string"
+          },
+          "resources" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResourceLink"
+            },
+            "type" : "array"
           },
           "section" : {
             "$ref" : "#/components/schemas/SectionRef"

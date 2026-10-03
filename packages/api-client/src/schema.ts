@@ -92,6 +92,12 @@ export interface components {
             meaning: string;
             term: string;
         };
+        ResourceLink: {
+            label: string;
+            name: string;
+            type: string;
+            url: string;
+        };
         SectionRef: {
             name: string;
             slug: string;
@@ -129,6 +135,7 @@ export interface components {
             originalUrl: string;
             /** Format: date-time */
             publishedAt: string;
+            resources: components["schemas"]["ResourceLink"][];
             section: components["schemas"]["SectionRef"];
             source: components["schemas"]["SourceRef"];
             summary: string;

@@ -38,6 +38,7 @@ function story(id: string, slug: string, name: string, headline: string, hoursAg
     publishedAt: new Date(Date.now() - hoursAgo * 3600_000).toISOString(),
     dateEstimated: false,
     attribution: "Summary written from The Hindu's headline and teaser",
+    resources: [] as { type: string; label: string; url: string; name: string }[],
   };
 }
 

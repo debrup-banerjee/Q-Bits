@@ -6,6 +6,8 @@ import com.qbits.catalog.domain.StoryPage;
 import com.qbits.catalog.domain.StoryView;
 import com.qbits.catalog.persistence.StoryQueryRepository;
 import com.qbits.catalog.persistence.StoryQueryRepository.Row;
+import com.qbits.resources.ResourceQueries;
+import com.qbits.resources.domain.ResourceLink;
 import com.qbits.sources.SourceRegistry;
 import com.qbits.sources.domain.Source;
 import com.qbits.stories.domain.Section;
@@ -27,11 +29,17 @@ public class CatalogService {
   private final StoryQueryRepository queries;
   private final SourceRegistry registry;
   private final Clock clock;
+  private final ResourceQueries resources;
 
-  public CatalogService(StoryQueryRepository queries, SourceRegistry registry, Clock clock) {
+  public CatalogService(
+      StoryQueryRepository queries,
+      SourceRegistry registry,
+      Clock clock,
+      ResourceQueries resources) {
     this.queries = queries;
     this.registry = registry;
     this.clock = clock;
+    this.resources = resources;
   }
 
   public StoryPage list(Optional<Section> section, Optional<Cursor> after, int limit) {
@@ -55,11 +63,16 @@ public class CatalogService {
         more
             ? CursorCodec.encode(new Cursor(page.getLast().publishedAt(), page.getLast().id()))
             : null;
-    return new StoryPage(page.stream().map(this::view).toList(), next);
+    Map<UUID, List<ResourceLink>> links =
+        resources.verifiedFor(page.stream().map(Row::id).toList());
+    return new StoryPage(
+        page.stream().map(r -> view(r, links.getOrDefault(r.id(), List.of()))).toList(), next);
   }
 
   public Optional<StoryView> find(UUID id) {
-    return queries.find(id, windowStart()).map(this::view);
+    return queries
+        .find(id, windowStart())
+        .map(r -> view(r, resources.verifiedFor(List.of(r.id())).getOrDefault(r.id(), List.of())));
   }
 
   public Map<Section, Long> counts() {
@@ -78,7 +91,7 @@ public class CatalogService {
     return clock.instant().minus(WINDOW);
   }
 
-  private StoryView view(Row r) {
+  private StoryView view(Row r, List<ResourceLink> links) {
     Optional<Source> source = registry.find(r.sourceId());
     String name = source.map(Source::name).orElse(r.sourceId());
     String homepage = source.map(s -> s.homepage().toString()).orElse(null);
@@ -92,6 +105,7 @@ public class CatalogService {
         r.canonicalUrl(),
         r.publishedAt(),
         r.dateEstimated(),
-        StoryView.attributionFor(name));
+        StoryView.attributionFor(name),
+        links);
   }
 }

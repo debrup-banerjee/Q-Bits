@@ -26,6 +26,7 @@ export function story(overrides: Partial<StoryView> = {}): StoryView {
     publishedAt: '2026-10-03T04:00:00Z',
     dateEstimated: false,
     attribution: "Summary written from The Hindu's headline and teaser",
+    resources: [],
     ...overrides,
   };
 }

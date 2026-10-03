@@ -22,6 +22,7 @@ class CatalogControllerIT extends ApiTest {
 
   @Autowired ItemRepository items;
   @Autowired StoryRepository stories;
+  @Autowired com.qbits.resources.persistence.ItemResourceRepository itemResources;
   private final JsonMapper json = JsonMapper.builder().build();
   private CatalogFixtures seed;
   private Instant now;
@@ -77,6 +78,50 @@ class CatalogControllerIT extends ApiTest {
     assertThat(first.body.get("data")).hasSize(2);
     assertThat(second.body.get("data")).hasSize(1);
     assertThat(second.body.get("nextCursor").isNull()).isTrue();
+  }
+
+  @Test
+  void includesVerifiedOpenSourceLinksInOrderAndAtMostThree() { // 005 R5.1, R5.2
+    UUID id = seed.published("example-lab", Section.GLOBAL_AI_TECH, now.minus(Duration.ofHours(1)));
+    link(id, "https://arxiv.org/abs/2410.01234", true);
+    link(id, "https://huggingface.co/datasets/allenai/c4", true);
+    link(id, "https://huggingface.co/kestrel-ai/Kestrel-70B", true);
+    link(id, "https://github.com/kestrel-ai/kestrel", true);
+    link(id, "https://github.com/kestrel-ai/unverified", false);
+
+    JsonNode resources = get("/api/v1/stories/" + id).body.get("resources");
+
+    assertThat(resources).hasSize(3);
+    assertThat(resources.findValuesAsString("type")).containsExactly("code", "model", "dataset");
+    assertThat(resources.findValuesAsString("label"))
+        .containsExactly("Code on GitHub", "Model on Hugging Face", "Dataset on Hugging Face");
+    assertThat(resources.get(0).get("name").asString()).isEqualTo("kestrel-ai/kestrel");
+    assertThat(resources.get(0).get("url").asString())
+        .isEqualTo("https://github.com/kestrel-ai/kestrel");
+  }
+
+  @Test
+  void storiesWithoutLinksHaveAnEmptyList() { // 005 R5.1
+    seed.published("example-lab", Section.GLOBAL_AI_TECH, now.minus(Duration.ofHours(1)));
+
+    JsonNode story = get("/api/v1/stories").body.get("data").get(0);
+
+    assertThat(story.get("resources").isArray()).isTrue();
+    assertThat(story.get("resources")).isEmpty();
+  }
+
+  private void link(UUID itemId, String url, boolean verified) {
+    var c = new com.qbits.resources.domain.ResourceLinkNormaliser().normalise(url).orElseThrow();
+    itemResources.insertIfNew(itemId, c, com.qbits.resources.domain.LinkOrigin.DESCRIPTION, now);
+    if (verified) {
+      long rid =
+          itemResources.findByItem(itemId).stream()
+              .filter(r -> r.url().equals(c.url()))
+              .findFirst()
+              .orElseThrow()
+              .id();
+      itemResources.markVerified(rid, c.url(), c.name(), now);
+    }
   }
 
   @Test

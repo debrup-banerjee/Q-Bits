@@ -227,7 +227,8 @@ class IngestionJobIT extends IntegrationTest {
             health,
             props,
             clock);
-    return new IngestionJob(new SourceRegistry(sources), ingestor, locks);
+    SourceRegistry registry = new SourceRegistry(sources);
+    return new IngestionJob(registry, ingestor, locks, new SourceVisibility(registry, items));
   }
 
   private List<Source> sources() {

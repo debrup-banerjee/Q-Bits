@@ -30,6 +30,7 @@ qbits:
     retry-backoff: PT2S
     max-age: PT72H
     retention: P7D
+    retention-cron: "0 15 2 * * *"
     robots-cache-ttl: PT24H
     degraded-after-failures: 5
     robots-agent-name: QBits

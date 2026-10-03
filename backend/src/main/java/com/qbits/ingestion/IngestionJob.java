@@ -30,11 +30,17 @@ public class IngestionJob {
   private final SourceRegistry registry;
   private final SourceIngestor ingestor;
   private final LockingTaskExecutor locks;
+  private final SourceVisibility visibility;
 
-  public IngestionJob(SourceRegistry registry, SourceIngestor ingestor, LockingTaskExecutor locks) {
+  public IngestionJob(
+      SourceRegistry registry,
+      SourceIngestor ingestor,
+      LockingTaskExecutor locks,
+      SourceVisibility visibility) {
     this.registry = registry;
     this.ingestor = ingestor;
     this.locks = locks;
+    this.visibility = visibility;
   }
 
   /** Runs once if no other instance holds the lock. Returns true if this call did the work. */
@@ -51,6 +57,7 @@ public class IngestionJob {
   }
 
   private int runAllSources() {
+    visibility.sync(); // R8.1: disabled sources stop being fetched and their items are hidden.
     List<Source> sources = registry.enabled();
     int ran = 0;
     try (ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor()) {

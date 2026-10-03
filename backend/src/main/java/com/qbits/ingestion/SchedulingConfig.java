@@ -40,14 +40,21 @@ class SchedulingConfig {
   static class Triggers {
 
     private final IngestionJob ingestion;
+    private final RetentionJob retention;
 
-    Triggers(IngestionJob ingestion) {
+    Triggers(IngestionJob ingestion, RetentionJob retention) {
       this.ingestion = ingestion;
+      this.retention = retention;
     }
 
     @Scheduled(fixedDelayString = "${qbits.ingestion.tick}", initialDelayString = "PT30S")
     void ingest() {
       ingestion.runOnce();
+    }
+
+    @Scheduled(cron = "${qbits.ingestion.retention-cron}", zone = "UTC")
+    void deleteOldItems() {
+      retention.runOnce();
     }
   }
 }

@@ -19,6 +19,7 @@ public record IngestionProperties(
     @NotNull Duration retryBackoff,
     @NotNull Duration maxAge,
     @NotNull Duration retention,
+    @NotBlank String retentionCron,
     @NotNull Duration robotsCacheTtl,
     @Min(1) int degradedAfterFailures,
     @NotBlank String userAgent,

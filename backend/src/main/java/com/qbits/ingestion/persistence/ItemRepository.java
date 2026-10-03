@@ -84,6 +84,21 @@ public class ItemRepository {
         .single();
   }
 
+  /**
+   * Hides items of sources that are not enabled and shows items of enabled ones (spec 001 R8.1).
+   * Returns the number of rows changed.
+   */
+  public int syncVisibility(java.util.Collection<String> enabledSourceIds) {
+    String[] ids = enabledSourceIds.toArray(String[]::new);
+    return jdbc.sql(
+            """
+            update items set hidden = not (source_id = any(:ids))
+            where hidden is distinct from not (source_id = any(:ids))
+            """)
+        .param("ids", ids)
+        .update();
+  }
+
   /** Hides or shows every item of a source (spec 001 R8.1). */
   public int setHiddenForSource(String sourceId, boolean hidden) {
     return jdbc.sql(

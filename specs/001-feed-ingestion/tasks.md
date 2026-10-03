@@ -72,3 +72,4 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `SourceHealth` + Actuator contributor; disabled sources skipped and items hidden; purge command; `RetentionJob`.
 - **Tests:** `SourceHealthIT` (5 failures → DEGRADED, success clears), `SourceAdminIT` (disable hides, purge deletes), `RetentionJobIT` (7-day boundary with fixed `Clock`).
 - **Done when:** all pass; `/actuator/health` shows per-source detail.
+- **Status:** done

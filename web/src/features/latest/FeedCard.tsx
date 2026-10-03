@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { Link } from 'react-router';
 import { ExternalLink } from '../../components/ExternalLink';
 import { RelativeTime } from '../../components/RelativeTime';
+import { ResourceLinks } from '../../components/ResourceLinks';
 import { WordsToKnow } from '../stories/WordsToKnow';
 import { SourceBadge } from './SourceBadge';
 
@@ -56,6 +57,7 @@ export function FeedCard({ story, now }: { story: StoryView; now?: Date }) {
             {expanded ? 'Show less' : 'Show more'}
           </button>
         </div>
+        <ResourceLinks resources={story.resources} />
         <div className="mt-1">
           <ExternalLink href={story.originalUrl} sourceName={story.source.name} />
         </div>

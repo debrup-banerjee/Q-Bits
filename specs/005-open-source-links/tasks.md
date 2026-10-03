@@ -56,3 +56,4 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Do:** `ResourceLinks` component; add to `StoryCard` and `FeedCard`; e2e mock data with resources.
 - **Tests:** `ResourceLinks.test.tsx` (labels, monospace name, link attributes and accessible names, hidden when empty); card tests; Playwright and axe on a story with links at 360 px and 1280 px.
 - **Done when:** all pass, no new axe violations.
+- **Status:** done. Pills fit the card width on phones; long names are shortened with the full name on hover and in the accessible label.

@@ -2,6 +2,7 @@ import type { StoryView } from '@qbits/api-client';
 import { Link } from 'react-router';
 import { ExternalLink } from '../../components/ExternalLink';
 import { RelativeTime } from '../../components/RelativeTime';
+import { ResourceLinks } from '../../components/ResourceLinks';
 import { WordsToKnow } from './WordsToKnow';
 
 /**
@@ -36,6 +37,7 @@ export function StoryCard({
       </Heading>
       <p className="max-w-[65ch] text-base leading-relaxed">{story.summary}</p>
       <WordsToKnow terms={story.keyTerms} />
+      <ResourceLinks resources={story.resources} />
       <div>
         <ExternalLink href={story.originalUrl} sourceName={story.source.name} />
       </div>

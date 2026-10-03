@@ -42,13 +42,43 @@ function story(id: string, slug: string, name: string, headline: string, hoursAg
   };
 }
 
+function withLinks<T extends { resources: unknown[] }>(s: T): T {
+  return {
+    ...s,
+    resources: [
+      {
+        type: 'code',
+        label: 'Code on GitHub',
+        url: 'https://github.com/example-lab/bookshelf',
+        name: 'example-lab/bookshelf',
+      },
+      {
+        type: 'model',
+        label: 'Model on Hugging Face',
+        url: 'https://huggingface.co/example-lab/bookshelf-8b',
+        name: 'example-lab/bookshelf-8b',
+      },
+      {
+        type: 'paper',
+        label: 'Paper on arXiv',
+        url: 'https://arxiv.org/abs/2410.01234',
+        name: '2410.01234',
+      },
+    ],
+  };
+}
+
+export const LINKED_STORY_ID = '0192f0c4-0000-7000-8000-000000000011';
+
 const STORIES: Record<string, ReturnType<typeof story>[]> = {
   'global-ai-tech': [
-    story(
-      '0192f0c4-0000-7000-8000-000000000011',
-      'global-ai-tech',
-      'Global AI Tech',
-      'A new AI model can read a whole bookshelf at once',
+    withLinks(
+      story(
+        '0192f0c4-0000-7000-8000-000000000011',
+        'global-ai-tech',
+        'Global AI Tech',
+        'A new AI model can read a whole bookshelf at once',
+      ),
     ),
     story(
       '0192f0c4-0000-7000-8000-000000000012',

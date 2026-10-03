@@ -33,6 +33,23 @@ it('links out safely to the publisher', () => {
   expect(link).toHaveAttribute('rel', 'noopener noreferrer');
 });
 
+it('shows open-source links when present', () => {
+  renderAt(
+    <StoryCard
+      story={story({
+        resources: [
+          { type: 'code', label: 'Code on GitHub', url: 'https://github.com/a/b', name: 'a/b' },
+        ],
+      })}
+      now={NOW}
+    />,
+  );
+
+  expect(
+    screen.getByRole('link', { name: 'Code on GitHub: a/b (opens in a new tab)' }),
+  ).toBeInTheDocument();
+});
+
 it('says "about" when the publish date was estimated', () => {
   renderAt(<StoryCard story={story({ dateEstimated: true })} now={NOW} />);
 

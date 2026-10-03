@@ -59,6 +59,37 @@ it('links out safely and shows the attribution', () => {
   ).toBeInTheDocument();
 });
 
+it('shows open-source links without expanding the card', () => {
+  renderAt(
+    <FeedCard
+      story={story({
+        resources: [
+          {
+            type: 'model',
+            label: 'Model on Hugging Face',
+            url: 'https://huggingface.co/org/m',
+            name: 'org/m',
+          },
+        ],
+      })}
+      now={NOW}
+    />,
+  );
+
+  expect(screen.getByRole('button', { name: 'Show more' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
+  expect(
+    screen.getByRole('link', { name: 'Model on Hugging Face: org/m (opens in a new tab)' }),
+  ).toBeVisible();
+});
+
+it('shows no open-source row when there are no links', () => {
+  renderAt(<FeedCard story={story()} now={NOW} />);
+  expect(screen.queryByLabelText('Open source')).not.toBeInTheDocument();
+});
+
 it('has no images, embeds or social buttons', () => {
   const { container } = renderAt(<FeedCard story={story()} now={NOW} />);
 

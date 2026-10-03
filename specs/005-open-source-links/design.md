@@ -117,6 +117,12 @@ qbits:
 3. For each: fresh cache hit → copy result. Otherwise ask the host's limiter; if allowed, call the API and write the cache.
 4. Found → `VERIFIED` (GitHub may update `url`/`name` to the canonical repo). Missing → `NOT_FOUND`. Failed → `CHECK_FAILED`, `attempts++`, next delay; after 3 failures → `NOT_FOUND`.
 
+## Notes from implementation
+- Hosts are stored in upper case (`GITHUB`, `GITLAB`, `HUGGINGFACE`, `ARXIV`) to match the Java enum; the API's `type` values stay lower case as designed.
+- The job depends on a small `LinkChecker` interface (implemented by `HostApis`) so tests can script host answers without a network.
+- The per-host limiter is in memory. Only one instance runs the job at a time (database lock), so this is enough for one deployment; revisit if the job ever runs on several instances in turn.
+- Candidates per item are capped at 10 before checking, to keep host calls small.
+
 ## Error handling
 Host errors never affect ingestion or stories. Logs carry host, status and item id, never feed text.
 

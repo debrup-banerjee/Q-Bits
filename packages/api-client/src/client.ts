@@ -8,6 +8,8 @@ export type SectionRef = Schemas['SectionRef'];
 export type SectionView = Schemas['SectionView'];
 export type SourceView = Schemas['SourceView'];
 export type SiteView = Schemas['SiteView'];
+/** A verified open-source link: code, model, dataset or paper. */
+export type ResourceLink = Schemas['ResourceLink'];
 /** A source's homepage can be missing if the source was removed from the approved list. */
 export type SourceRef = Omit<Schemas['SourceRef'], 'homepage'> & { homepage: string | null };
 export type StoryView = Omit<Schemas['StoryView'], 'source'> & { source: SourceRef };

@@ -71,7 +71,7 @@ Turn Q-Bits into a **daily digest** to halve the cost of writing summaries. Feed
 ## Principles touched
 Architecture (summaries written once a day in a batch; an edition becomes visible all at once; windows anchored to the edition), Content and legal (unchanged inputs and checks).
 
-## Open questions
-- **Cut-off time:** 06:00 IST so the digest is ready for the morning? Any time works.
-- **Section tabs:** your first idea was to refresh them every 36 hours. In this design they change with the daily edition, because a separate refresh would cost the same and only make them staler. Keep them daily?
-- **Weekends:** publish every day, or skip some days?
+## Decisions (owner, 2026-10-04)
+- Cut-off time: **06:00 IST**, every day.
+- Section tabs change with the **daily** edition (no separate 36-hour refresh).
+- Editions are published **every day**, weekends included.

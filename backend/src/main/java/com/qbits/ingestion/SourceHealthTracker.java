@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Works out a source's next state after a fetch attempt. After N failures in a row the source is
- * DEGRADED and a warning is logged; one success clears it (spec 001 R7.4).
+ * DEGRADED and a warning is logged; one success clears it (spec 001 R7.4). A failed fetch and an
+ * unavailable robots.txt both count as failures.
  */
 @Component
 public class SourceHealthTracker {
@@ -25,7 +26,10 @@ public class SourceHealthTracker {
 
   public SourceState next(SourceState state, FetchStatus status, Instant at) {
     boolean success = status == FetchStatus.OK || status == FetchStatus.NOT_MODIFIED;
-    boolean failure = status == FetchStatus.FAILED;
+    // robots.txt that keeps failing (5xx, timeout, redirect, 429) blocks the source just as surely
+    // as a broken feed, so it counts toward DEGRADED too. A robots.txt "disallow" does not: that
+    // is the publisher's answer, not a fault.
+    boolean failure = status == FetchStatus.FAILED || status == FetchStatus.ROBOTS_UNAVAILABLE;
 
     int failures =
         success ? 0 : failure ? state.consecutiveFailures() + 1 : state.consecutiveFailures();
@@ -47,6 +51,7 @@ public class SourceHealthTracker {
         at,
         success ? at : state.lastSuccessAt(),
         failures,
-        health);
+        health,
+        state.retryAfter());
   }
 }

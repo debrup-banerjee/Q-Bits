@@ -93,3 +93,10 @@ Content and legal (all), Fetching (all), Architecture: idempotent ingestion, fai
 - Initial source list: a 24-source candidate list is in `config/sources.yml`, all disabled until each feed URL and its terms are checked. Which should be enabled first?
 - Relevance threshold and keyword weights — start with a list and tune on a week of data?
 - Keep discarded items' URLs (not text) for 7 days to tune the filter, or count only?
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- **R7.1** THE SYSTEM SHALL time out a fetch after 10 seconds and retry up to 2 times with backoff for timeouts and 5xx responses without Retry-After. IF a response is 429, or 503 with Retry-After, THEN THE SYSTEM SHALL not retry it in that run and SHALL not fetch the source again before the Retry-After time, capped at 24 hours.
+- **R7.4** WHEN a source's fetch fails, or its robots.txt is unavailable, 5 times in a row THE SYSTEM SHALL mark it `DEGRADED` and log at WARN; one success clears it.
+- **R3.4** (addition) A robots.txt answering 401 or 403 means disallow all; 429, 5xx and redirects mean unavailable for this cycle.

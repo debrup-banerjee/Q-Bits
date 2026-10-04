@@ -46,7 +46,8 @@ class SourceHealthTrackerTest {
 
   @Test
   void oneSuccessClearsDegraded() { // 001 R7.4
-    SourceState degraded = new SourceState("src", null, null, NOW, null, 7, SourceHealth.DEGRADED);
+    SourceState degraded =
+        new SourceState("src", null, null, NOW, null, 7, SourceHealth.DEGRADED, null);
 
     SourceState next = tracker.next(degraded, FetchStatus.NOT_MODIFIED, NOW);
 
@@ -56,8 +57,30 @@ class SourceHealthTrackerTest {
   }
 
   @Test
-  void robotsSkipsNeitherCountAsFailureNorSuccess() {
-    SourceState state = new SourceState("src", null, null, null, null, 2, SourceHealth.OK);
+  void unavailableRobotsTxtCountsTowardDegraded() { // 001 R7.4, R3.4
+    SourceState state = SourceState.initial("src");
+    for (int i = 1; i <= 4; i++) {
+      state = tracker.next(state, FetchStatus.ROBOTS_UNAVAILABLE, NOW);
+    }
+    assertThat(state.health()).isEqualTo(SourceHealth.OK);
+
+    state = tracker.next(state, FetchStatus.FAILED, NOW);
+
+    assertThat(state.health()).isEqualTo(SourceHealth.DEGRADED);
+    assertThat(state.consecutiveFailures()).isEqualTo(5);
+  }
+
+  @Test
+  void keepsRetryAfterSetByTheCaller() { // 001 R7.1
+    SourceState state = SourceState.initial("src").withRetryAfter(NOW.plusSeconds(60));
+
+    assertThat(tracker.next(state, FetchStatus.FAILED, NOW).retryAfter())
+        .isEqualTo(NOW.plusSeconds(60));
+  }
+
+  @Test
+  void blockedByRobotsCountsNeitherAsFailureNorSuccess() { // 001 R3.2
+    SourceState state = new SourceState("src", null, null, null, null, 2, SourceHealth.OK, null);
 
     SourceState next = tracker.next(state, FetchStatus.BLOCKED_BY_ROBOTS, NOW);
 

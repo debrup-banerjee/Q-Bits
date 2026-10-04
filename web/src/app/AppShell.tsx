@@ -1,8 +1,10 @@
 import { Link, Outlet } from 'react-router';
+import { useAuth } from '../features/auth/AuthContext';
 import { SectionNav } from '../features/sections/SectionNav';
 
 /** Header, section navigation, page content and footer. */
 export function AppShell() {
+  const { username, isLoggedIn, logout } = useAuth();
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -14,11 +16,29 @@ export function AppShell() {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <Link to="/" className="flex items-baseline gap-2 no-underline">
-            <span className="text-2xl font-bold tracking-tight text-ink">Q-Bits</span>
-            <span className="text-sm text-muted">AI news, in plain words</span>
+            <span className="text-2xl font-bold tracking-tight text-accent">Q-Bits</span>
+            <span className="text-sm font-medium text-muted">Unlocking AI</span>
           </Link>
-          <div className="hidden sm:block">
-            <SectionNav />
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <div className="hidden sm:block">
+              <SectionNav />
+            </div>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted">Hi, {username}</span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="font-semibold text-accent hover:underline"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="text-sm font-semibold text-accent hover:underline">
+                Log in
+              </Link>
+            )}
           </div>
         </div>
       </header>

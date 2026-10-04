@@ -10,6 +10,14 @@ public sealed interface FetchOutcome {
   /** 304: nothing changed since the validators we sent (R2.3). */
   record NotModified() implements FetchOutcome {}
 
-  /** Gave up. HTTP status if there was one, and a short reason. */
-  record Failed(Integer httpStatus, String error) implements FetchOutcome {}
+  /**
+   * Gave up. HTTP status if there was one, a short reason, and the raw {@code Retry-After} value of
+   * a 429 or 503 when the server sent one (null otherwise).
+   */
+  record Failed(Integer httpStatus, String error, String retryAfter) implements FetchOutcome {
+
+    public Failed(Integer httpStatus, String error) {
+      this(httpStatus, error, null);
+    }
+  }
 }

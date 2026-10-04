@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.qbits.IntegrationTest;
 import com.qbits.MutableClock;
 import com.qbits.common.Ids;
+import com.qbits.ingestion.ItemStore;
 import com.qbits.ingestion.domain.Item;
 import com.qbits.ingestion.domain.StoryStatus;
 import com.qbits.ingestion.persistence.ItemRepository;
@@ -154,15 +155,18 @@ class StoryJobIT extends IntegrationTest {
   }
 
   private StoryJob job(FakeStoryWriter writer, StoryWriterProperties props) {
-    StoryService service = new StoryService(writer, stories, items, props, tx, clock);
-    return new StoryJob(items, registry(), service, budget, backoff, props, locks, clock);
+    StoryService service =
+        new StoryService(writer, stories, new ItemStore(items), props, tx, clock);
+    return new StoryJob(
+        new ItemStore(items), registry(), service, budget, backoff, props, locks, clock);
   }
 
   private static StoryWriterProperties props(int parallelism, int cap) {
     return new StoryWriterProperties(
+        StoryWriterProperties.Mode.DIGEST,
         "anthropic",
         "test-model",
-        "v1",
+        "v2",
         800,
         cap,
         parallelism,

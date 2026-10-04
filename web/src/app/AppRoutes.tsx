@@ -6,8 +6,13 @@ import { LatestPage } from '../features/latest/LatestPage';
 import { SectionPage } from '../features/sections/SectionPage';
 import { StoryPage } from '../features/stories/StoryPage';
 import { AboutPage } from '../features/about/AboutPage';
+import { LoginPage } from '../features/auth/LoginPage';
+import { RegisterPage } from '../features/auth/RegisterPage';
 
-/** Routes: /, /section/:slug, /story/:id, /about. Pages are filled in by later tasks. */
+/**
+ * Routes: /, /section/:slug, /story/:id, /about, /login, /register. Login and registration are
+ * optional accounts, not a gate -- every other route stays reachable without signing in.
+ */
 export function AppRoutes() {
   return (
     <Routes>
@@ -17,6 +22,8 @@ export function AppRoutes() {
         <Route path="section/:slug" element={<SectionPage />} />
         <Route path="story/:id" element={<StoryPage />} />
         <Route path="about" element={<AboutPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

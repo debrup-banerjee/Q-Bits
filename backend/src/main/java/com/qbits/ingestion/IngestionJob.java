@@ -2,8 +2,8 @@ package com.qbits.ingestion;
 
 import com.qbits.sources.SourceRegistry;
 import com.qbits.sources.domain.Source;
+import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -31,22 +31,25 @@ public class IngestionJob {
   private final SourceIngestor ingestor;
   private final LockingTaskExecutor locks;
   private final SourceVisibility visibility;
+  private final Clock clock;
 
   public IngestionJob(
       SourceRegistry registry,
       SourceIngestor ingestor,
       LockingTaskExecutor locks,
-      SourceVisibility visibility) {
+      SourceVisibility visibility,
+      Clock clock) {
     this.registry = registry;
     this.ingestor = ingestor;
     this.locks = locks;
     this.visibility = visibility;
+    this.clock = clock;
   }
 
   /** Runs once if no other instance holds the lock. Returns true if this call did the work. */
   public boolean runOnce() {
     LockConfiguration lock =
-        new LockConfiguration(Instant.now(), LOCK_NAME, Duration.ofMinutes(30), Duration.ZERO);
+        new LockConfiguration(clock.instant(), LOCK_NAME, Duration.ofMinutes(30), Duration.ZERO);
     try {
       return locks.executeWithLock(this::runAllSources, lock).wasExecuted();
     } catch (RuntimeException | Error e) {

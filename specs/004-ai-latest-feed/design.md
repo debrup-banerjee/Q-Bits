@@ -70,3 +70,9 @@ Background checks fail silently (the next check retries); only the main list sho
 ## Risks
 - With 24 sources and a 30-minute fetch interval, a story can appear up to ~35 minutes after publication (fetch + summary). Acceptable; noted on the About page as "updated through the day".
 - A quiet day may leave the feed short. The empty state and "Browse by section" link cover it.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- The notes added in commit `8fef355` (the `useNewStories` signature and dropping `ClampedText`) are approved. Both were later superseded by spec 006, which removed the new-stories button and polling.
+- The phone tab-bar fix done in T7 and the About page change are accepted.

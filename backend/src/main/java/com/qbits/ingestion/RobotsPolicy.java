@@ -14,6 +14,8 @@ import java.util.Locale;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -33,7 +35,7 @@ public class RobotsPolicy {
   private final SimpleRobotRulesParser parser = new SimpleRobotRulesParser();
 
   public RobotsPolicy(
-      RestClient feedRestClient,
+      @Qualifier("feedRestClient") RestClient feedRestClient,
       RobotsCacheRepository cache,
       IngestionProperties props,
       Clock clock) {
@@ -74,8 +76,18 @@ public class RobotsPolicy {
           .exchange(
               (request, response) -> {
                 int status = response.getStatusCode().value();
-                if (status >= 500) {
+                if (status >= 500 || status == 429) {
+                  // Server error or rate limited: skip this cycle, cache nothing (R3.4).
                   log.warn("robots unavailable host={} status={}", authority, status);
+                  return Optional.<CachedRobots>empty();
+                }
+                if (status >= 300 && status < 400) {
+                  // Redirects are not followed (R1.3): treat as unavailable, cache nothing.
+                  log.warn(
+                      "robots unavailable host={} status={} redirectTarget={}",
+                      authority,
+                      status,
+                      response.getHeaders().getFirst(HttpHeaders.LOCATION));
                   return Optional.<CachedRobots>empty();
                 }
                 String body =
@@ -91,8 +103,12 @@ public class RobotsPolicy {
   }
 
   private RobotsDecision decide(URI feedUrl, CachedRobots robots) {
+    if (robots.statusCode() == 401 || robots.statusCode() == 403) {
+      // The host refuses us its robots.txt: never fetch past a login or bot check.
+      return new RobotsDecision.Disallowed();
+    }
     if (robots.statusCode() != 200 || robots.body() == null) {
-      // 404 and other client errors: no robots.txt, so fetching is allowed (R3.4).
+      // 404 and other client errors: no robots.txt, so fetching is allowed (R3.4, RFC 9309).
       return new RobotsDecision.Allowed(Optional.empty());
     }
     BaseRobotRules rules =

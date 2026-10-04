@@ -14,7 +14,7 @@ Flat rules. If a spec or a task conflicts with one of these, stop and flag it; d
 - Open-source links (code, model, dataset, paper) come only from URLs inside the feed entry: its links and the link targets in its description or content. Only the URL is kept, never any surrounding text. Only allowlisted hosts are accepted (GitHub, GitLab, Hugging Face, arXiv). Each link is checked through the host's official API before it is shown. Links are never generated, guessed or searched for.
 - AI Latest shows only the latest edition: stories published in the 24 hours before its cut-off. Section tabs show the 72 hours before the latest cut-off. Windows are measured from the edition's cut-off, not from the reader's clock, so stories never vanish mid-day. Stored stories are deleted after 7 days.
 - Takedown: a source can be disabled in config, which hides its stories at once. A purge removes them within 24 hours.
-- Only the source title and excerpt are sent to the summary service. No reader data is ever sent.
+- The only publisher text sent to the summary service is the feed's title and excerpt (max 300 characters). Alongside it go plain facts that carry no publisher expression: source name, publish date, and our own region and section hints from `config/sources.yml`. Never article bodies, page text or images. No reader data is ever sent.
 
 ## Fetching
 - Fetch only sources listed in `config/sources.yml`. Each entry records access method, terms URL and the date its terms were last reviewed.

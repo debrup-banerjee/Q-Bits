@@ -1,5 +1,6 @@
 package com.qbits.resources.domain;
 
+import com.qbits.common.links.LinkOrigin;
 import java.time.Instant;
 import java.util.UUID;
 

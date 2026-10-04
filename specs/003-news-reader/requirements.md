@@ -73,3 +73,8 @@ Content and legal (link out, attribution, no images, 72 hours), Architecture (cl
 
 ## Open questions
 - Should the home page also show a "Words of the day" strip gathering key terms from the last 72 hours?
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- **R6.1** (wording) ("5 hours ago"; "about 5 hours ago", or "yesterday (estimated)", if `dateEstimated`).

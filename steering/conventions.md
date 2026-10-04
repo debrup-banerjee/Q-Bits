@@ -92,3 +92,4 @@
 - Backend: `mvn -f backend/pom.xml verify`
 - Web: `npm run verify --workspace web` (type-check, lint, unit tests)
 - Run the parts the change touches; run both if the API contract changed.
+- `npm run verify` also fails if `packages/api-client/src/schema.ts` does not match `openapi.json`; run `npm run generate:api` after any contract change.

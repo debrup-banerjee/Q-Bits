@@ -3,13 +3,19 @@ package com.qbits.stories.domain;
 import java.util.Arrays;
 import java.util.Optional;
 
-/** The four reader-facing sections, in display order. Defined once here (conventions). */
+/** The five reader-facing sections, in display order. Defined once here (conventions). */
 public enum Section {
   GLOBAL_AI_TECH(
-      "global-ai-tech", "Global AI Tech", "New AI models, products and what they can do."),
+      "global-ai-tech",
+      "AI Wire",
+      "Ongoing AI tech coverage: capabilities, updates and what's changing."),
+  NEW_RELEASES(
+      "new-releases",
+      "New Releases",
+      "Brand-new model launches and major AI-relevant hardware, like a new GPU generation."),
   WORLD_BUSINESS(
       "world-business",
-      "World Business",
+      "AI in Business",
       "Money, companies, chips and jobs around the world: where AI meets the economy."),
   INDIA_AI(
       "india-ai",
@@ -18,7 +24,7 @@ public enum Section {
           + " in India."),
   INNOVATIONS_RESEARCH(
       "innovations-research",
-      "Innovations & Research",
+      "AI Innovations",
       "New ideas and discoveries from labs and universities.");
 
   private final String slug;

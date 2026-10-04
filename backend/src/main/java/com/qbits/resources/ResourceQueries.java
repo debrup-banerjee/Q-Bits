@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-/** Verified links for stories: ordered code, model, dataset, paper; at most 3 each (R5.1). */
+/** Verified links for stories: ordered code, model, dataset, paper; at most 3 in total (R5.1). */
 @Service
 public class ResourceQueries {
 

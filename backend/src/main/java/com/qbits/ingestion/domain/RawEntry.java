@@ -1,6 +1,6 @@
 package com.qbits.ingestion.domain;
 
-import com.qbits.resources.domain.FoundLink;
+import com.qbits.common.links.FoundLink;
 import java.time.Instant;
 import java.util.List;
 

@@ -5,6 +5,7 @@ import { StoryCard } from './StoryCard';
 
 const NOW = new Date('2026-10-03T09:00:00Z');
 
+// 003 R6.1, R6.4, R6.5
 it('shows every part of the story', () => {
   const { container } = renderAt(<StoryCard story={story()} now={NOW} />);
 
@@ -22,6 +23,7 @@ it('shows every part of the story', () => {
   expect(container.querySelector('img, iframe, video, embed, object')).toBeNull();
 });
 
+// 003 R6.3
 it('links out safely to the publisher', () => {
   renderAt(<StoryCard story={story()} now={NOW} />);
 
@@ -50,12 +52,14 @@ it('shows open-source links when present', () => {
   ).toBeInTheDocument();
 });
 
+// 003 R6.1
 it('says "about" when the publish date was estimated', () => {
   renderAt(<StoryCard story={story({ dateEstimated: true })} now={NOW} />);
 
   expect(screen.getByText('about 5 hours ago')).toBeInTheDocument();
 });
 
+// 003 R6.6
 it('links the headline to the shareable story page', () => {
   renderAt(<StoryCard story={story()} now={NOW} />);
 

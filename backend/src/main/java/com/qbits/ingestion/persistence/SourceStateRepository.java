@@ -31,7 +31,8 @@ public class SourceStateRepository {
                     instant(rs.getTimestamp("last_fetched_at")),
                     instant(rs.getTimestamp("last_success_at")),
                     rs.getInt("consecutive_failures"),
-                    SourceHealth.valueOf(rs.getString("health"))))
+                    SourceHealth.valueOf(rs.getString("health")),
+                    instant(rs.getTimestamp("retry_not_before_at"))))
         .optional();
   }
 
@@ -49,15 +50,17 @@ public class SourceStateRepository {
     jdbc.sql(
             """
             insert into sources_state (source_id, etag, last_modified, last_fetched_at,
-              last_success_at, consecutive_failures, health)
-            values (:id, :etag, :lastModified, :lastFetchedAt, :lastSuccessAt, :failures, :health)
+              last_success_at, consecutive_failures, health, retry_not_before_at)
+            values (:id, :etag, :lastModified, :lastFetchedAt, :lastSuccessAt, :failures, :health,
+              :retryAfter)
             on conflict (source_id) do update set
               etag = excluded.etag,
               last_modified = excluded.last_modified,
               last_fetched_at = excluded.last_fetched_at,
               last_success_at = excluded.last_success_at,
               consecutive_failures = excluded.consecutive_failures,
-              health = excluded.health
+              health = excluded.health,
+              retry_not_before_at = excluded.retry_not_before_at
             """)
         .param("id", state.sourceId())
         .param("etag", state.etag())
@@ -66,6 +69,7 @@ public class SourceStateRepository {
         .param("lastSuccessAt", timestamp(state.lastSuccessAt()))
         .param("failures", state.consecutiveFailures())
         .param("health", state.health().name())
+        .param("retryAfter", timestamp(state.retryAfter()))
         .update();
   }
 

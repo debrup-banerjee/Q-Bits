@@ -1,10 +1,11 @@
 package com.qbits.stories;
 
+import com.qbits.ingestion.ItemStore;
 import com.qbits.ingestion.domain.StoryStatus;
-import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.stories.domain.Story;
 import com.qbits.stories.domain.StoryDraft;
 import com.qbits.stories.domain.StoryInput;
+import com.qbits.stories.domain.StoryNote;
 import com.qbits.stories.domain.StoryValidator;
 import com.qbits.stories.domain.ValidationFailure;
 import com.qbits.stories.persistence.StoryRepository;
@@ -44,7 +45,7 @@ public class StoryService {
 
   private final StoryWriter writer;
   private final StoryRepository stories;
-  private final ItemRepository items;
+  private final ItemStore items;
   private final StoryWriterProperties props;
   private final TransactionTemplate tx;
   private final Clock clock;
@@ -53,7 +54,7 @@ public class StoryService {
   public StoryService(
       StoryWriter writer,
       StoryRepository stories,
-      ItemRepository items,
+      ItemStore items,
       StoryWriterProperties props,
       TransactionTemplate tx,
       Clock clock) {
@@ -78,34 +79,68 @@ public class StoryService {
         log.warn("story writer unavailable item={} reason={}", itemId, e.getMessage());
         return Outcome.UNAVAILABLE; // stays PENDING (R9.2)
       } catch (StoryWriter.WriterRejected e) {
-        items.updateStoryStatus(itemId, StoryStatus.REJECTED, "PROVIDER_ERROR: " + e.getMessage());
+        items.setStoryStatus(
+            itemId, StoryStatus.REJECTED, StoryNote.of("PROVIDER_ERROR: " + e.getMessage()));
         return Outcome.REJECTED;
       }
 
-      if (!draft.isAi()) {
-        items.updateStoryStatus(itemId, StoryStatus.NOT_AI, draft.reason()); // R2
-        log.info("story not ai item={}", itemId);
-        return Outcome.NOT_AI;
+      Applied applied = applyDraft(itemId, input, draft, attempt, false);
+      switch (applied.result()) {
+        case SAVED:
+          return Outcome.PUBLISHED;
+        case NOT_AI:
+          return Outcome.NOT_AI;
+        case REJECTED:
+          return Outcome.REJECTED;
+        case RETRY:
+          feedback = Optional.of(applied.feedback()); // R8.2
+          break;
       }
-      List<ValidationFailure> failures = validator.check(draft, input);
-      if (failures.isEmpty()) {
-        publish(itemId, draft, attempt);
-        return Outcome.PUBLISHED;
-      }
-      String rules =
-          failures.stream().map(ValidationFailure::toString).collect(Collectors.joining("; "));
-      log.info(
-          "story draft invalid item={} attempt={} rules={}", itemId, attempt, ruleIds(failures));
-      if (attempt == 2) {
-        items.updateStoryStatus(itemId, StoryStatus.REJECTED, ruleIds(failures)); // R8.3
-        return Outcome.REJECTED;
-      }
-      feedback = Optional.of(rules); // R8.2
     }
     throw new IllegalStateException("unreachable");
   }
 
-  private void publish(UUID itemId, StoryDraft d, int attempts) {
+  /** What happened to one draft. */
+  public enum DraftResult {
+    SAVED,
+    NOT_AI,
+    RETRY,
+    REJECTED
+  }
+
+  /** Result of applying a draft; {@code feedback} is set for RETRY. */
+  public record Applied(DraftResult result, String feedback) {}
+
+  /**
+   * Validates a draft and records the outcome. Shared by realtime writing and the daily batch (spec
+   * 006 R2.4). With {@code holdBack} a valid story is saved as WRITTEN, to be published with its
+   * edition; otherwise it is PUBLISHED at once. On the first attempt an invalid draft returns RETRY
+   * with feedback; on the second it is REJECTED.
+   */
+  public Applied applyDraft(
+      UUID itemId, StoryInput input, StoryDraft draft, int attempt, boolean holdBack) {
+    if (!draft.isAi()) {
+      items.setStoryStatus(itemId, StoryStatus.NOT_AI, StoryNote.of(draft.reason())); // 002 R2.2
+      log.info("story not ai item={}", itemId);
+      return new Applied(DraftResult.NOT_AI, null);
+    }
+    List<ValidationFailure> failures = validator.check(draft, input);
+    if (failures.isEmpty()) {
+      save(itemId, draft, attempt, holdBack ? StoryStatus.WRITTEN : StoryStatus.PUBLISHED);
+      return new Applied(DraftResult.SAVED, null);
+    }
+    log.info("story draft invalid item={} attempt={} rules={}", itemId, attempt, ruleIds(failures));
+    if (attempt >= 2) {
+      items.setStoryStatus(
+          itemId, StoryStatus.REJECTED, StoryNote.of(ruleIds(failures))); // 002 R8.3
+      return new Applied(DraftResult.REJECTED, null);
+    }
+    String rules =
+        failures.stream().map(ValidationFailure::toString).collect(Collectors.joining("; "));
+    return new Applied(DraftResult.RETRY, rules);
+  }
+
+  private void save(UUID itemId, StoryDraft d, int attempts, StoryStatus status) {
     Story story =
         new Story(
             itemId,
@@ -120,11 +155,16 @@ public class StoryService {
             d.outputTokens(),
             attempts);
     tx.executeWithoutResult(
-        status -> {
+        txStatus -> {
           stories.save(story);
-          items.updateStoryStatus(itemId, StoryStatus.PUBLISHED, null); // R8.4
+          items.setStoryStatus(itemId, status, null); // 002 R8.4, 006 R3.2
         });
-    log.info("story published item={} section={} attempts={}", itemId, d.section(), attempts);
+    log.info(
+        "story saved item={} status={} section={} attempts={}",
+        itemId,
+        status,
+        d.section(),
+        attempts);
   }
 
   private static String ruleIds(List<ValidationFailure> failures) {

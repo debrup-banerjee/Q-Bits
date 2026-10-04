@@ -35,6 +35,9 @@ import tools.jackson.databind.json.JsonMapper;
  */
 class StoryWriterLiveIT {
 
+  /** The prompt version under review; keep in step with qbits.story-writer.prompt-version. */
+  private static final String PROMPT_VERSION = "v2";
+
   @Test
   void writeSamplesForReview() throws Exception {
     String key = System.getenv("ANTHROPIC_API_KEY");
@@ -50,9 +53,10 @@ class StoryWriterLiveIT {
     }
     StoryWriterProperties props =
         new StoryWriterProperties(
+            StoryWriterProperties.Mode.DIGEST,
             "anthropic",
             model,
-            "v1",
+            PROMPT_VERSION,
             800,
             500,
             1,
@@ -63,7 +67,8 @@ class StoryWriterLiveIT {
     StoryValidator validator = new StoryValidator();
 
     StringBuilder report =
-        new StringBuilder("# Live story samples\n\nModel: `" + model + "` · prompt v1\n\n");
+        new StringBuilder(
+            "# Live story samples\n\nModel: `" + model + "` · prompt " + PROMPT_VERSION + "\n\n");
     long inTokens = 0;
     long outTokens = 0;
     int sectionMatches = 0;

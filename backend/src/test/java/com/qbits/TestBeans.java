@@ -1,5 +1,7 @@
 package com.qbits;
 
+import com.qbits.stories.BatchStoryWriter;
+import com.qbits.stories.FakeBatchStoryWriter;
 import com.qbits.stories.FakeStoryWriter;
 import com.qbits.stories.StoryFixtures;
 import com.qbits.stories.StoryWriter;
@@ -15,5 +17,11 @@ public class TestBeans {
   @Primary
   StoryWriter fakeStoryWriter() {
     return new FakeStoryWriter(StoryFixtures::validDraft);
+  }
+
+  @Bean
+  @Primary
+  BatchStoryWriter fakeBatchStoryWriter() {
+    return new FakeBatchStoryWriter(StoryFixtures::validDraft);
   }
 }

@@ -27,7 +27,16 @@ public final class SourcesFileParser {
       Set.of("global-ai-tech", "world-business", "india-ai", "innovations-research");
 
   private static final Pattern ID = Pattern.compile("[a-z0-9][a-z0-9-]{1,62}");
-  private static final Duration MIN_INTERVAL = Duration.ofMinutes(15);
+
+  private final Duration minInterval;
+
+  /**
+   * @param minInterval lowest per-source interval allowed (R2.1); comes from {@code
+   *     qbits.ingestion.min-interval} so the file check and the scheduler use one value
+   */
+  public SourcesFileParser(Duration minInterval) {
+    this.minInterval = minInterval;
+  }
 
   /** Parses the YAML text; checks structure and R1.4 (enabled sources need a terms review). */
   public List<Source> parse(String yamlText) {
@@ -41,16 +50,6 @@ public final class SourcesFileParser {
         problems.add(problem(source.id(), "termsReviewedOn", "is required when enabled is true"));
       }
     }
-    if (!problems.isEmpty()) {
-      throw new SourceConfigException(problems);
-    }
-    return List.copyOf(sources);
-  }
-
-  /** Parses the YAML text and checks structure only (R1.1, R1.2), ignoring R1.4. */
-  public List<Source> parseStructureOnly(String yamlText) {
-    List<String> problems = new ArrayList<>();
-    List<Source> sources = parseStructure(yamlText, problems);
     if (!problems.isEmpty()) {
       throw new SourceConfigException(problems);
     }
@@ -98,7 +97,7 @@ public final class SourcesFileParser {
               e.requiredBoolean("aiNative"),
               e.requiredEnum("region", Region.class),
               e.optionalSectionHint(),
-              e.optionalInterval());
+              e.optionalInterval(minInterval));
       sources.add(source);
     }
     return sources;
@@ -214,7 +213,7 @@ public final class SourcesFileParser {
       return hint;
     }
 
-    Duration optionalInterval() {
+    Duration optionalInterval(Duration minInterval) {
       Object v = values.get("intervalMinutes");
       if (v == null) {
         return null;
@@ -224,8 +223,8 @@ public final class SourcesFileParser {
         return null;
       }
       Duration interval = Duration.ofMinutes(minutes);
-      if (interval.compareTo(MIN_INTERVAL) < 0) {
-        add("intervalMinutes", "must be at least 15");
+      if (interval.compareTo(minInterval) < 0) {
+        add("intervalMinutes", "must be at least " + minInterval.toMinutes());
         return null;
       }
       return interval;

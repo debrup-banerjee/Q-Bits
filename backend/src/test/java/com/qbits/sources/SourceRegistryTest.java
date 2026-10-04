@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.qbits.sources.domain.SourceConfigException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -18,7 +19,7 @@ class SourceRegistryTest {
     Path file = dir.resolve("sources.yml");
     Files.writeString(file, "sources:\n  - id: bad\n");
 
-    assertThatThrownBy(() -> SourceRegistry.load(file))
+    assertThatThrownBy(() -> SourceRegistry.load(file, Duration.ofMinutes(15)))
         .isInstanceOf(SourceConfigException.class)
         .hasMessageContaining("source 'bad': field 'name' is required");
   }
@@ -37,7 +38,7 @@ class SourceRegistryTest {
              type: rss, aiNative: false, region: global, enabled: false}
         """);
 
-    SourceRegistry registry = SourceRegistry.load(file);
+    SourceRegistry registry = SourceRegistry.load(file, Duration.ofMinutes(15));
 
     assertThat(registry.all()).hasSize(2);
     assertThat(registry.enabled()).extracting("id").containsExactly("on-one");

@@ -16,6 +16,7 @@ function setWidth(wide: boolean) {
   })) as unknown as typeof window.matchMedia;
 }
 
+// 003 R6.2
 it('starts collapsed on phones, showing only the term names', () => {
   setWidth(false);
   const { container } = render(<WordsToKnow terms={TERMS} />);
@@ -24,6 +25,7 @@ it('starts collapsed on phones, showing only the term names', () => {
   expect(screen.getByText(': GPU, Context window')).toBeInTheDocument();
 });
 
+// 003 R6.2
 it('opens with one tap', async () => {
   setWidth(false);
   const { container } = render(<WordsToKnow terms={TERMS} />);
@@ -34,6 +36,7 @@ it('opens with one tap', async () => {
   expect(screen.getByText(/How much text the AI can keep in mind/)).toBeVisible();
 });
 
+// 003 R6.2
 it('starts open on wider screens', () => {
   setWidth(true);
   const { container } = render(<WordsToKnow terms={TERMS} />);
@@ -41,6 +44,7 @@ it('starts open on wider screens', () => {
   expect(container.querySelector('details')).toHaveAttribute('open');
 });
 
+// 003 R6.2
 it('renders nothing without terms', () => {
   const { container } = render(<WordsToKnow terms={[]} />);
   expect(container).toBeEmptyDOMElement();

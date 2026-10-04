@@ -24,12 +24,24 @@ class StateAndLogRepositoryIT extends IntegrationTest {
   void savesAndUpdatesSourceState() {
     states.save(SourceState.initial("src"));
     SourceState updated =
-        new SourceState("src", "\"etag-1\"", "Fri, 02 Oct 2026", NOW, NOW, 0, SourceHealth.OK);
+        new SourceState(
+            "src", "\"etag-1\"", "Fri, 02 Oct 2026", NOW, NOW, 0, SourceHealth.OK, null);
 
     states.save(updated);
 
     assertThat(states.find("src")).contains(updated);
     assertThat(states.findAll()).hasSize(1);
+  }
+
+  @Test
+  void storesAndClearsRetryAfter() { // 001 R7.1
+    SourceState waiting = SourceState.initial("src").withRetryAfter(NOW.plusSeconds(7200));
+
+    states.save(waiting);
+    assertThat(states.find("src").orElseThrow().retryAfter()).isEqualTo(NOW.plusSeconds(7200));
+
+    states.save(waiting.withRetryAfter(null));
+    assertThat(states.find("src").orElseThrow().retryAfter()).isNull();
   }
 
   @Test

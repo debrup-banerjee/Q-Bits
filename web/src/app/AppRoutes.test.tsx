@@ -18,6 +18,7 @@ it('shows a friendly page for unknown routes', async () => {
   );
 });
 
+// 003 R7.1
 it('has a footer link to the About page', async () => {
   server.use(sectionsHandler);
   renderAt(<AppRoutes />);
@@ -25,6 +26,7 @@ it('has a footer link to the About page', async () => {
   expect(screen.getByRole('link', { name: 'How Q-Bits works' })).toHaveAttribute('href', '/about');
 });
 
+// 004 R2.2, R2.3
 it('shows AI Latest at / and the section overview at /sections', async () => {
   server.use(
     sectionsHandler,
@@ -42,6 +44,7 @@ it('shows AI Latest at / and the section overview at /sections', async () => {
   expect(screen.getByRole('heading', { level: 1, name: 'Browse by section' })).toBeInTheDocument();
 });
 
+// 004 R2.3
 it('has a footer link to browse by section', async () => {
   server.use(sectionsHandler);
   renderAt(<AppRoutes />);

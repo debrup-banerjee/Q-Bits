@@ -122,3 +122,14 @@ Every per-source step is wrapped so any exception becomes a `FAILED` log row wit
 ## Risks
 - Feed URLs in `config/sources.yml` are unverified; some may have moved.
 - Keyword pre-filter may drop genuine AI stories from general feeds; tune with the fetch-log counts.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- Redirects are never followed for feeds or robots.txt (R1.3). A redirecting feed is `FAILED` with `HTTP <code> redirect not followed, target: <url>`; a redirecting robots.txt is `ROBOTS_UNAVAILABLE` and the source is skipped that cycle. The operator updates `feedUrl`.
+- robots.txt answers: 401/403 → disallow all, cached 24 h (never bypass logins); 429, 5xx, timeouts and redirects → unavailable, skip this cycle, nothing cached; 404 and other 4xx → allowed (RFC 9309).
+- Retries: 429 is never retried. A 5xx is retried unless it carries Retry-After. Retry-After on 429 or 503 (seconds or HTTP-date, capped at 24 h) is stored in `sources_state.retry_not_before_at` (V6) and cleared by the next attempt. The due check skips a source until that time. A body over 5 MB is `FAILED` and not retried.
+- Five consecutive failures (`FAILED` or `ROBOTS_UNAVAILABLE`) → `DEGRADED` + WARN log. Stored errors hold the exception class and the first line of the message only (≤ 200 characters).
+- Components: `ItemAdminService` (ingestion) performs purges for `SourceAdminCommands`; `ItemStore` (ingestion) is the only way other features reach items; `SourceVisibility` hides disabled sources' stories at startup and at the start of each ingestion run.
+- Config: `app.version` comes from `pom.xml` at build time; the User-Agent is `QBits/${app.version}`. The sources-file check reads `qbits.ingestion.min-interval`.
+- Link checks (005) use their own HTTP client and config `qbits.resources.http` (timeout, user-agent; defaults equal to ingestion's) and still follow redirects so renamed repos resolve.

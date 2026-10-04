@@ -7,7 +7,8 @@
   "types": "src/index.ts",
   "scripts": {
     "generate": "openapi-typescript openapi.json -o src/schema.ts --properties-required-by-default",
-    "verify": "tsc -p tsconfig.json && vitest run"
+    "verify": "npm run check:generated && tsc -p tsconfig.json && vitest run",
+    "check:generated": "node scripts/check-schema.mjs"
   },
   "dependencies": {
     "openapi-fetch": "0.17.0"

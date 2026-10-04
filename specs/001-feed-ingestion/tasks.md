@@ -70,6 +70,22 @@ Each task is 2–4 hours, leaves the full check green, and can be tested on its 
 - **Covers:** R7.4, R7.5, R8.1, R8.2, R9.2
 - **Depends on:** T8
 - **Do:** `SourceHealth` + Actuator contributor; disabled sources skipped and items hidden; purge command; `RetentionJob`.
-- **Tests:** `SourceHealthIT` (5 failures → DEGRADED, success clears), `SourceAdminIT` (disable hides, purge deletes), `RetentionJobIT` (7-day boundary with fixed `Clock`).
+- **Tests:** `SourceHealthTrackerTest` (5 failures → DEGRADED, success clears) and `SourcesHealthEndpointIT` (per-source detail), `SourceAdminIT` (disable hides, purge deletes), `RetentionJobIT` (7-day boundary with fixed `Clock`).
 - **Done when:** all pass; `/actuator/health` shows per-source detail.
 - **Status:** done
+
+## T10 — Review fixes: registered URLs only, rate limits, purge via service
+- **Covers:** R1.3, R7.1, R3.4, R8.2 (review B1–B3, C1, M1)
+- **Depends on:** T9
+- **Do:** feed and robots.txt client never follows redirects (a 3xx is a `FAILED` fetch with the target in `error`; on robots.txt it is `ROBOTS_UNAVAILABLE`); link checks get their own client; 429 is not retried and its `Retry-After` is recorded; robots.txt 401/403 means disallow all, 429 means unavailable; purge goes through `ItemAdminService`.
+- **Tests:** `IngestionJobIT.requestsOnlyRegisteredFeedUrlsAndTheirRobotsTxtEvenOnRedirects`, `FeedFetcherIT` (cross-host and same-host redirect, 429), `RobotsPolicyIT` (401/403, 429, redirect).
+- **Done when:** full backend check passes.
+- **Status:** done
+
+## T11 — Review tidy-up: Retry-After, robots.txt health, minors
+- **Covers:** R7.1, R7.4, R2.1, R2.4, R8.1 (review B2 follow-up, M2–M7, M9)
+- **Depends on:** T10
+- **Do:** migration `V6__source_retry_after.sql` adds `sources_state.retry_after`; a `Retry-After` (seconds or HTTP-date, capped at 24 h) on 429 or 503 holds the source back until then and is cleared on the next attempt; a 503 with `Retry-After` is not retried in the run; `ROBOTS_UNAVAILABLE` counts toward `DEGRADED`; an oversized feed is not retried; stored and logged errors keep only the exception class and first message line; jobs use the injected `Clock`; User-Agent version from `pom.xml`; visibility sync also at startup; the minimum interval has one source (`qbits.ingestion.min-interval`); `parseStructureOnly` removed; link checks read `qbits.resources.http`.
+- **Tests:** `RetryAfterTest`, `SourceIngestorTest`, `SourceHealthTrackerTest.unavailableRobotsTxtCountsTowardDegraded`, `IngestionJobIT.waitsUntilRetryAfterThenClearsItAfterASuccessfulFetch`, `honoursRetryAfterDateOnServiceUnavailableCappedAtOneDay`, `robotsTxtThatKeepsRedirectingDegradesTheSource`, `FeedFetcherIT` (503 with and without Retry-After, oversized feed, User-Agent), `StateAndLogRepositoryIT.storesAndClearsRetryAfter`, `SourceAdminIT.hidesItemsOfSourcesNotEnabledAsSoonAsTheAppIsReady`, `SourcesFileParserTest.minimumIntervalComesFromTheIngestionSetting`, `HostApisIT.linkChecksHaveTheirOwnHttpSettingsDefaultingToFeedFetching`.
+- **Done when:** full backend check passes.
+- **Status:** implemented, awaiting review

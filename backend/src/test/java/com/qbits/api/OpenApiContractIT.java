@@ -36,4 +36,14 @@ class OpenApiContractIT extends ApiTest {
     }
     assertThat(json.readTree(Files.readString(CONTRACT))).isEqualTo(json.readTree(rendered));
   }
+
+  @Test
+  void resourceTypeIsAFixedListOfValues() { // 005 R5.1
+    JsonNode live = json.readTree(http.get().uri("/v3/api-docs").retrieve().body(String.class));
+
+    JsonNode type = live.at("/components/schemas/ResourceLink/properties/type");
+
+    assertThat(type.get("type").asString()).isEqualTo("string");
+    assertThat(type.get("enum").toString()).isEqualTo("[\"code\",\"model\",\"dataset\",\"paper\"]");
+  }
 }

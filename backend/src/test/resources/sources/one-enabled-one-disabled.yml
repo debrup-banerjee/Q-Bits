@@ -1,0 +1,21 @@
+sources:
+  - id: example-lab
+    name: Example Lab
+    homepage: https://lab.example.org
+    feedUrl: https://lab.example.org/feed.xml
+    type: atom
+    aiNative: true
+    region: global
+    termsUrl: https://lab.example.org/terms
+    termsReviewedOn: 2026-10-03
+    enabled: true
+  - id: paused-news
+    name: Paused News
+    homepage: https://paused.example.org
+    feedUrl: https://paused.example.org/feed.xml
+    type: atom
+    aiNative: true
+    region: global
+    termsUrl: https://paused.example.org/terms
+    termsReviewedOn: 2026-10-03
+    enabled: false

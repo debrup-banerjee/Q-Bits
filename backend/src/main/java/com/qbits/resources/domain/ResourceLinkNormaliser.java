@@ -21,6 +21,10 @@ public final class ResourceLinkNormaliser {
   private static final Pattern ARXIV_ID =
       Pattern.compile("^(\\d{4}\\.\\d{4,5}|[a-z-]+(?:\\.[A-Z]{2})?/\\d{7})(?:v\\d+)?(?:\\.pdf)?$");
 
+  /**
+   * First path segments that are GitHub site pages, not owners (R2.3). Organisation names are never
+   * listed here: {@code github.com/github/gitignore} is a real repository.
+   */
   private static final Set<String> GITHUB_RESERVED =
       Set.of(
           "features",
@@ -50,12 +54,15 @@ public final class ResourceLinkNormaliser {
           "resources",
           "solutions",
           "team",
-          "contact",
-          "github");
+          "contact");
 
   private static final Set<String> GITLAB_RESERVED =
       Set.of("explore", "users", "help", "dashboard", "search", "projects", "groups", "-");
 
+  /**
+   * First path segments that are Hugging Face site pages, not organisations (R2.3). The {@code
+   * huggingface} organisation publishes real models, so it is not listed.
+   */
   private static final Set<String> HF_RESERVED =
       Set.of(
           "blog",
@@ -79,7 +86,6 @@ public final class ResourceLinkNormaliser {
           "privacy",
           "hub",
           "inference-endpoints",
-          "huggingface",
           "changelog",
           "jobs",
           "brand",

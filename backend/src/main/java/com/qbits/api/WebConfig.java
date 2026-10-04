@@ -29,5 +29,13 @@ class WebConfig implements WebMvcConfigurer {
         .allowedMethods("GET")
         .exposedHeaders(CatalogController.DATA_AS_OF)
         .allowCredentials(false);
+    // More specific than /api/**, so it fully replaces the GET-only rule above for auth paths
+    // (conventions: auth is the one part of the API that writes, so it needs POST too).
+    registry
+        .addMapping("/api/v1/auth/**")
+        .allowedOrigins(props.allowedOrigins().toArray(String[]::new))
+        .allowedMethods("GET", "POST")
+        .allowedHeaders("Content-Type", "Authorization")
+        .allowCredentials(false);
   }
 }

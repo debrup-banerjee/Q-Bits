@@ -1,8 +1,8 @@
 package com.qbits.stories;
 
+import com.qbits.ingestion.ItemStore;
 import com.qbits.ingestion.domain.Item;
 import com.qbits.ingestion.domain.StoryStatus;
-import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.sources.SourceRegistry;
 import com.qbits.sources.domain.Source;
 import com.qbits.stories.StoryService.Outcome;
@@ -40,7 +40,7 @@ public class StoryAdminCommands implements ApplicationRunner {
 
   private static final Logger log = LoggerFactory.getLogger(StoryAdminCommands.class);
 
-  private final ItemRepository items;
+  private final ItemStore items;
   private final SourceRegistry registry;
   private final StoryService service;
   private final WriterBudgetRepository budget;
@@ -49,7 +49,7 @@ public class StoryAdminCommands implements ApplicationRunner {
   private final ApplicationContext context;
 
   public StoryAdminCommands(
-      ItemRepository items,
+      ItemStore items,
       SourceRegistry registry,
       StoryService service,
       WriterBudgetRepository budget,
@@ -83,7 +83,7 @@ public class StoryAdminCommands implements ApplicationRunner {
 
   public Outcome rewriteStory(UUID itemId) {
     Item item =
-        items.findById(itemId).orElseThrow(() -> new IllegalArgumentException("no item " + itemId));
+        items.find(itemId).orElseThrow(() -> new IllegalArgumentException("no item " + itemId));
     Outcome outcome = service.process(item.id(), input(item), gate());
     log.info("story rewritten item={} outcome={}", itemId, outcome);
     return outcome;
@@ -91,7 +91,7 @@ public class StoryAdminCommands implements ApplicationRunner {
 
   public Map<Outcome, Integer> rewriteSource(String sourceId) {
     Map<Outcome, Integer> counts = new EnumMap<>(Outcome.class);
-    for (UUID id : items.findIdsBySourceAndStatus(sourceId, StoryStatus.PUBLISHED)) {
+    for (UUID id : items.idsBySourceAndStatus(sourceId, StoryStatus.PUBLISHED)) {
       counts.merge(rewriteStory(id), 1, Integer::sum);
     }
     log.info("source rewritten source={} outcomes={}", sourceId, counts);

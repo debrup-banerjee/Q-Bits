@@ -68,7 +68,9 @@ class ItemRepositoryIT extends IntegrationTest {
             "prefilter_score",
             "story_status",
             "hidden",
-            "story_note");
+            "story_note",
+            "edition_id",
+            "retry_feedback");
   }
 
   @Test

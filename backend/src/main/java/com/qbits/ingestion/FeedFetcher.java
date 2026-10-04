@@ -1,29 +1,31 @@
 package com.qbits.ingestion;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 /**
  * Fetches a feed politely: conditional GET with stored validators, timeouts, and a small number of
- * retries with exponential backoff for timeouts and server errors (spec 001 R2.2–R2.4, R7.1).
+ * retries with exponential backoff for timeouts and server errors (spec 001 R2.2–R2.4, R7.1). The
+ * body is capped at {@link #MAX_BODY_BYTES}.
  */
 @Service
 public class FeedFetcher {
 
   private static final Logger log = LoggerFactory.getLogger(FeedFetcher.class);
   static final int MAX_BODY_BYTES = 5 * 1024 * 1024;
+  private static final int MAX_HEADER_IN_ERROR = 300;
 
   private final RestClient http;
   private final IngestionProperties props;
 
-  public FeedFetcher(RestClient feedRestClient, IngestionProperties props) {
+  public FeedFetcher(
+      @Qualifier("feedRestClient") RestClient feedRestClient, IngestionProperties props) {
     this.http = feedRestClient;
     this.props = props;
   }
@@ -65,10 +67,31 @@ public class FeedFetcher {
                 if (status == 304) {
                   return new FetchOutcome.NotModified();
                 }
-                if (status != 200) {
-                  return new FetchOutcome.Failed(status, "HTTP " + status);
+                if (status >= 300 && status < 400) {
+                  // R1.3: never follow; the operator updates feedUrl after checking the target.
+                  String target = response.getHeaders().getFirst(HttpHeaders.LOCATION);
+                  return new FetchOutcome.Failed(
+                      status, "HTTP " + status + " redirect not followed, target: " + clip(target));
                 }
-                byte[] body = readLimited(response.getBody());
+                if (status != 200) {
+                  // 429 is never retried (R7.1). A Retry-After on 429 or 503 pushes the source's
+                  // next fetch back.
+                  String retryAfter =
+                      status == 429 || status == 503
+                          ? response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)
+                          : null;
+                  String error =
+                      retryAfter == null
+                          ? "HTTP " + status
+                          : "HTTP " + status + ", Retry-After: " + clip(retryAfter);
+                  return new FetchOutcome.Failed(status, error, retryAfter);
+                }
+                byte[] body = response.getBody().readNBytes(MAX_BODY_BYTES + 1);
+                if (body.length > MAX_BODY_BYTES) {
+                  // Not retried: the feed would be just as large a few seconds later.
+                  return new FetchOutcome.Failed(
+                      status, "feed larger than " + MAX_BODY_BYTES + " bytes");
+                }
                 HttpHeaders headers = response.getHeaders();
                 return new FetchOutcome.Fetched(
                     status, body, headers.getETag(), headers.getFirst(HttpHeaders.LAST_MODIFIED));
@@ -82,17 +105,24 @@ public class FeedFetcher {
     }
   }
 
-  private static byte[] readLimited(InputStream in) throws IOException {
-    byte[] body = in.readNBytes(MAX_BODY_BYTES + 1);
-    if (body.length > MAX_BODY_BYTES) {
-      throw new IOException("feed larger than " + MAX_BODY_BYTES + " bytes");
-    }
-    return body;
-  }
-
+  /**
+   * Only timeouts, network errors and 5xx are retried (R7.1). Never 429 or other 4xx, never an
+   * oversized feed, and never a 5xx that came with Retry-After: the publisher asked us to wait.
+   */
   private static boolean isRetryable(FetchOutcome outcome) {
     return outcome instanceof FetchOutcome.Failed f
-        && (f.httpStatus() == null || f.httpStatus() >= 500 || f.httpStatus() == 429);
+        && f.retryAfter() == null
+        && (f.httpStatus() == null || f.httpStatus() >= 500);
+  }
+
+  /** Keeps header values short enough for the fetch log's error column. */
+  private static String clip(String value) {
+    if (value == null) {
+      return "none";
+    }
+    return value.length() > MAX_HEADER_IN_ERROR
+        ? value.substring(0, MAX_HEADER_IN_ERROR) + "…"
+        : value;
   }
 
   private static String describe(FetchOutcome outcome) {

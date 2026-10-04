@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.qbits.IntegrationTest;
 import com.qbits.common.Ids;
+import com.qbits.common.links.LinkOrigin;
 import com.qbits.ingestion.domain.Item;
 import com.qbits.ingestion.domain.StoryStatus;
 import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.resources.domain.Candidate;
 import com.qbits.resources.domain.ItemResource;
-import com.qbits.resources.domain.LinkOrigin;
 import com.qbits.resources.domain.ResourceHost;
 import com.qbits.resources.domain.ResourceStatus;
 import com.qbits.resources.domain.ResourceType;

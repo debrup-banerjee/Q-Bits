@@ -6,6 +6,7 @@ import { FeedCard } from './FeedCard';
 
 const NOW = new Date('2026-10-03T04:12:00Z');
 
+// 004 R4.1
 it('shows the parts in timeline order', () => {
   renderAt(<FeedCard story={story()} now={NOW} />);
 
@@ -25,6 +26,7 @@ it('shows the parts in timeline order', () => {
   );
 });
 
+// 004 R4.2
 it('clamps the summary and expands it with the words to know', async () => {
   renderAt(<FeedCard story={story()} now={NOW} />);
   const button = screen.getByRole('button', { name: 'Show more' });
@@ -46,6 +48,7 @@ it('clamps the summary and expands it with the words to know', async () => {
   expect(screen.getByTestId('feed-summary')).toHaveClass('line-clamp-3');
 });
 
+// 004 R4.3
 it('links out safely and shows the attribution', () => {
   renderAt(<FeedCard story={story()} now={NOW} />);
 
@@ -90,6 +93,7 @@ it('shows no open-source row when there are no links', () => {
   expect(screen.queryByLabelText('Open source')).not.toBeInTheDocument();
 });
 
+// 004 R4.4
 it('has no images, embeds or social buttons', () => {
   const { container } = renderAt(<FeedCard story={story()} now={NOW} />);
 

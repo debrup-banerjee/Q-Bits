@@ -65,31 +65,22 @@ public class ResourceCheckJob {
     int missing = 0;
     int failed = 0;
     for (ItemResource r : due) {
-      Optional<CachedCheck> cached = cache.findFresh(r.url(), now.minus(props.cacheTtl()));
-      if (cached.isPresent()) {
-        apply(r, cached.get().found(), cached.get().canonical(), now);
-        continue;
-      }
-      if (throttled.contains(r.host())) {
-        continue;
-      }
-      CheckResult result = hosts.check(r.asCandidate());
-      switch (result) {
-        case CheckResult.Found f -> {
-          cache.save(new CachedCheck(r.url(), true, f.canonicalName(), now));
-          apply(r, true, f.canonicalName(), now);
-          verified++;
+      try {
+        switch (check(r, throttled, now)) {
+          case VERIFIED -> verified++;
+          case MISSING -> missing++;
+          case FAILED -> failed++;
+          case SKIPPED -> {}
         }
-        case CheckResult.Missing m -> {
-          cache.save(new CachedCheck(r.url(), false, null, now));
-          apply(r, false, null, now);
-          missing++;
-        }
-        case CheckResult.Failed f -> {
-          retryOrGiveUp(r, now);
-          failed++;
-        }
-        case CheckResult.Throttled t -> throttled.add(r.host());
+      } catch (RuntimeException e) {
+        // One bad row must never end the run; record it and move on.
+        failed++;
+        log.warn(
+            "link check row failed id={} item={} error={}",
+            r.id(),
+            r.itemId(),
+            e.getClass().getSimpleName());
+        recordFailure(r, now);
       }
     }
     if (!due.isEmpty()) {
@@ -100,6 +91,61 @@ public class ResourceCheckJob {
           missing,
           failed,
           throttled);
+    }
+  }
+
+  private enum Outcome {
+    VERIFIED,
+    MISSING,
+    FAILED,
+    SKIPPED
+  }
+
+  private Outcome check(ItemResource r, Set<ResourceHost> throttled, Instant now) {
+    Optional<CachedCheck> cached = cache.findFresh(r.url(), now.minus(props.cacheTtl()));
+    if (cached.isPresent()) {
+      apply(r, cached.get().found(), cached.get().canonical(), now);
+      return Outcome.SKIPPED;
+    }
+    if (throttled.contains(r.host())) {
+      return Outcome.SKIPPED;
+    }
+    CheckResult result = hosts.check(r.asCandidate());
+    return switch (result) {
+      case CheckResult.Found f -> {
+        cache.save(new CachedCheck(r.url(), true, f.canonicalName(), now));
+        apply(r, true, f.canonicalName(), now);
+        yield Outcome.VERIFIED;
+      }
+      case CheckResult.Missing m -> {
+        cache.save(new CachedCheck(r.url(), false, null, now));
+        apply(r, false, null, now);
+        yield Outcome.MISSING;
+      }
+      case CheckResult.Failed f -> {
+        log.warn(
+            "link check failed id={} item={} host={} reason={}",
+            r.id(),
+            r.itemId(),
+            r.host(),
+            f.reason());
+        retryOrGiveUp(r, now);
+        yield Outcome.FAILED;
+      }
+      case CheckResult.Throttled t -> {
+        throttled.add(r.host());
+        yield Outcome.SKIPPED;
+      }
+    };
+  }
+
+  /** Puts a row that broke the run loop on the retry schedule, so it cannot block the queue. */
+  private void recordFailure(ItemResource r, Instant now) {
+    try {
+      retryOrGiveUp(r, now);
+    } catch (RuntimeException e) {
+      log.warn(
+          "link check retry not recorded id={} error={}", r.id(), e.getClass().getSimpleName());
     }
   }
 

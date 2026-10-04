@@ -84,3 +84,12 @@ API errors become Problem Details; the client maps any non-2xx to `ErrorState` w
 ## Risks
 - Generated-client drift — mitigated by the contract test.
 - Long key-term lists on phones — capped at 5 and collapsed by default.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- `GET /api/v1/site` (site name, contact) and the `CorsConfig` → `WebConfig` rename are part of the design.
+- Dates: relative time with `Intl.RelativeTimeFormat`; when `dateEstimated`, numeric times get an "about" prefix ("about 5 hours ago") and word forms an "(estimated)" suffix ("yesterday (estimated)").
+- `source.homepage` is `null` when the source is no longer on the approved list; the contract marks it nullable.
+- The /sections overview always shows "AI news from the last 72 hours, sorted into four sections", with "Updated …" beside it when known.
+- The About page reads section names and descriptions from the API.

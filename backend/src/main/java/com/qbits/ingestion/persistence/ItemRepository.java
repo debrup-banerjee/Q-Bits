@@ -6,6 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -14,6 +18,11 @@ import org.springframework.stereotype.Repository;
 /** Stores item metadata. Inserts are idempotent on canonical URL (spec 001 R6). */
 @Repository
 public class ItemRepository {
+
+  /** Column limits from the schema (V2, V5). */
+  static final int MAX_NOTE_CHARS = 300;
+
+  static final int MAX_FEEDBACK_CHARS = 1000;
 
   private final JdbcClient jdbc;
 
@@ -77,17 +86,24 @@ public class ItemRepository {
         .optional();
   }
 
-  /** Moves an item to a new story status with an optional note (spec 002). */
+  /**
+   * Moves an item to a new story status with an optional note (spec 002). Retry feedback is kept
+   * only while the item is PENDING.
+   */
   public void updateStoryStatus(UUID id, StoryStatus status, String note) {
-    String trimmed = note != null && note.length() > 300 ? note.substring(0, 300) : note;
-    jdbc.sql("update items set story_status = :status, story_note = :note where id = :id")
+    jdbc.sql(
+            """
+            update items set story_status = :status, story_note = :note,
+              retry_feedback = case when :status = 'PENDING' then retry_feedback end
+            where id = :id
+            """)
         .param("status", status.name())
-        .param("note", trimmed)
+        .param("note", fit(note, MAX_NOTE_CHARS))
         .param("id", id)
         .update();
   }
 
-  public java.util.Optional<String> findStoryNote(UUID id) {
+  public Optional<String> findStoryNote(UUID id) {
     return jdbc.sql("select story_note from items where id = :id")
         .param("id", id)
         .query(String.class)
@@ -95,7 +111,7 @@ public class ItemRepository {
   }
 
   /** Visible PENDING items published at or after {@code since}, newest first (spec 002 R1.1). */
-  public java.util.List<Item> findPendingNewestFirst(Instant since, int limit) {
+  public List<Item> findPendingNewestFirst(Instant since, int limit) {
     return jdbc.sql(
             """
             select * from items
@@ -112,17 +128,111 @@ public class ItemRepository {
   /** Marks PENDING items older than the cut-off as EXPIRED (spec 002 R9.3). */
   public int expirePendingBefore(Instant cutoff) {
     return jdbc.sql(
-            "update items set story_status = 'EXPIRED' where story_status = 'PENDING' and published_at < :cutoff")
+            """
+            update items set story_status = 'EXPIRED', retry_feedback = null
+            where story_status = 'PENDING' and published_at < :cutoff
+            """)
         .param("cutoff", Timestamp.from(cutoff))
         .update();
   }
 
-  public java.util.List<UUID> findIdsBySourceAndStatus(String sourceId, StoryStatus status) {
+  public List<UUID> findIdsBySourceAndStatus(String sourceId, StoryStatus status) {
     return jdbc.sql("select id from items where source_id = :sourceId and story_status = :status")
         .param("sourceId", sourceId)
         .param("status", status.name())
         .query(UUID.class)
         .list();
+  }
+
+  /**
+   * Puts up to {@code limit} waiting items into an edition, newest first: PENDING, visible, not in
+   * another edition, fetched by the cut-off and published within the window (spec 006 R1.2, R1.3).
+   * Safe when two cuts run at once: rows another cut has locked are skipped, and the outer check
+   * never moves an item that already has an edition.
+   */
+  public int assignToEdition(UUID editionId, Instant cutoff, Instant since, int limit) {
+    return jdbc.sql(
+            """
+            with picked as materialized (
+              select id from items
+              where story_status = 'PENDING' and not hidden and edition_id is null
+                and fetched_at <= :cutoff and published_at >= :since
+              order by published_at desc, id desc
+              limit :limit
+              for update skip locked)
+            update items set edition_id = :edition
+            from picked
+            where items.id = picked.id
+              and items.edition_id is null and items.story_status = 'PENDING'
+            """)
+        .param("edition", editionId)
+        .param("cutoff", Timestamp.from(cutoff))
+        .param("since", Timestamp.from(since))
+        .param("limit", limit)
+        .update();
+  }
+
+  /** Items of an edition that still wait for a story, oldest first. */
+  public List<Item> findPendingInEdition(UUID editionId) {
+    return jdbc.sql(
+            "select * from items where edition_id = :e and story_status = 'PENDING' order by published_at, id")
+        .param("e", editionId)
+        .query(ItemRepository::map)
+        .list();
+  }
+
+  public void setRetryFeedback(UUID id, String feedback) {
+    jdbc.sql("update items set retry_feedback = :f where id = :id")
+        .param("f", fit(feedback, MAX_FEEDBACK_CHARS))
+        .param("id", id)
+        .update();
+  }
+
+  public Optional<String> findRetryFeedback(UUID id) {
+    return jdbc.sql("select retry_feedback from items where id = :id")
+        .param("id", id)
+        .query(String.class)
+        .optional();
+  }
+
+  /** Sends one item back to wait for the next edition (spec 006 R6.2). */
+  public void releaseFromEdition(UUID id) {
+    jdbc.sql(
+            "update items set edition_id = null, retry_feedback = null where id = :id and story_status = 'PENDING'")
+        .param("id", id)
+        .update();
+  }
+
+  /** Publishes every WRITTEN story of an edition at once (spec 006 R3.1). Returns the count. */
+  public int publishEdition(UUID editionId) {
+    return jdbc.sql(
+            "update items set story_status = 'PUBLISHED' where edition_id = :e and story_status = 'WRITTEN'")
+        .param("e", editionId)
+        .update();
+  }
+
+  /** Items of an edition still PENDING go back for the next edition. */
+  public int releaseUnfinished(UUID editionId) {
+    return jdbc.sql(
+            """
+            update items set edition_id = null, retry_feedback = null
+            where edition_id = :e and story_status = 'PENDING'
+            """)
+        .param("e", editionId)
+        .update();
+  }
+
+  /** How many of an edition's items are in each story status (spec 006 R1.4). */
+  public Map<StoryStatus, Integer> countByStatusInEdition(UUID editionId) {
+    Map<StoryStatus, Integer> counts = new EnumMap<>(StoryStatus.class);
+    jdbc.sql(
+            "select story_status, count(*) n from items where edition_id = :e group by story_status")
+        .param("e", editionId)
+        .query(
+            rs -> {
+              counts.put(StoryStatus.valueOf(rs.getString("story_status")), rs.getInt("n"));
+            });
+    return Map.copyOf(counts);
   }
 
   public long countBySource(String sourceId) {
@@ -136,7 +246,7 @@ public class ItemRepository {
    * Hides items of sources that are not enabled and shows items of enabled ones (spec 001 R8.1).
    * Returns the number of rows changed.
    */
-  public int syncVisibility(java.util.Collection<String> enabledSourceIds) {
+  public int syncVisibility(Collection<String> enabledSourceIds) {
     String[] ids = enabledSourceIds.toArray(String[]::new);
     return jdbc.sql(
             """
@@ -168,6 +278,21 @@ public class ItemRepository {
     return jdbc.sql("delete from items where published_at < :cutoff")
         .param("cutoff", Timestamp.from(cutoff))
         .update();
+  }
+
+  /**
+   * Cuts text to the column's limit at a character boundary, counting characters the way PostgreSQL
+   * does, and drops NUL characters, which PostgreSQL cannot store.
+   */
+  static String fit(String text, int maxChars) {
+    if (text == null) {
+      return null;
+    }
+    String clean = text.replace("\u0000", "");
+    if (clean.codePointCount(0, clean.length()) <= maxChars) {
+      return clean;
+    }
+    return clean.substring(0, clean.offsetByCodePoints(0, maxChars));
   }
 
   static Item map(ResultSet rs, int row) throws SQLException {

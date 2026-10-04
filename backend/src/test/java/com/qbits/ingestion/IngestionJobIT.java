@@ -1,6 +1,7 @@
 package com.qbits.ingestion;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -22,17 +23,28 @@ import com.qbits.sources.SourceRegistry;
 import com.qbits.sources.domain.Region;
 import com.qbits.sources.domain.Source;
 import com.qbits.sources.domain.SourceType;
+import com.qbits.stories.FakeStoryWriter;
+import com.qbits.stories.StoryFixtures;
+import com.qbits.stories.StoryJob;
+import com.qbits.stories.StoryService;
+import com.qbits.stories.StoryWriter;
+import com.qbits.stories.StoryWriterProperties;
+import com.qbits.stories.persistence.JobBackoffRepository;
+import com.qbits.stories.persistence.StoryRepository;
+import com.qbits.stories.persistence.WriterBudgetRepository;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestClient;
 
 class IngestionJobIT extends IntegrationTest {
@@ -42,6 +54,11 @@ class IngestionJobIT extends IntegrationTest {
       WireMockExtension.newInstance()
           .options(wireMockConfig().dynamicPort().gzipDisabled(true))
           .build();
+
+  /** A host that is not in the sources file. Nothing may ever reach it. */
+  @RegisterExtension
+  static WireMockExtension elsewhere =
+      WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build();
 
   private static final Instant NOW = Instant.parse("2026-10-03T06:00:00Z");
 
@@ -59,6 +76,10 @@ class IngestionJobIT extends IntegrationTest {
   @Autowired LockingTaskExecutor locks;
   @Autowired com.qbits.resources.ResourceCollector resourceCollector;
   @Autowired com.qbits.resources.persistence.ItemResourceRepository itemResources;
+  @Autowired StoryRepository stories;
+  @Autowired WriterBudgetRepository budget;
+  @Autowired JobBackoffRepository backoff;
+  @Autowired TransactionTemplate tx;
 
   private MutableClock clock;
 
@@ -118,6 +139,112 @@ class IngestionJobIT extends IntegrationTest {
     job.runOnce();
 
     site.verify(1, getRequestedFor(urlEqualTo("/news/rss.xml")));
+  }
+
+  @Test
+  void requestsOnlyRegisteredFeedUrlsAndTheirRobotsTxtEvenOnRedirects() { // 001 R1.3
+    elsewhere.stubFor(get(anyUrl()).willReturn(aResponse().withStatus(200).withBody("<rss/>")));
+    site.stubFor(
+        get(urlEqualTo("/lab/atom.xml"))
+            .willReturn(
+                aResponse()
+                    .withStatus(301)
+                    .withHeader("Location", elsewhere.baseUrl() + "/lab/atom.xml")));
+    site.stubFor(
+        get(urlEqualTo("/broken/feed"))
+            .willReturn(
+                aResponse().withStatus(302).withHeader("Location", site.baseUrl() + "/moved")));
+    site.stubFor(get(urlEqualTo("/moved")).willReturn(aResponse().withStatus(200)));
+
+    job(sources()).runOnce();
+
+    assertThat(site.getAllServeEvents())
+        .extracting(e -> e.getRequest().getUrl())
+        .isNotEmpty()
+        .allMatch(
+            url ->
+                Set.of("/robots.txt", "/news/rss.xml", "/lab/atom.xml", "/broken/feed")
+                    .contains(url));
+    assertThat(elsewhere.getAllServeEvents()).isEmpty();
+    FetchLogEntry crossHost = fetchLog.findBySource("ai-lab").getFirst();
+    assertThat(crossHost.status()).isEqualTo(FetchStatus.FAILED);
+    assertThat(crossHost.httpStatus()).isEqualTo(301);
+    assertThat(crossHost.error()).contains(elsewhere.baseUrl() + "/lab/atom.xml");
+    FetchLogEntry sameHost = fetchLog.findBySource("broken").getFirst();
+    assertThat(sameHost.status()).isEqualTo(FetchStatus.FAILED);
+    assertThat(sameHost.httpStatus()).isEqualTo(302);
+    assertThat(fetchLog.findBySource("tech-news").getFirst().status()).isEqualTo(FetchStatus.OK);
+  }
+
+  @Test
+  void waitsUntilRetryAfterThenClearsItAfterASuccessfulFetch() { // 001 R7.1
+    site.stubFor(
+        get(urlEqualTo("/lab/atom.xml"))
+            .willReturn(aResponse().withStatus(429).withHeader("Retry-After", "7200")));
+    IngestionJob job = job(sources());
+
+    job.runOnce();
+
+    assertThat(states.find("ai-lab").orElseThrow().retryAfter())
+        .isEqualTo(NOW.plus(Duration.ofHours(2)));
+    assertThat(fetchLog.findBySource("ai-lab").getFirst().httpStatus()).isEqualTo(429);
+
+    clock.advance(Duration.ofMinutes(31)); // interval passed, Retry-After not yet
+    job.runOnce();
+    site.verify(1, getRequestedFor(urlEqualTo("/lab/atom.xml")));
+    site.verify(2, getRequestedFor(urlEqualTo("/news/rss.xml")));
+
+    stubFeed("/lab/atom.xml", "atom-sample.xml");
+    clock.advance(Duration.ofMinutes(90)); // now past Retry-After
+    job.runOnce();
+
+    site.verify(2, getRequestedFor(urlEqualTo("/lab/atom.xml")));
+    assertThat(fetchLog.findBySource("ai-lab").getFirst().status()).isEqualTo(FetchStatus.OK);
+    assertThat(states.find("ai-lab").orElseThrow().retryAfter()).isNull();
+  }
+
+  @Test
+  void honoursRetryAfterDateOnServiceUnavailableCappedAtOneDay() { // 001 R7.1
+    site.stubFor(
+        get(urlEqualTo("/lab/atom.xml"))
+            .willReturn(
+                aResponse()
+                    .withStatus(503)
+                    .withHeader("Retry-After", "Sat, 03 Oct 2026 09:00:00 GMT")));
+    site.stubFor(
+        get(urlEqualTo("/news/rss.xml"))
+            .willReturn(aResponse().withStatus(429).withHeader("Retry-After", "604800")));
+
+    job(sources()).runOnce();
+
+    site.verify(1, getRequestedFor(urlEqualTo("/lab/atom.xml"))); // not retried at once
+    assertThat(states.find("ai-lab").orElseThrow().retryAfter())
+        .isEqualTo(Instant.parse("2026-10-03T09:00:00Z"));
+    assertThat(states.find("tech-news").orElseThrow().retryAfter())
+        .isEqualTo(NOW.plus(Duration.ofHours(24)));
+  }
+
+  @Test
+  void robotsTxtThatKeepsRedirectingDegradesTheSource() { // 001 R7.4, R3.4, R1.3
+    site.stubFor(
+        get(urlEqualTo("/robots.txt"))
+            .willReturn(
+                aResponse()
+                    .withStatus(301)
+                    .withHeader("Location", elsewhere.baseUrl() + "/robots.txt")));
+    IngestionJob job = job(sources());
+
+    for (int run = 1; run <= 5; run++) {
+      job.runOnce();
+      clock.advance(Duration.ofMinutes(31));
+    }
+
+    var state = states.find("tech-news").orElseThrow();
+    assertThat(state.consecutiveFailures()).isEqualTo(5);
+    assertThat(state.health()).isEqualTo(com.qbits.ingestion.domain.SourceHealth.DEGRADED);
+    assertThat(fetchLog.findBySource("tech-news"))
+        .allMatch(e -> e.status() == FetchStatus.ROBOTS_UNAVAILABLE);
+    assertThat(elsewhere.getAllServeEvents()).isEmpty();
   }
 
   @Test
@@ -229,6 +356,49 @@ class IngestionJobIT extends IntegrationTest {
   }
 
   @Test
+  void keepsIngestingWhileTheSummaryServiceIsDown() { // 002 R9.2
+    IngestionJob ingestion = job(sources());
+    FakeStoryWriter down =
+        new FakeStoryWriter(
+            in -> {
+              throw new StoryWriter.WriterUnavailable("service down", null);
+            });
+    StoryJob storyJob = storyJob(down, sources());
+
+    ingestion.runOnce();
+    storyJob.runOnce();
+    assertThat(down.inputs).isNotEmpty();
+    assertThat(backoff.find("stories")).isPresent(); // the story job is backing off
+
+    String next =
+        new String(FeedParserTest.fixture("atom-sample.xml"))
+            .replace("urn:example:1", "urn:example:2")
+            .replace("https://lab.example.org/robots-laundry", "https://lab.example.org/chip-news")
+            .replace(
+                "Robots learn to fold laundry with machine learning",
+                "New AI chip speeds up neural network training");
+    site.stubFor(
+        get(urlEqualTo("/lab/atom.xml")).willReturn(aResponse().withStatus(200).withBody(next)));
+    clock.advance(Duration.ofMinutes(31));
+
+    ingestion.runOnce();
+    storyJob.runOnce();
+
+    assertThat(items.existsByCanonicalUrl("https://lab.example.org/chip-news")).isTrue();
+    assertThat(items.countBySource("ai-lab")).isEqualTo(2);
+    assertThat(fetchLog.findBySource("ai-lab"))
+        .hasSize(2)
+        .allSatisfy(e -> assertThat(e.status()).isEqualTo(FetchStatus.OK));
+    Long pending =
+        jdbc.queryForObject(
+            "select count(*) from items where story_status = ?",
+            Long.class,
+            StoryStatus.PENDING.name());
+    assertThat(pending).isEqualTo(3);
+    assertThat(jdbc.queryForObject("select count(*) from stories", Long.class)).isZero();
+  }
+
+  @Test
   void twoInstancesFetchEachSourceOnce() throws Exception { // 001 R2.5
     IngestionJob first = job(sources());
     IngestionJob second = job(sources());
@@ -259,7 +429,23 @@ class IngestionJobIT extends IntegrationTest {
             resourceCollector,
             clock);
     SourceRegistry registry = new SourceRegistry(sources);
-    return new IngestionJob(registry, ingestor, locks, new SourceVisibility(registry, items));
+    return new IngestionJob(
+        registry, ingestor, locks, new SourceVisibility(registry, items), clock);
+  }
+
+  private StoryJob storyJob(StoryWriter writer, List<Source> sources) {
+    StoryWriterProperties storyProps = StoryFixtures.props();
+    StoryService service =
+        new StoryService(writer, stories, new ItemStore(items), storyProps, tx, clock);
+    return new StoryJob(
+        new ItemStore(items),
+        new SourceRegistry(sources),
+        service,
+        budget,
+        backoff,
+        storyProps,
+        locks,
+        clock);
   }
 
   private List<Source> sources() {

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.qbits.IntegrationTest;
 import com.qbits.common.Ids;
+import com.qbits.ingestion.ItemStore;
 import com.qbits.ingestion.domain.Item;
 import com.qbits.ingestion.domain.StoryStatus;
 import com.qbits.ingestion.persistence.ItemRepository;
@@ -68,12 +69,17 @@ class StoryAdminIT extends IntegrationTest {
 
   private StoryService service(String version) {
     return new StoryService(
-        new FakeStoryWriter(StoryFixtures::validDraft), stories, items, props(version), tx, clock);
+        new FakeStoryWriter(StoryFixtures::validDraft),
+        stories,
+        new ItemStore(items),
+        props(version),
+        tx,
+        clock);
   }
 
   private StoryAdminCommands admin(String version) {
     return new StoryAdminCommands(
-        items,
+        new ItemStore(items),
         new SourceRegistry(List.of()),
         service(version),
         budget,
@@ -84,6 +90,7 @@ class StoryAdminIT extends IntegrationTest {
 
   private static StoryWriterProperties props(String version) {
     return new StoryWriterProperties(
+        StoryWriterProperties.Mode.DIGEST,
         "anthropic",
         "test-model",
         version,

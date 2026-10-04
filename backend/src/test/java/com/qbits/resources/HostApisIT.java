@@ -36,7 +36,9 @@ class HostApisIT extends IntegrationTest {
           .options(wireMockConfig().dynamicPort().gzipDisabled(true))
           .build();
 
-  @Autowired RestClient feedRestClient;
+  @Autowired RestClient linkCheckRestClient;
+  @Autowired LinkCheckHttpProperties http;
+  @Autowired com.qbits.ingestion.IngestionProperties ingestion;
   @Autowired JsonMapper json;
 
   private final ResourceLinkNormaliser normaliser = new ResourceLinkNormaliser();
@@ -76,7 +78,7 @@ class HostApisIT extends IntegrationTest {
                 limit,
                 ResourceHost.ARXIV,
                 limit));
-    return new HostApis(feedRestClient, props, json, clock);
+    return new HostApis(linkCheckRestClient, props, json, clock);
   }
 
   private Candidate c(String url) {
@@ -131,6 +133,12 @@ class HostApisIT extends IntegrationTest {
   }
 
   @Test
+  void linkChecksHaveTheirOwnHttpSettingsDefaultingToFeedFetching() { // 005 R4.6, 001 R2.4
+    assertThat(http.userAgent()).isEqualTo(ingestion.userAgent());
+    assertThat(http.timeout()).isEqualTo(ingestion.timeout());
+  }
+
+  @Test
   void sendsTokenOnlyWhenConfiguredAndAlwaysTheUserAgent() { // 005 R4.6
     api.stubFor(
         get(urlPathEqualTo("/repos/a/b")).willReturn(aResponse().withStatus(200).withBody("{}")));
@@ -139,7 +147,7 @@ class HostApisIT extends IntegrationTest {
     api.verify(
         getRequestedFor(urlEqualTo("/repos/a/b"))
             .withHeader("Authorization", absent())
-            .withHeader("User-Agent", equalTo("QBits/0.1 (+mailto:debrup28.nitdgp@gmail.com)")));
+            .withHeader("User-Agent", equalTo(http.userAgent())));
 
     api.resetRequests();
     apis("tok123", 100, Duration.ZERO).check(c("https://github.com/a/b"));

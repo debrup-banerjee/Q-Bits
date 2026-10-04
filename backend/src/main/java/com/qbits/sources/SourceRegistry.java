@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,15 +19,15 @@ public class SourceRegistry {
     this.sources = List.copyOf(sources);
   }
 
-  /** Reads and validates the sources file. */
-  public static SourceRegistry load(Path file) {
+  /** Reads and validates the sources file. Per-source intervals must be at least minInterval. */
+  public static SourceRegistry load(Path file, Duration minInterval) {
     String text;
     try {
       text = Files.readString(file);
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot read sources file " + file.toAbsolutePath(), e);
     }
-    return new SourceRegistry(new SourcesFileParser().parse(text));
+    return new SourceRegistry(new SourcesFileParser(minInterval).parse(text));
   }
 
   public List<Source> all() {

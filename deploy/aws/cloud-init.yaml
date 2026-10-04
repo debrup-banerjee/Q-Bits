@@ -1,0 +1,127 @@
+#cloud-config
+# Bootstraps a fresh Ubuntu 22.04 EC2 instance with everything Q-Bits needs except the app
+# code itself (deploy-app.sh copies that in afterwards and does the first start).
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - unzip
+  - nginx
+  - docker.io
+  - docker-compose-v2
+  - openjdk-21-jre-headless
+
+write_files:
+  - path: /opt/qbits/refresh-identity-token.sh
+    permissions: '0750'
+    owner: ubuntu:ubuntu
+    content: |
+      #!/usr/bin/env bash
+      # Re-fetches a short-lived AWS STS web identity token for Anthropic workload identity
+      # federation and atomically replaces the file the app reads. Run on a timer (see the
+      # qbits-refresh-token systemd unit) well before each token's 900s expiry.
+      set -euo pipefail
+      REGION="$(curl -s -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600' -X PUT http://169.254.169.254/latest/api/token \
+        | xargs -I{} curl -s -H 'X-aws-ec2-metadata-token: {}' http://169.254.169.254/latest/meta-data/placement/region)"
+
+      TOKEN="$(aws sts get-web-identity-token \
+        --region "$REGION" \
+        --audience "https://api.anthropic.com" \
+        --signing-algorithm RS256 \
+        --duration-seconds 900 \
+        --query WebIdentityToken --output text)"
+
+      umask 077
+      echo -n "$TOKEN" > /opt/qbits/identity-token.tmp
+      mv /opt/qbits/identity-token.tmp /opt/qbits/identity-token
+
+  - path: /etc/systemd/system/qbits-refresh-token.service
+    content: |
+      [Unit]
+      Description=Refresh the Anthropic workload identity token
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      User=ubuntu
+      ExecStart=/opt/qbits/refresh-identity-token.sh
+
+  - path: /etc/systemd/system/qbits-refresh-token.timer
+    content: |
+      [Unit]
+      Description=Run qbits-refresh-token every 5 minutes
+
+      [Timer]
+      OnBootSec=30
+      OnUnitActiveSec=5min
+      Unit=qbits-refresh-token.service
+
+      [Install]
+      WantedBy=timers.target
+
+  - path: /etc/systemd/system/qbits-backend.service
+    content: |
+      [Unit]
+      Description=Q-Bits Spring Boot backend
+      After=network-online.target docker.service
+
+      [Service]
+      Type=simple
+      User=ubuntu
+      # The jar and web/config files are deployed pre-built by deploy-app.sh; this instance
+      # never compiles anything (too little RAM on a t3.micro to build and run at once).
+      WorkingDirectory=/opt/qbits/app
+      EnvironmentFile=/opt/qbits/.env
+      ExecStart=/usr/bin/java -jar /opt/qbits/app/backend.jar
+      Restart=on-failure
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/nginx/sites-available/qbits
+    content: |
+      server {
+        listen 80 default_server;
+        server_name _;
+
+        root /opt/qbits/app/web/dist;
+        index index.html;
+
+        location /api/ {
+          proxy_pass http://127.0.0.1:8080;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location / {
+          try_files $uri /index.html;
+        }
+      }
+
+runcmd:
+  - mkdir -p /opt/qbits/app/web
+  - chown -R ubuntu:ubuntu /opt/qbits
+  - usermod -aG docker ubuntu
+  # 1GB swap: a t3.micro only has 1GB RAM, so this is a safety net against the OOM killer
+  # under memory spikes (it does not make building on the instance a good idea -- we don't).
+  - fallocate -l 1G /swapfile
+  - chmod 600 /swapfile
+  - mkswap /swapfile
+  - swapon /swapfile
+  - echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  # AWS CLI v2 (Ubuntu's apt package is v1 and too old for `sts get-web-identity-token`)
+  - curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+  - unzip -q /tmp/awscliv2.zip -d /tmp
+  - /tmp/aws/install
+  - rm -rf /tmp/awscliv2.zip /tmp/aws
+  - rm -f /etc/nginx/sites-enabled/default
+  - ln -sf /etc/nginx/sites-available/qbits /etc/nginx/sites-enabled/qbits
+  - systemctl enable --now docker
+  - systemctl enable --now qbits-refresh-token.timer
+  - systemctl enable qbits-backend
+  - systemctl restart nginx

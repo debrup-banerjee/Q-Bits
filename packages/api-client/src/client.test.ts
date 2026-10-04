@@ -12,6 +12,7 @@ afterAll(() => server.close());
 const api = createQBitsApi(BASE);
 
 describe('createQBitsApi', () => {
+  // 003 R2.1, R2.7
   it('returns stories with the data-as-of time and passes query params', async () => {
     let seen: URL | undefined;
     server.use(
@@ -32,6 +33,7 @@ describe('createQBitsApi', () => {
     expect(result.dataAsOf).toBe('2026-10-03T05:00:00Z');
   });
 
+  // 003 R2.6
   it('turns problem details into ApiError with the backend code', async () => {
     server.use(
       http.get(`${BASE}/api/v1/stories/:id`, () =>
@@ -48,6 +50,7 @@ describe('createQBitsApi', () => {
     });
   });
 
+  // 003 R8.2
   it('reports network failures as ApiError', async () => {
     server.use(http.get(`${BASE}/api/v1/site`, () => HttpResponse.error()));
 

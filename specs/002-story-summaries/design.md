@@ -154,3 +154,14 @@ SDK exceptions map to `WriterUnavailable` (retry later) or `WriterRejected` (bad
 - Thin excerpts give thin stories. Mitigation: shorter minimum length, never pad, prominent link out.
 - The model may still slip in outside knowledge that has no numbers. Mitigation: prompt rule, sample reviews, reviewer checklist.
 - Cost grows with source count. Mitigation: pre-filter (001), daily cap.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- Prompt: `prompts/story-writer.v2.md` (v1 plus: keep every product, model and company name exactly as the input writes it); `prompt-version: v2`. v1 is kept unchanged.
+- Inputs sent (R1.2) are unchanged; `steering/principles.md` now states that the only publisher text sent is the title and excerpt, plus plain facts (source name, publish date, our region and section hints).
+- Validation: headline ≤ 120 and summary ≤ 1000 characters after trimming (same limits as the database), so an over-long draft is invalid instead of failing on save. Quote check: an apostrophe inside a word is not a quote mark. `NUMBERS`: every number in headline+summary appears in the title or excerpt (1,000 = 1000); a number followed by a scale word (thousand/k, million/mn/m, billion/bn/b, trillion/tn, lakh, crore) must appear with the same scale. Other units (GB, nm) are judged in the editorial sample check.
+- `story_note` is one line of at most 300 characters; longer reasons are cut cleanly.
+- Error handling: any other client error (for example an answer that cannot be read) maps to `WriterUnavailable`.
+- The extra back-off table used by the story job is part of the design.
+- Stories reach items only through `ingestion.ItemStore`, never `ingestion.persistence`; a test enforces this.

@@ -1,6 +1,7 @@
 package com.qbits.ingestion;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
@@ -24,6 +25,11 @@ class FeedFetcherIT extends IntegrationTest {
       WireMockExtension.newInstance()
           .options(wireMockConfig().dynamicPort().gzipDisabled(true))
           .build();
+
+  /** A host that is not in the sources file. */
+  @RegisterExtension
+  static WireMockExtension elsewhere =
+      WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build();
 
   @Autowired FeedFetcher fetcher;
   @Autowired IngestionProperties props;
@@ -78,9 +84,12 @@ class FeedFetcherIT extends IntegrationTest {
 
     fetcher.fetch(feed, null, null);
 
+    // The version comes from the build (pom.xml), never a hand-written number.
+    assertThat(props.userAgent())
+        .matches("QBits/\\d+\\.\\d+[^ @]* \\(\\+mailto:debrup28\\.nitdgp@gmail\\.com\\)");
     site.verify(
         getRequestedFor(urlEqualTo("/feed.xml"))
-            .withHeader("User-Agent", equalTo("QBits/0.1 (+mailto:debrup28.nitdgp@gmail.com)")));
+            .withHeader("User-Agent", equalTo(props.userAgent())));
   }
 
   @Test
@@ -108,6 +117,96 @@ class FeedFetcherIT extends IntegrationTest {
 
     assertThat(outcome).isEqualTo(new FetchOutcome.Failed(500, "HTTP 500"));
     site.verify(1 + props.retries(), getRequestedFor(urlEqualTo("/feed.xml")));
+  }
+
+  @Test
+  void doesNotFollowRedirectToAnotherHost() { // 001 R1.3
+    elsewhere.stubFor(get(anyUrl()).willReturn(aResponse().withStatus(200).withBody("<rss/>")));
+    String target = elsewhere.baseUrl() + "/feed.xml";
+    site.stubFor(
+        get(urlEqualTo("/feed.xml"))
+            .willReturn(aResponse().withStatus(301).withHeader("Location", target)));
+
+    FetchOutcome outcome = fetcher.fetch(feed, null, null);
+
+    assertThat(outcome)
+        .isEqualTo(
+            new FetchOutcome.Failed(301, "HTTP 301 redirect not followed, target: " + target));
+    site.verify(1, getRequestedFor(urlEqualTo("/feed.xml")));
+    assertThat(elsewhere.getAllServeEvents()).isEmpty();
+  }
+
+  @Test
+  void doesNotFollowRedirectOnTheSameHost() { // 001 R1.3
+    site.stubFor(
+        get(urlEqualTo("/feed.xml"))
+            .willReturn(
+                aResponse().withStatus(302).withHeader("Location", site.baseUrl() + "/new.xml")));
+    site.stubFor(get(urlEqualTo("/new.xml")).willReturn(aResponse().withStatus(200)));
+
+    FetchOutcome outcome = fetcher.fetch(feed, null, null);
+
+    assertThat(outcome)
+        .isInstanceOfSatisfying(
+            FetchOutcome.Failed.class, f -> assertThat(f.httpStatus()).isEqualTo(302));
+    site.verify(1, getRequestedFor(urlEqualTo("/feed.xml")));
+    site.verify(0, getRequestedFor(urlEqualTo("/new.xml")));
+  }
+
+  @Test
+  void doesNotRetryWhenRateLimitedAndRecordsRetryAfter() { // 001 R7.1
+    site.stubFor(
+        get(urlEqualTo("/feed.xml"))
+            .willReturn(aResponse().withStatus(429).withHeader("Retry-After", "3600")));
+
+    FetchOutcome outcome = fetcher.fetch(feed, null, null);
+
+    assertThat(outcome)
+        .isEqualTo(new FetchOutcome.Failed(429, "HTTP 429, Retry-After: 3600", "3600"));
+    site.verify(1, getRequestedFor(urlEqualTo("/feed.xml")));
+  }
+
+  @Test
+  void doesNotRetryServiceUnavailableThatAsksUsToWait() { // 001 R7.1
+    site.stubFor(
+        get(urlEqualTo("/feed.xml"))
+            .willReturn(
+                aResponse()
+                    .withStatus(503)
+                    .withHeader("Retry-After", "Sat, 03 Oct 2026 09:30:00 GMT")));
+
+    FetchOutcome outcome = fetcher.fetch(feed, null, null);
+
+    assertThat(outcome)
+        .isEqualTo(
+            new FetchOutcome.Failed(
+                503,
+                "HTTP 503, Retry-After: Sat, 03 Oct 2026 09:30:00 GMT",
+                "Sat, 03 Oct 2026 09:30:00 GMT"));
+    site.verify(1, getRequestedFor(urlEqualTo("/feed.xml")));
+  }
+
+  @Test
+  void retriesServiceUnavailableWithoutRetryAfter() { // 001 R7.1
+    site.stubFor(get(urlEqualTo("/feed.xml")).willReturn(aResponse().withStatus(503)));
+
+    assertThat(fetcher.fetch(feed, null, null)).isEqualTo(new FetchOutcome.Failed(503, "HTTP 503"));
+    site.verify(1 + props.retries(), getRequestedFor(urlEqualTo("/feed.xml")));
+  }
+
+  @Test
+  void downloadsAnOversizedFeedOnlyOnce() { // 001 R7.1
+    byte[] huge = new byte[FeedFetcher.MAX_BODY_BYTES + 1];
+    site.stubFor(
+        get(urlEqualTo("/feed.xml")).willReturn(aResponse().withStatus(200).withBody(huge)));
+
+    FetchOutcome outcome = fetcher.fetch(feed, null, null);
+
+    assertThat(outcome)
+        .isEqualTo(
+            new FetchOutcome.Failed(
+                200, "feed larger than " + FeedFetcher.MAX_BODY_BYTES + " bytes"));
+    site.verify(1, getRequestedFor(urlEqualTo("/feed.xml")));
   }
 
   @Test

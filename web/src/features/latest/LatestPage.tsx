@@ -1,20 +1,19 @@
-import { useLatestFeed } from '@qbits/api-client';
+import { useEdition, useLatestFeed } from '@qbits/api-client';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { ErrorState } from '../../components/ErrorState';
-import { RelativeTime } from '../../components/RelativeTime';
 import { useNow } from '../../hooks/useNow';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
-import { NewStoriesButton } from './NewStoriesButton';
+import { editionLabel, nextEditionText, timeOf } from './editionText';
 
-/** AI Latest: every story from the last 24 hours, newest first, as a timeline (spec 004 R3). */
+/** AI Latest: today's daily edition, newest first, as a timeline (spec 004 R3, 006 R5). */
 export function LatestPage() {
   const feed = useLatestFeed();
+  const edition = useEdition().data;
   const now = useNow();
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = feed;
-  const firstPage = feed.data?.pages[0];
   const items = feed.data?.pages.flatMap((p) => p.data.data) ?? [];
 
   useEffect(() => {
@@ -36,17 +35,29 @@ export function LatestPage() {
       <div className="pb-2">
         <h1 className="text-2xl font-bold sm:text-3xl">AI Latest</h1>
         <p className="mt-1 text-sm text-muted">
-          Every AI story from the last 24 hours, newest first
-          {firstPage?.dataAsOf && (
+          {edition ? (
             <>
-              {' · Updated '}
-              <RelativeTime iso={firstPage.dataAsOf} now={now} />
+              {editionLabel(edition.data.publishedAt, now)} · published{' '}
+              {timeOf(edition.data.publishedAt)}
+              <span className="block sm:inline">
+                <span className="hidden sm:inline"> · </span>
+                {nextEditionText(edition.data.nextCutoffAt, now)}
+              </span>
             </>
+          ) : (
+            'Every AI story from the last 24 hours, newest first'
           )}
         </p>
       </div>
 
-      {firstPage && <NewStoriesButton firstPage={firstPage} loadedAt={feed.dataUpdatedAt} />}
+      {edition?.data.late && (
+        <p
+          role="status"
+          className="mb-2 rounded-lg border border-line bg-chip px-3 py-2 text-sm font-medium"
+        >
+          Today&apos;s edition is running late. Here is the last one.
+        </p>
+      )}
 
       {feed.isError && <ErrorState onRetry={() => void feed.refetch()} />}
       {feed.isPending && <FeedSkeleton />}

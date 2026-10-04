@@ -32,6 +32,17 @@ public class WriterBudgetRepository {
         .isPresent();
   }
 
+  /**
+   * Takes up to {@code wanted} calls from today's budget at once; returns how many were granted.
+   */
+  public synchronized int takeUpTo(LocalDate day, int wanted, int cap) {
+    int granted = 0;
+    while (granted < wanted && tryTake(day, cap)) {
+      granted++;
+    }
+    return granted;
+  }
+
   public int used(LocalDate day) {
     return jdbc.sql("select coalesce((select calls from writer_budget where day = :day), 0)")
         .param("day", Date.valueOf(day))

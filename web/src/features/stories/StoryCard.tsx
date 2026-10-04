@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ExternalLink } from '../../components/ExternalLink';
 import { RelativeTime } from '../../components/RelativeTime';
 import { ResourceLinks } from '../../components/ResourceLinks';
+import { sectionPill } from '../sections/sectionTheme';
 import { WordsToKnow } from './WordsToKnow';
 
 /**
@@ -22,7 +23,10 @@ export function StoryCard({
   return (
     <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-wide text-muted">
-        <Link to={`/section/${story.section.slug}`} className="text-accent hover:underline">
+        <Link
+          to={`/section/${story.section.slug}`}
+          className={`rounded-full px-2 py-0.5 tracking-wide hover:opacity-90 ${sectionPill(story.section.slug)}`}
+        >
           {story.section.name}
         </Link>
         <span aria-hidden="true">·</span>

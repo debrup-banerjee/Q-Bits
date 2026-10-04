@@ -1,5 +1,6 @@
 import { useSections } from '@qbits/api-client';
 import { NavLink } from 'react-router';
+import { sectionDot, sectionPill } from './sectionTheme';
 
 const base =
   'whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors sm:px-3.5';
@@ -9,7 +10,9 @@ const active = 'bg-accent text-accent-ink';
 /**
  * Tabs: AI Latest first (a fixed label; spec 004 R2.1), then the sections from the API.
  * Section navigation. A sticky, scrollable tab bar on phones; an inline bar on wider screens
- * (spec 003 R4.3). Names come from the API, never hard-coded.
+ * (spec 003 R4.3). Names come from the API, never hard-coded. Each section keeps its own colour
+ * when active, so the current tab is easy to spot at a glance (conventions: colourful but
+ * compliant -- colour marks the active tab, never changes idle-state text contrast).
  */
 export function SectionNav() {
   const sections = useSections();
@@ -28,9 +31,20 @@ export function SectionNav() {
           <li key={s.slug}>
             <NavLink
               to={`/section/${s.slug}`}
-              className={({ isActive }) => `${base} ${isActive ? active : idle}`}
+              className={({ isActive }) =>
+                `${base} flex items-center gap-1.5 ${isActive ? sectionPill(s.slug) : idle}`
+              }
             >
-              {s.name}
+              {({ isActive }) =>
+                isActive ? (
+                  s.name
+                ) : (
+                  <>
+                    <span aria-hidden="true" className={`h-2 w-2 rounded-full ${sectionDot(s.slug)}`} />
+                    {s.name}
+                  </>
+                )
+              }
             </NavLink>
           </li>
         ))}

@@ -22,11 +22,18 @@ management:
     health:
       show-details: always
 
+# Filled in from pom.xml at build time (resource filtering), so the User-Agent tracks releases.
+app:
+  version: "@project.version@"
+
 qbits:
   sources-file: ${QBITS_SOURCES_FILE:../config/sources.yml}
   contact-email: debrup28.nitdgp@gmail.com
   web:
     allowed-origins: ${QBITS_WEB_ORIGINS:http://localhost:5173}
+  auth:
+    secret: ${QBITS_AUTH_SECRET:}
+    google-client-id: ${QBITS_GOOGLE_CLIENT_ID:}
   ingestion:
     tick: PT5M
     default-interval: PT30M
@@ -40,11 +47,12 @@ qbits:
     robots-cache-ttl: PT24H
     degraded-after-failures: 5
     robots-agent-name: QBits
-    user-agent: "QBits/0.1 (+mailto:debrup28.nitdgp@gmail.com)"
+    user-agent: "QBits/${app.version} (+mailto:debrup28.nitdgp@gmail.com)"
   story-writer:
     provider: anthropic
     model: ${QBITS_STORY_MODEL:}
-    prompt-version: v1
+    mode: ${QBITS_STORY_MODE:digest}
+    prompt-version: v3
     max-output-tokens: 800
     daily-call-cap: 500
     parallelism: 4
@@ -53,6 +61,9 @@ qbits:
     tick: PT2M
     max-backoff: PT30M
   resources:
+    http:
+      timeout: ${qbits.ingestion.timeout}
+      user-agent: ${qbits.ingestion.user-agent}
     tick: PT5M
     batch-size: 30
     max-per-story: 3
@@ -69,6 +80,14 @@ qbits:
       GITLAB: { per-hour: 100, min-spacing: PT1S }
       HUGGINGFACE: { per-hour: 100, min-spacing: PT1S }
       ARXIV: { per-hour: 300, min-spacing: PT3S }
+  digest:
+    cutoff-time: "06:00"
+    zone: Asia/Kolkata
+    tick: PT5M
+    poll-every: PT10M
+    submit-retry-every: PT30M
+    publish-deadline: PT6H
+    late-notice-after: PT2H
   relevance:
     threshold: 1.0
     keywords:

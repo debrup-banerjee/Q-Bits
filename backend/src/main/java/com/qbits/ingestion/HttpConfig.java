@@ -8,7 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
-/** HTTP client used for feeds and robots.txt: timeouts, redirects and an honest User-Agent. */
+/**
+ * HTTP client used for feeds and robots.txt: timeouts and an honest User-Agent (spec 001 R2.4).
+ *
+ * <p>Redirects are never followed, so a fetch only ever reaches a registered feed URL or its host's
+ * robots.txt (R1.3). A redirect comes back as a 3xx response and is recorded as a failure.
+ */
 @Configuration
 class HttpConfig {
 
@@ -17,7 +22,7 @@ class HttpConfig {
     HttpClient httpClient =
         HttpClient.newBuilder()
             .connectTimeout(props.timeout())
-            .followRedirects(HttpClient.Redirect.NORMAL)
+            .followRedirects(HttpClient.Redirect.NEVER) // R1.3
             .proxy(ProxySelector.getDefault())
             .build();
     JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);

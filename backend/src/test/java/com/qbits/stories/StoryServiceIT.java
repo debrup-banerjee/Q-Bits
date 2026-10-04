@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.qbits.IntegrationTest;
 import com.qbits.common.Ids;
+import com.qbits.ingestion.ItemStore;
 import com.qbits.ingestion.domain.Item;
 import com.qbits.ingestion.domain.StoryStatus;
 import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.stories.StoryService.CallGate;
 import com.qbits.stories.StoryService.Outcome;
+import com.qbits.stories.domain.StoryDraft;
 import com.qbits.stories.domain.StoryInput;
 import com.qbits.stories.persistence.StoryRepository;
 import java.time.Clock;
@@ -31,7 +33,12 @@ class StoryServiceIT extends IntegrationTest {
 
   private StoryService service(FakeStoryWriter writer) {
     return new StoryService(
-        writer, stories, items, StoryFixtures.props(), tx, Clock.fixed(NOW, ZoneOffset.UTC));
+        writer,
+        stories,
+        new ItemStore(items),
+        StoryFixtures.props(),
+        tx,
+        Clock.fixed(NOW, ZoneOffset.UTC));
   }
 
   @Test
@@ -47,11 +54,41 @@ class StoryServiceIT extends IntegrationTest {
     assertThat(stories.find(id).orElseThrow())
         .satisfies(
             s -> {
-              assertThat(s.promptVersion()).isEqualTo("v1");
+              assertThat(s.promptVersion()).isEqualTo("v2");
               assertThat(s.model()).isEqualTo("test-model");
               assertThat(s.attempts()).isEqualTo(1);
               assertThat(s.writtenAt()).isEqualTo(NOW);
             });
+  }
+
+  @Test
+  void holdsBackAValidBatchDraftAsWritten() { // 006 R2.4, R3.2
+    UUID id = item();
+    StoryService service = service(new FakeStoryWriter(StoryFixtures::validDraft));
+
+    StoryService.Applied applied =
+        service.applyDraft(id, INPUT, StoryFixtures.validDraft(INPUT), 1, true);
+
+    assertThat(applied.result()).isEqualTo(StoryService.DraftResult.SAVED);
+    assertThat(status(id)).isEqualTo(StoryStatus.WRITTEN);
+    assertThat(stories.find(id)).isPresent();
+  }
+
+  @Test
+  void firstInvalidBatchDraftAsksForRetryWithFeedbackSecondIsRejected() { // 006 R2.4, R2.5
+    UUID id = item();
+    StoryService service = service(new FakeStoryWriter(StoryFixtures::validDraft));
+
+    StoryService.Applied first =
+        service.applyDraft(id, INPUT, StoryFixtures.invalidDraft(INPUT), 1, true);
+    assertThat(first.result()).isEqualTo(StoryService.DraftResult.RETRY);
+    assertThat(first.feedback()).contains("SUMMARY_LEN");
+    assertThat(status(id)).isEqualTo(StoryStatus.PENDING);
+
+    StoryService.Applied second =
+        service.applyDraft(id, INPUT, StoryFixtures.invalidDraft(INPUT), 2, true);
+    assertThat(second.result()).isEqualTo(StoryService.DraftResult.REJECTED);
+    assertThat(status(id)).isEqualTo(StoryStatus.REJECTED);
   }
 
   @Test
@@ -65,6 +102,24 @@ class StoryServiceIT extends IntegrationTest {
     assertThat(status(id)).isEqualTo(StoryStatus.NOT_AI);
     assertThat(items.findStoryNote(id)).contains("This is about football");
     assertThat(stories.find(id)).isEmpty();
+  }
+
+  @Test
+  void aLongNotAiReasonIsCutToTheNoteLimitAndStillSaved() { // 002 R2.2
+    UUID id = item();
+    // 299 letters then an emoji across the 300th character, a NUL and a line break
+    String reason = "x".repeat(299) + "😀" + "\u0000\nmore text " + "y".repeat(400);
+    FakeStoryWriter writer =
+        new FakeStoryWriter(
+            in -> new StoryDraft(false, reason, null, null, null, null, "test-model", 10, 5));
+
+    Outcome outcome = service(writer).process(id, INPUT, CallGate.UNLIMITED);
+
+    assertThat(outcome).isEqualTo(Outcome.NOT_AI);
+    assertThat(status(id)).isEqualTo(StoryStatus.NOT_AI);
+    String note = items.findStoryNote(id).orElseThrow();
+    assertThat(note.codePointCount(0, note.length())).isEqualTo(300);
+    assertThat(note).startsWith("x".repeat(299)).endsWith("😀");
   }
 
   @Test

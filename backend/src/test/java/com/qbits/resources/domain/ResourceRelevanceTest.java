@@ -2,6 +2,7 @@ package com.qbits.resources.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.qbits.common.links.LinkOrigin;
 import org.junit.jupiter.api.Test;
 
 class ResourceRelevanceTest {

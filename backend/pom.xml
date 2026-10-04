@@ -49,6 +49,10 @@
     <dependency><groupId>org.springdoc</groupId><artifactId>springdoc-openapi-starter-webmvc-api</artifactId><version>${springdoc.version}</version></dependency>
     <dependency><groupId>com.anthropic</groupId><artifactId>anthropic-java</artifactId><version>${anthropic-java.version}</version></dependency>
     <dependency><groupId>com.fasterxml.uuid</groupId><artifactId>java-uuid-generator</artifactId><version>${uuid-generator.version}</version></dependency>
+    <!-- Password hashing only (BCryptPasswordEncoder). Not spring-boot-starter-security: that
+         starter locks every endpoint by default, which would fight the "optional accounts,
+         nothing public changes" design (spec: auth is additive, not a gate). -->
+    <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-crypto</artifactId></dependency>
 
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-testcontainers</artifactId><scope>test</scope></dependency>

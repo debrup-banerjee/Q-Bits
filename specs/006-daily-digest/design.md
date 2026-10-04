@@ -112,3 +112,19 @@ Same tokens per story as before at half price: about **$5–15 a month on Haiku 
 ## Risks
 - Batch results can take up to 24 hours in the worst case; the 6-hour deadline and late notice keep the site usable.
 - A day with a problem shows yesterday's edition; the late notice says so plainly.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- Package layout: the digest lives in `com.qbits.stories.digest`; stories reach items only through `ingestion.ItemStore` (joins the caller's transaction).
+- Late first run: if no edition exists for the latest cut-off and it is already past cut-off + 6 h, the edition is cut at "now". Any edition cut at or after today's scheduled cut-off (scheduled, late or operator) counts as today's edition.
+- Flow: a failed results download leaves the edition `SUBMITTED`/`RETRYING` and is read again at the next poll, until the deadline. Past the deadline, a batch that has ended is read before publishing. A failed retry-batch submit leaves the edition `RETRYING` with no retry batch id and a next-submit time; it is tried every 30 minutes until the deadline. The retry batch uses only the calls left under the daily cap; items that don't fit go back to `PENDING` without an edition (feedback cleared).
+- If no calls remain today, the edition stays `COLLECTING` and tries again each tick until the deadline, when it is published empty.
+- Results: errored → `REJECTED` with `PROVIDER_ERROR: <type>: <message>`; an unreadable line → `REJECTED` with `PROVIDER_ERROR: malformed result`, or back to `PENDING` if its id can't be read; expired or cancelled → back to `PENDING`.
+- `EditionPublisher`: one transaction publishes items, releases still-`PENDING` items, and marks the edition `PUBLISHED` with counts taken from its items' statuses.
+- Operator cut takes the same `digest` lock; assignment only moves items with no edition and skips rows another cut has locked.
+- Data model additions: `editions.last_polled_at`, `editions.next_submit_at`, `editions_status_idx`, `items.edition_id` (on delete set null), `items.retry_feedback text` (≤ 1000, kept only while `PENDING` in a retry round).
+- API: `GET /api/v1/edition` also returns `late` (boolean, computed in the backend).
+- Config: `qbits.digest.tick` (default PT5M); `qbits.story-writer.mode: digest | realtime` — any other or missing value stops the app at startup.
+- `StoryService.applyDraft` has a `holdBack` flag (true in digest mode).
+- Health (`digest`): latest edition's `status`, `cutoffAt`, `publishedAt`, `stories`; while one is open, also `lastPublishedCutoffAt` and `lastPublishedAt`. Stays UP and adds `warning` when the latest edition is `FAILED` or today's is late.

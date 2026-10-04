@@ -1,6 +1,7 @@
 package com.qbits.ingestion;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
@@ -26,6 +27,11 @@ class RobotsPolicyIT extends IntegrationTest {
 
   @RegisterExtension
   static WireMockExtension site =
+      WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build();
+
+  /** A host that is not in the sources file. */
+  @RegisterExtension
+  static WireMockExtension elsewhere =
       WireMockExtension.newInstance().options(wireMockConfig().dynamicPort()).build();
 
   private static final Instant NOW = Instant.parse("2026-10-03T06:00:00Z");
@@ -84,6 +90,40 @@ class RobotsPolicyIT extends IntegrationTest {
     robots(503, "busy");
 
     assertThat(policy.check(feed)).isInstanceOf(RobotsDecision.Unavailable.class);
+    assertThat(cache.find(feed.getRawAuthority())).isEmpty();
+  }
+
+  @Test
+  void disallowsAllWhenRobotsIsUnauthorisedOrForbidden() { // 001 R3.2
+    robots(401, "login");
+    assertThat(policy.check(feed)).isInstanceOf(RobotsDecision.Disallowed.class);
+
+    jdbc.update("delete from robots_cache");
+    robots(403, "blocked");
+    assertThat(policy.check(feed)).isInstanceOf(RobotsDecision.Disallowed.class);
+  }
+
+  @Test
+  void skipsWhenRobotsIsRateLimited() { // 001 R3.4
+    robots(429, "slow down");
+
+    assertThat(policy.check(feed)).isInstanceOf(RobotsDecision.Unavailable.class);
+    assertThat(cache.find(feed.getRawAuthority())).isEmpty();
+  }
+
+  @Test
+  void doesNotFollowRobotsRedirect() { // 001 R1.3
+    elsewhere.stubFor(
+        get(anyUrl()).willReturn(aResponse().withStatus(200).withBody("User-agent: *\n")));
+    site.stubFor(
+        get(urlEqualTo("/robots.txt"))
+            .willReturn(
+                aResponse()
+                    .withStatus(301)
+                    .withHeader("Location", elsewhere.baseUrl() + "/robots.txt")));
+
+    assertThat(policy.check(feed)).isInstanceOf(RobotsDecision.Unavailable.class);
+    assertThat(elsewhere.getAllServeEvents()).isEmpty();
     assertThat(cache.find(feed.getRawAuthority())).isEmpty();
   }
 

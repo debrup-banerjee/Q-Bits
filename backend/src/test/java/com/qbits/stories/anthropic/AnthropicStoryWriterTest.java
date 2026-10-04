@@ -100,6 +100,20 @@ class AnthropicStoryWriterTest {
   }
 
   @Test
+  void systemPromptAsksToKeepNamesAsWritten() { // 002 R6.2
+    reply(
+        200,
+        toolResponse(Map.of("isAi", false, "reason", "Not about AI", "section", "GLOBAL_AI_TECH")));
+
+    writer.write(INPUT, Optional.empty());
+
+    JsonNode body =
+        json.readTree(api.getAllServeEvents().getFirst().getRequest().getBodyAsString());
+    assertThat(body.get("system").toString())
+        .contains("Write every product, model and company name exactly as the input writes it");
+  }
+
+  @Test
   void mapsToolOutputToDraft() { // 002 R10.1
     reply(
         200,
@@ -195,6 +209,7 @@ class AnthropicStoryWriterTest {
   void missingModelIsTemporaryAndMakesNoCall() {
     var noModel =
         new com.qbits.stories.StoryWriterProperties(
+            com.qbits.stories.StoryWriterProperties.Mode.DIGEST,
             "anthropic",
             "",
             "v1",

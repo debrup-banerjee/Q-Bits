@@ -1,10 +1,14 @@
 # Approved sources for Q-Bits.
 #
-# STATUS: all 24 sources approved by the owner on 2026-10-03 and enabled.
-# Still to do before the first real run, per source:
-#   1. confirm feedUrl is a working RSS/Atom feed (URLs are best-known and not yet tested; some may have moved),
-#   2. read the publisher's feed/RSS terms and fill termsUrl,
-#   3. set termsReviewedOn to the review date (YYYY-MM-DD).
+# STATUS: 26 sources, 25 enabled (owner approved the original 24 on 2026-10-03; sarvam-ai-blog
+# and pcquest added and pib-meity disabled on 2026-10-04 -- see each entry's own notes).
+# termsUrl and termsReviewedOn set on 2026-10-04 at the owner's request (his attestation).
+# Each termsUrl is the publisher's general site terms page. Confirmed to exist by search on 2026-10-04,
+# except these, which are best-known links still to be opened once: microsoft, the-verge, wired, ars-technica,
+# bbc, guardian, et-tech, mint, the-hindu.
+# Still to do: confirm each feedUrl is a working RSS/Atom feed (best-known, not yet fetched; some may have moved).
+# sarvam-ai-blog and pcquest are the exception: their feeds were actually fetched and confirmed live
+# on 2026-10-04, not just best-known links.
 # The app refuses to start while an enabled source lacks termsUrl or termsReviewedOn (spec 001, R1.4).
 # To start without a source, set it to enabled: false.
 #
@@ -19,6 +23,10 @@
 #
 # Deliberately not listed: Reuters, Bloomberg, Financial Times, Wall Street Journal, The Information
 # (no public RSS, paywalled, or terms that forbid aggregation). Revisit only through a licensed API.
+# Also not listed: Meta's AI blog (ai.meta.com/blog) -- checked 2026-10-04, it has no official RSS
+# feed (confirmed: no feed link in the page, no Meta-operated endpoint). Only unofficial
+# third-party scrapers exist; same reasoning as above applies. Meta AI news still surfaces via
+# TechCrunch, The Verge, the Guardian etc. when they cover it.
 
 sources:
 
@@ -31,8 +39,8 @@ sources:
     aiNative: true
     region: global
     sectionHint: global-ai-tech
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://openai.com/policies/row-terms-of-use/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: google-deepmind-blog
@@ -43,20 +51,22 @@ sources:
     aiNative: true
     region: global
     sectionHint: global-ai-tech
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://policies.google.com/terms
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: google-ai-blog
     name: Google AI (The Keyword)
-    homepage: https://blog.google/technology/ai/
-    feedUrl: https://blog.google/technology/ai/rss/
+    homepage: https://blog.google/innovation-and-ai/technology/ai/
+    # Fixed 2026-10-04: Google restructured this blog; the old feedUrl 301-redirected and the
+    # app deliberately doesn't follow feed redirects, so this source had 0 items since launch.
+    feedUrl: https://blog.google/innovation-and-ai/technology/ai/rss/
     type: rss
     aiNative: true
     region: global
     sectionHint: global-ai-tech
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://policies.google.com/terms
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: microsoft-ai-blog
@@ -67,8 +77,8 @@ sources:
     aiNative: true
     region: global
     sectionHint: global-ai-tech
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.microsoft.com/en-us/legal/terms-of-use
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: nvidia-blog
@@ -78,8 +88,8 @@ sources:
     type: rss
     aiNative: false
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.nvidia.com/en-us/about-nvidia/terms-of-service/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: huggingface-blog
@@ -90,8 +100,8 @@ sources:
     aiNative: true
     region: global
     sectionHint: global-ai-tech
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://huggingface.co/terms-of-service
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   # ── Major tech press (Global AI Tech / World Business) ──────────────────────────
@@ -102,8 +112,8 @@ sources:
     type: atom
     aiNative: true
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.voxmedia.com/legal/terms-of-use
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: techcrunch-ai
@@ -113,8 +123,8 @@ sources:
     type: rss
     aiNative: true
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://techcrunch.com/terms-of-service/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: mit-tech-review-ai
@@ -124,8 +134,8 @@ sources:
     type: rss
     aiNative: true
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.technologyreview.com/terms-of-service/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: wired-ai
@@ -135,8 +145,8 @@ sources:
     type: rss
     aiNative: true
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.condenast.com/user-agreement
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: ars-technica
@@ -146,8 +156,8 @@ sources:
     type: rss
     aiNative: false
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.condenast.com/user-agreement
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: venturebeat-ai
@@ -157,8 +167,8 @@ sources:
     type: rss
     aiNative: true
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://venturebeat.com/terms-of-service
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   # ── Global news, technology/business desks (World Business) ────────────────────
@@ -169,8 +179,8 @@ sources:
     type: rss
     aiNative: false
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.bbc.co.uk/usingthebbc/terms
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: guardian-ai
@@ -180,8 +190,8 @@ sources:
     type: rss
     aiNative: true
     region: global
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.theguardian.com/help/terms-of-service
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: cnbc-technology
@@ -192,8 +202,8 @@ sources:
     aiNative: false
     region: global
     sectionHint: world-business
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.cnbc.com/nbcuniversal-terms-of-service/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   # ── India (India AI) ─────────────────────────────────────────────────────
@@ -204,8 +214,8 @@ sources:
     type: rss
     aiNative: false
     region: india
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://economictimes.indiatimes.com/terms-conditions
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: mint-technology
@@ -215,8 +225,8 @@ sources:
     type: rss
     aiNative: false
     region: india
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.livemint.com/terms-of-use
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: the-hindu-technology
@@ -226,8 +236,8 @@ sources:
     type: rss
     aiNative: false
     region: india
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.thehindu.com/termsofuse/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: inc42
@@ -237,8 +247,8 @@ sources:
     type: rss
     aiNative: false
     region: india
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://inc42.com/terms-and-conditions/
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: pib-meity
@@ -249,8 +259,35 @@ sources:
     aiNative: false
     region: india
     sectionHint: india-ai
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://pib.gov.in/content/102_2_Copyright-Policy.aspx
+    termsReviewedOn: 2026-10-04
+    # Disabled 2026-10-04: pib.gov.in serves no real robots.txt (HTTP 200 with a generic
+    # "page not available" error page instead), so every fetch is refused as ROBOTS_UNAVAILABLE.
+    # Re-enable if/when their site serves a proper robots.txt.
+    enabled: false
+
+  - id: sarvam-ai-blog
+    name: Sarvam AI
+    homepage: https://www.sarvam.ai/blogs
+    feedUrl: https://www.sarvam.ai/rss.xml
+    type: rss
+    aiNative: true
+    region: india
+    sectionHint: india-ai
+    termsUrl: https://www.sarvam.ai/terms-of-service
+    termsReviewedOn: 2026-10-04
+    enabled: true
+
+  - id: pcquest
+    name: PCQuest
+    homepage: https://www.pcquest.com/
+    feedUrl: https://www.pcquest.com/rss
+    type: rss
+    aiNative: false
+    region: india
+    sectionHint: india-ai
+    termsUrl: https://www.pcquest.com/terms-of-use
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   # ── Research (Innovations & Research) ────────────────────────────────────
@@ -262,8 +299,8 @@ sources:
     aiNative: true
     region: global
     sectionHint: innovations-research
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://news.mit.edu/terms-of-use
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: google-research-blog
@@ -274,8 +311,8 @@ sources:
     aiNative: true
     region: global
     sectionHint: innovations-research
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://policies.google.com/terms
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: nature-machine-learning
@@ -286,8 +323,8 @@ sources:
     aiNative: true
     region: global
     sectionHint: innovations-research
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.nature.com/info/terms-and-conditions
+    termsReviewedOn: 2026-10-04
     enabled: true
 
   - id: sciencedaily-ai
@@ -298,6 +335,6 @@ sources:
     aiNative: true
     region: global
     sectionHint: innovations-research
-    termsUrl: null
-    termsReviewedOn: null
+    termsUrl: https://www.sciencedaily.com/terms.htm
+    termsReviewedOn: 2026-10-04
     enabled: true

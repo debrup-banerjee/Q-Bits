@@ -13,18 +13,21 @@ import com.qbits.sources.domain.Region;
 import com.qbits.sources.domain.Source;
 import com.qbits.sources.domain.SourceType;
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
 
 class SourceAdminIT extends IntegrationTest {
 
   private static final Instant NOW = Instant.parse("2026-10-03T06:00:00Z");
 
   @Autowired ItemRepository items;
-  @Autowired ApplicationContext context;
+  @Autowired ConfigurableApplicationContext context;
 
   @Test
   void disablingASourceHidesItsItemsAndReEnablingShowsThem() { // 001 R8.1
@@ -54,12 +57,23 @@ class SourceAdminIT extends IntegrationTest {
   }
 
   @Test
+  void hidesItemsOfSourcesNotEnabledAsSoonAsTheAppIsReady() { // 001 R8.1
+    Item orphan = item("not-in-the-file", "https://d.example/1");
+    items.insertIfNew(orphan);
+
+    context.publishEvent(
+        new ApplicationReadyEvent(new SpringApplication(), new String[0], context, Duration.ZERO));
+
+    assertThat(items.findById(orphan.id()).orElseThrow().hidden()).isTrue();
+  }
+
+  @Test
   void purgeDeletesEveryItemOfTheSource() { // 001 R8.2
     items.insertIfNew(item("off-src", "https://b.example/1"));
     items.insertIfNew(item("off-src", "https://b.example/2"));
     items.insertIfNew(item("on-src", "https://a.example/1"));
 
-    int deleted = new SourceAdminCommands(items, context).purge("off-src");
+    int deleted = new SourceAdminCommands(new ItemAdminService(items), context).purge("off-src");
 
     assertThat(deleted).isEqualTo(2);
     assertThat(items.countBySource("off-src")).isZero();

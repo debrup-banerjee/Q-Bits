@@ -6,6 +6,7 @@ import { gzipSync } from 'node:zlib';
 /** Keeps the first download small so the home page is quick on a phone (spec 003 non-functional). */
 const BUDGET_GZIP_KB = 120;
 
+// 003 non-functional: home page interactive in under 2.5 s (bundle budget)
 // eslint-disable-next-line no-empty-pattern -- Playwright needs the fixtures argument first
 test('JavaScript bundle stays within budget', async ({}, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'checked once');

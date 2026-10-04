@@ -7,6 +7,7 @@ import { server } from '../../test/server';
 
 beforeEach(() => server.use(sectionsHandler));
 
+// 003 R4.3, 004 R2.1
 it('lists the sections from the API in order', async () => {
   renderAt(<AppRoutes />);
 
@@ -17,13 +18,15 @@ it('lists the sections from the API in order', async () => {
     .map((a) => a.textContent);
   expect(names).toEqual([
     'AI Latest',
-    'Global AI Tech',
-    'World Business',
+    'AI Wire',
+    'New Releases',
+    'AI in Business',
     'India AI',
-    'Innovations & Research',
+    'AI Innovations',
   ]);
 });
 
+// 004 R2.2
 it('marks AI Latest as current on the home page', async () => {
   renderAt(<AppRoutes />, '/');
 
@@ -34,6 +37,7 @@ it('marks AI Latest as current on the home page', async () => {
   );
 });
 
+// 003 R4.3
 it('marks the current section as active', async () => {
   renderAt(<AppRoutes />, '/section/india-ai');
 
@@ -43,6 +47,7 @@ it('marks the current section as active', async () => {
   expect(within(nav).getByRole('link', { name: 'AI Latest' })).not.toHaveAttribute('aria-current');
 });
 
+// 003 R9.3
 it('is reachable by keyboard', async () => {
   renderAt(<AppRoutes />);
   const user = userEvent.setup();

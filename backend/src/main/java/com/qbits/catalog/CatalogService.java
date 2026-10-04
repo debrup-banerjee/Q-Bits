@@ -10,8 +10,8 @@ import com.qbits.resources.ResourceQueries;
 import com.qbits.resources.domain.ResourceLink;
 import com.qbits.sources.SourceRegistry;
 import com.qbits.sources.domain.Source;
+import com.qbits.stories.digest.EditionQueries;
 import com.qbits.stories.domain.Section;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -28,18 +28,18 @@ public class CatalogService {
 
   private final StoryQueryRepository queries;
   private final SourceRegistry registry;
-  private final Clock clock;
   private final ResourceQueries resources;
+  private final EditionQueries editions;
 
   public CatalogService(
       StoryQueryRepository queries,
       SourceRegistry registry,
-      Clock clock,
-      ResourceQueries resources) {
+      ResourceQueries resources,
+      EditionQueries editions) {
     this.queries = queries;
     this.registry = registry;
-    this.clock = clock;
     this.resources = resources;
+    this.editions = editions;
   }
 
   public StoryPage list(Optional<Section> section, Optional<Cursor> after, int limit) {
@@ -52,7 +52,7 @@ public class CatalogService {
     Duration capped = window.compareTo(WINDOW) > 0 ? WINDOW : window;
     List<Row> rows =
         queries.list(
-            clock.instant().minus(capped),
+            editions.windowEnd().minus(capped), // 006 R4.2
             section,
             after.map(Cursor::publishedAt),
             after.map(Cursor::id),
@@ -79,8 +79,13 @@ public class CatalogService {
     return queries.countBySection(windowStart());
   }
 
+  /**
+   * The latest edition's publish time, or the newest story's time before any edition and in
+   * realtime mode (006 R5.2, R6.4).
+   */
   public Optional<Instant> dataAsOf() {
-    return queries.latestPublishedAt(windowStart());
+    Optional<Instant> edition = editions.dataAsOf();
+    return edition.isPresent() ? edition : queries.latestPublishedAt(windowStart());
   }
 
   public List<Source> enabledSources() {
@@ -88,7 +93,7 @@ public class CatalogService {
   }
 
   private Instant windowStart() {
-    return clock.instant().minus(WINDOW);
+    return editions.windowEnd().minus(WINDOW);
   }
 
   private StoryView view(Row r, List<ResourceLink> links) {

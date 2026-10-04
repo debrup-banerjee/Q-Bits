@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { ExternalLink } from '../../components/ExternalLink';
 import { RelativeTime } from '../../components/RelativeTime';
 import { ResourceLinks } from '../../components/ResourceLinks';
+import { sectionDot } from '../sections/sectionTheme';
 import { WordsToKnow } from '../stories/WordsToKnow';
 import { SourceBadge } from './SourceBadge';
 
@@ -27,8 +28,12 @@ export function FeedCard({ story, now }: { story: StoryView; now?: Date }) {
           <span aria-hidden="true">·</span>
           <Link
             to={`/section/${story.section.slug}`}
-            className="font-medium text-accent hover:underline"
+            className="flex items-center gap-1.5 font-medium text-accent hover:underline"
           >
+            <span
+              aria-hidden="true"
+              className={`h-2 w-2 rounded-full ${sectionDot(story.section.slug)}`}
+            />
             {story.section.name}
           </Link>
         </div>

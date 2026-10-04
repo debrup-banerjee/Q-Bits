@@ -1,8 +1,8 @@
 package com.qbits.ingestion;
 
+import com.qbits.common.links.FoundLink;
+import com.qbits.common.links.LinkOrigin;
 import com.qbits.ingestion.domain.RawEntry;
-import com.qbits.resources.domain.FoundLink;
-import com.qbits.resources.domain.LinkOrigin;
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -29,7 +29,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class FeedParser {
 
+  /**
+   * Upper bound on URLs collected from one entry (spec 005 R1.1). R1.1 asks for every link in the
+   * entry; this cap is a safety limit so a feed with very long content cannot make one entry carry
+   * thousands of URLs into ingestion. Links are taken in priority order (entry links, description,
+   * then content), so the links R3.1 always keeps are collected first. Recorded in the 005 design
+   * (approved changes, 2026-10-04).
+   */
   static final int MAX_LINKS = 50;
+
   private static final Pattern PLAIN_URL = Pattern.compile("https?://[^\\s<>\"')\\]]+");
 
   /** The feed could not be parsed. */

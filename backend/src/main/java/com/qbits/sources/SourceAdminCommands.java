@@ -1,6 +1,6 @@
 package com.qbits.sources;
 
-import com.qbits.ingestion.persistence.ItemRepository;
+import com.qbits.ingestion.ItemAdminService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -24,10 +24,10 @@ public class SourceAdminCommands implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(SourceAdminCommands.class);
   static final String PURGE = "purge-source";
 
-  private final ItemRepository items;
+  private final ItemAdminService items;
   private final ApplicationContext context;
 
-  public SourceAdminCommands(ItemRepository items, ApplicationContext context) {
+  public SourceAdminCommands(ItemAdminService items, ApplicationContext context) {
     this.items = items;
     this.context = context;
   }
@@ -45,7 +45,7 @@ public class SourceAdminCommands implements ApplicationRunner {
 
   /** Deletes all items of a source. Returns how many were removed. */
   public int purge(String sourceId) {
-    int deleted = items.deleteBySource(sourceId);
+    int deleted = items.purgeSource(sourceId);
     log.warn("source purged source={} itemsDeleted={}", sourceId, deleted);
     return deleted;
   }

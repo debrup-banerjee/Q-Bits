@@ -143,3 +143,13 @@ Host errors never affect ingestion or stories. Logs carry host, status and item 
 ## Risks
 - Many publishers don't link code in their feed teaser; coverage will be best for lab blogs, Hugging Face and research sources. The open question about extra sources addresses this.
 - Unauthenticated GitHub limits are low. With `GITHUB_TOKEN` (a token with no scopes is enough) the limit rises well above our needs.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- The "Notes from implementation" section is approved: hosts stored as written, at most 10 links per story.
+- Links collected per feed entry are capped at 50 (entry links first, then description, then content).
+- `FoundLink` and `LinkOrigin` are shared value types in `com.qbits.common.links`, used by ingestion and resources.
+- Reserved GitHub first segments also include `resources, solutions, team, contact`. Reserved Hugging Face first segments are site pages only (`blog`, `docs`, `organizations`, listing pages). Organisation names such as `github` and `huggingface` are never reserved.
+- `type` is an enum in the contract: `code | model | dataset | paper`.
+- When a rename makes a link duplicate one the story already has, the rows merge into one verified row. One failing row never stops a check run; it goes on the normal retry schedule.

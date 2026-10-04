@@ -3,20 +3,26 @@ import type { Page } from '@playwright/test';
 const SECTIONS = [
   {
     slug: 'global-ai-tech',
-    name: 'Global AI Tech',
-    description: 'New AI models, products and what they can do.',
+    name: 'AI Wire',
+    description: 'Ongoing AI tech coverage: capabilities, updates and what is changing.',
     storyCount: 2,
   },
   {
+    slug: 'new-releases',
+    name: 'New Releases',
+    description: 'Brand-new model launches and major AI-relevant hardware.',
+    storyCount: 1,
+  },
+  {
     slug: 'world-business',
-    name: 'World Business',
+    name: 'AI in Business',
     description: 'Money, companies, chips and jobs around the world.',
     storyCount: 1,
   },
   { slug: 'india-ai', name: 'India AI', description: 'Everything AI in India.', storyCount: 1 },
   {
     slug: 'innovations-research',
-    name: 'Innovations & Research',
+    name: 'AI Innovations',
     description: 'New ideas from labs.',
     storyCount: 0,
   },
@@ -76,22 +82,30 @@ const STORIES: Record<string, ReturnType<typeof story>[]> = {
       story(
         '0192f0c4-0000-7000-8000-000000000011',
         'global-ai-tech',
-        'Global AI Tech',
+        'AI Wire',
         'A new AI model can read a whole bookshelf at once',
       ),
     ),
     story(
       '0192f0c4-0000-7000-8000-000000000012',
       'global-ai-tech',
-      'Global AI Tech',
+      'AI Wire',
       'Phones get an AI helper that works without the internet',
+    ),
+  ],
+  'new-releases': [
+    story(
+      '0192f0c4-0000-7000-8000-000000000041',
+      'new-releases',
+      'New Releases',
+      'A lab launches its next-generation AI model',
     ),
   ],
   'world-business': [
     story(
       '0192f0c4-0000-7000-8000-000000000021',
       'world-business',
-      'World Business',
+      'AI in Business',
       'Chipmaker plans a $20 billion factory for AI chips',
     ),
   ],
@@ -119,17 +133,33 @@ const json = (body: unknown) => ({
 export const BREAKING = story(
   '0192f0c4-0000-7000-8000-000000000099',
   'global-ai-tech',
-  'Global AI Tech',
+  'AI Wire',
   'Breaking: a lab shares a new open model',
   0,
 );
 
-/** Serves a small, fixed news set for every /api/v1 call. Set `state.breaking` to add a newer story. */
-export async function mockApi(page: Page, state: { breaking: boolean } = { breaking: false }) {
+/**
+ * Serves a small, fixed news set for every /api/v1 call. `state.late` marks today's edition as
+ * running late (spec 006).
+ */
+export async function mockApi(page: Page, state: { breaking?: boolean; late?: boolean } = {}) {
   await page.route('**/api/v1/**', async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;
     if (path === '/api/v1/sections') return route.fulfill(json(SECTIONS));
+    if (path === '/api/v1/edition') {
+      const published = new Date(Date.now() - 2 * 3600_000);
+      return route.fulfill(
+        json({
+          id: 'e1',
+          cutoffAt: new Date(published.getTime() - 30 * 60_000).toISOString(),
+          publishedAt: published.toISOString(),
+          storyCount: 4,
+          nextCutoffAt: new Date(Date.now() + 22 * 3600_000).toISOString(),
+          late: state.late ?? false,
+        }),
+      );
+    }
     if (path === '/api/v1/sources')
       return route.fulfill(json([{ name: 'The Hindu', homepage: 'https://www.thehindu.com/' }]));
     if (path === '/api/v1/site')

@@ -1,6 +1,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { QBitsApi, StoryPage, StoryView, WithAsOf } from './client';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { ApiError, type QBitsApi } from './client';
 
 const ApiContext = createContext<QBitsApi | null>(null);
 
@@ -47,67 +47,34 @@ export function storiesKey(section: string | undefined, limit: number, hours?: n
 
 export const LATEST_HOURS = 24;
 export const LATEST_PAGE = 20;
-export const NEW_STORIES_CHECK_MS = 120_000;
 
-/**
- * AI Latest: every story from the last 24 hours, newest first (spec 004 R3.2). The list does not
- * refresh by itself, so it never jumps while someone reads; useNewStories reports what's new.
- */
+/** AI Latest: today's edition, newest first (spec 004 R3.2, 006 R4.2). */
 export function useLatestFeed() {
   const query = useStories(undefined, LATEST_PAGE, LATEST_HOURS);
   return query;
 }
 
-export type NewStories = {
-  /** How many newer stories exist (capped at one page). */
-  count: number;
-  /** True when there may be more than `count` (the whole check page was new). */
-  more: boolean;
-  /** Reload the feed from the top so the new stories appear. */
-  apply: () => Promise<void>;
-};
-
 /**
- * Checks for newer stories every 2 minutes while the page is visible, without touching the feed
- * (spec 004 R5). Pass the feed's first page; the first check happens 2 minutes after it loaded.
+ * The latest daily edition, or null before the first one (spec 006 R5). Refetched when the tab is
+ * focused again, so a reader who comes back after the cut-off sees the new edition.
  */
-export function useNewStories(
-  firstPage: WithAsOf<StoryPage> | undefined,
-  loadedAt: number,
-): NewStories {
+export function useEdition() {
   const api = useApi();
-  const queryClient = useQueryClient();
-  const check = useQuery({
-    queryKey: ['stories', 'latest-check'],
-    queryFn: () => api.stories({ hours: LATEST_HOURS, limit: LATEST_PAGE }),
-    enabled: firstPage !== undefined,
-    initialData: firstPage,
-    initialDataUpdatedAt: loadedAt,
-    staleTime: NEW_STORIES_CHECK_MS,
-    refetchInterval: NEW_STORIES_CHECK_MS,
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: true,
-    retry: false,
-  });
-  const { count, more } = countNewer(firstPage?.data.data[0]?.id, check.data?.data.data ?? []);
-  return {
-    count,
-    more,
-    apply: async () => {
-      await queryClient.resetQueries({
-        queryKey: storiesKey(undefined, LATEST_PAGE, LATEST_HOURS),
-      });
+  return useQuery({
+    queryKey: ['edition'],
+    queryFn: async () => {
+      try {
+        return await api.edition();
+      } catch (e) {
+        if (e instanceof ApiError && e.code === 'NO_EDITION') {
+          return null;
+        }
+        throw e;
+      }
     },
-  };
-}
-
-/** Stories in `latest` that come before the one currently at the top of the feed. */
-export function countNewer(topId: string | undefined, latest: StoryView[]) {
-  const index = topId === undefined ? -1 : latest.findIndex((s) => s.id === topId);
-  if (index >= 0) {
-    return { count: index, more: false };
-  }
-  return { count: latest.length, more: latest.length >= LATEST_PAGE };
+    staleTime: STALE_MS,
+    refetchOnWindowFocus: true,
+  });
 }
 
 export function useStory(id: string) {
@@ -123,4 +90,37 @@ export function useSources() {
 export function useSite() {
   const api = useApi();
   return useQuery({ queryKey: ['site'], queryFn: () => api.site(), staleTime: STALE_MS });
+}
+
+/** Optional accounts: register, log in, or sign in with Google (never required to browse). */
+export function useRegister() {
+  const api = useApi();
+  return useMutation({
+    mutationFn: ({ username, password }: { username: string; password: string }) =>
+      api.register(username, password),
+  });
+}
+
+export function useLogin() {
+  const api = useApi();
+  return useMutation({
+    mutationFn: ({ username, password }: { username: string; password: string }) =>
+      api.login(username, password),
+  });
+}
+
+export function useGoogleSignIn() {
+  const api = useApi();
+  return useMutation({ mutationFn: (idToken: string) => api.googleSignIn(idToken) });
+}
+
+/** Confirms a stored token is still valid. Disabled (no request) when there is no token. */
+export function useMe(token: string | null) {
+  const api = useApi();
+  return useQuery({
+    queryKey: ['me', token],
+    queryFn: () => api.me(token!),
+    enabled: token !== null,
+    retry: false,
+  });
 }

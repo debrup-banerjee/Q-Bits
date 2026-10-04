@@ -138,6 +138,47 @@ class StoryValidatorTest {
   }
 
   @Test
+  void numbersAreComparedWithTheirScaleWords() { // 002 R6.1
+    StoryInput funding =
+        new StoryInput(
+            "Acme Labs raises $5 million",
+            "The start-up raised $5 million and plans a $2.5bn data centre with 300 staff.",
+            "TechCrunch",
+            "GLOBAL",
+            null,
+            Instant.parse("2026-10-03T04:00:00Z"));
+
+    assertThat(numberFailures("It raised 5 million dollars.", funding)).isEmpty();
+    assertThat(numberFailures("It raised $5m and plans a 2.5 billion dollar site.", funding))
+        .isEmpty(); // other spellings of the same scale
+    assertThat(numberFailures("About 300 people will work there.", funding)).isEmpty();
+    assertThat(numberFailures("It has 5 people.", funding)).isEmpty(); // bare digits from input
+    assertThat(numberFailures("It raised 5 billion dollars.", funding))
+        .singleElement()
+        .satisfies(f -> assertThat(f).contains("5 billion"));
+    assertThat(numberFailures("It hired 300 thousand staff.", funding))
+        .singleElement()
+        .satisfies(f -> assertThat(f).contains("300 thousand"));
+  }
+
+  private List<String> numberFailures(String sentence, StoryInput in) {
+    return validator.check(draft("H", sentence, List.of()), in).stream()
+        .filter(f -> f.rule().equals("NUMBERS"))
+        .map(ValidationFailure::toString)
+        .toList();
+  }
+
+  @Test
+  void notesFitTheStoredLimitAsOneLine() { // 002 R2.2, R8.3
+    assertThat(StoryNote.of("  Mostly about\n football\t\u0000 "))
+        .isEqualTo("Mostly about football");
+    String cut = StoryNote.of("x".repeat(299) + "😀" + "tail");
+    assertThat(cut.codePointCount(0, cut.length())).isEqualTo(StoryNote.MAX_CHARS);
+    assertThat(cut).endsWith("😀");
+    assertThat(StoryNote.of(null)).isNull();
+  }
+
+  @Test
   void copyingEightWordsFromTheSourceFails() { // 002 R7.1
     String copied = GOOD_SUMMARY + " It can read 1,000 pages at once and runs on 8 GPUs.";
     assertThat(rules(draft("H", copied, List.of()), INPUT)).contains("OVERLAP");
@@ -150,5 +191,44 @@ class StoryValidatorTest {
   void quotingTheSourceFails() { // 002 R7.2
     String quoted = GOOD_SUMMARY + " The company called it “a blog post for developers”.";
     assertThat(rules(draft("H", quoted, List.of()), INPUT)).contains("QUOTES");
+    String singleQuoted = GOOD_SUMMARY + " The company called it 'a blog post for developers'.";
+    assertThat(rules(draft("H", singleQuoted, List.of()), INPUT)).contains("QUOTES");
+  }
+
+  @Test
+  void apostrophesInsideWordsAreNotQuoteMarks() { // 002 R7.2
+    String possessives =
+        GOOD_SUMMARY
+            + " Acme Labs’ model that can read 1,000 pages’ worth of text is the lab’s pick.";
+    assertThat(rules(draft("H", possessives, List.of()), INPUT)).doesNotContain("QUOTES");
+    String straight =
+        GOOD_SUMMARY
+            + " Acme Labs' model that can read 1,000 pages' worth of text is the lab's pick.";
+    assertThat(rules(draft("H", straight, List.of()), INPUT)).doesNotContain("QUOTES");
+    String quotedWithApostrophe =
+        GOOD_SUMMARY + " It called the launch 'the company's blog post for developers'.";
+    StoryInput withApostrophe =
+        new StoryInput(
+            INPUT.title(),
+            EXCERPT + " It is the company's blog post for developers.",
+            INPUT.sourceName(),
+            INPUT.region(),
+            INPUT.sectionHint(),
+            INPUT.publishedAt());
+    assertThat(rules(draft("H", quotedWithApostrophe, List.of()), withApostrophe))
+        .contains("QUOTES");
+  }
+
+  @Test
+  void draftsLongerThanTheStoredLimitsFail() { // 002 R4.1, R4.2, R8.1
+    String longHeadline = "Extraordinarily ".repeat(12).trim(); // 12 words, 191 characters
+    assertThat(validator.check(draft(longHeadline, GOOD_SUMMARY, List.of()), INPUT))
+        .anySatisfy(f -> assertThat(f.toString()).contains("HEADLINE_LEN").contains("characters"));
+
+    String longSummary = "According to TechCrunch " + "extraordinarily ".repeat(97); // 100 words
+    assertThat(validator.check(draft("H", longSummary, List.of()), INPUT))
+        .anySatisfy(f -> assertThat(f.toString()).contains("SUMMARY_LEN").contains("characters"));
+
+    assertThat(rules(good(), INPUT)).doesNotContain("HEADLINE_LEN", "SUMMARY_LEN");
   }
 }

@@ -31,7 +31,7 @@ public class RetentionJob {
 
   public void runOnce() {
     LockConfiguration lock =
-        new LockConfiguration(Instant.now(), "retention", Duration.ofMinutes(10), Duration.ZERO);
+        new LockConfiguration(clock.instant(), "retention", Duration.ofMinutes(10), Duration.ZERO);
     locks.executeWithLock(
         (Runnable)
             () -> {

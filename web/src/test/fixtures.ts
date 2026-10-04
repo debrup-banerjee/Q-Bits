@@ -3,12 +3,13 @@ import { http, HttpResponse } from 'msw';
 import { API } from './render';
 
 export const SECTIONS: SectionView[] = [
-  { slug: 'global-ai-tech', name: 'Global AI Tech', description: 'Models.', storyCount: 2 },
-  { slug: 'world-business', name: 'World Business', description: 'Money.', storyCount: 1 },
+  { slug: 'global-ai-tech', name: 'AI Wire', description: 'Ongoing coverage.', storyCount: 2 },
+  { slug: 'new-releases', name: 'New Releases', description: 'Launches.', storyCount: 1 },
+  { slug: 'world-business', name: 'AI in Business', description: 'Money.', storyCount: 1 },
   { slug: 'india-ai', name: 'India AI', description: 'India.', storyCount: 1 },
   {
     slug: 'innovations-research',
-    name: 'Innovations & Research',
+    name: 'AI Innovations',
     description: 'Labs.',
     storyCount: 0,
   },

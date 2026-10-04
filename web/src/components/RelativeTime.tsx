@@ -18,8 +18,18 @@ export function relativeTime(iso: string, now: Date): string {
 }
 
 /**
- * Relative publish time with the exact date on hover. Says "about" when the publisher gave no
- * date and the fetch time was used instead (spec 003 R6.1).
+ * Relative time for a date the publisher did not give (the fetch time was used). Numbers read
+ * "about 5 hours ago"; words such as "yesterday" read "yesterday (estimated)", never
+ * "about yesterday".
+ */
+export function estimatedRelativeTime(iso: string, now: Date): string {
+  const text = relativeTime(iso, now);
+  return /\d/.test(text) ? `about ${text}` : `${text} (estimated)`;
+}
+
+/**
+ * Relative publish time with the exact date on hover. Marks the time as approximate when the
+ * publisher gave no date and the fetch time was used instead (spec 003 R6.1).
  */
 export function RelativeTime({
   iso,
@@ -30,11 +40,11 @@ export function RelativeTime({
   estimated?: boolean;
   now?: Date;
 }) {
-  const text = relativeTime(iso, now);
+  const text = estimated ? estimatedRelativeTime(iso, now) : relativeTime(iso, now);
   const exact = new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
   return (
     <time dateTime={iso} title={exact}>
-      {estimated ? `about ${text}` : text}
+      {text}
     </time>
   );
 }

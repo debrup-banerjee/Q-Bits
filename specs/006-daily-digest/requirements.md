@@ -75,3 +75,10 @@ Architecture (summaries written once a day in a batch; an edition becomes visibl
 - Cut-off time: **06:00 IST**, every day.
 - Section tabs change with the **daily** edition (no separate 36-hour refresh).
 - Editions are published **every day**, weekends included.
+
+## Approved changes (2026-10-04)
+Approved by Deb in session after the spec reviews. Where this section and the text above differ, this section wins.
+
+- **R1.1** (addition) If the first run of a day is more than 6 hours after the cut-off, that day's edition is cut at that time instead of 06:00 IST.
+- **R6.4** (addition) In `realtime` mode the R4 windows end at now, `X-Data-As-Of` is the newest published story's time, and `GET /api/v1/edition` reports `late: false`.
+- **R6.5** THE SYSTEM SHALL show the latest edition's status, cut-off and published time in Actuator health; it stays UP and adds a `warning` when the latest edition is `FAILED` or today's edition is late.

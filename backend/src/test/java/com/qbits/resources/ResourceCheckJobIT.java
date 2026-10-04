@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.qbits.IntegrationTest;
 import com.qbits.MutableClock;
 import com.qbits.common.Ids;
+import com.qbits.common.links.LinkOrigin;
 import com.qbits.ingestion.domain.Item;
 import com.qbits.ingestion.domain.StoryStatus;
 import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.resources.ResourcesProperties.RateLimit;
 import com.qbits.resources.domain.Candidate;
 import com.qbits.resources.domain.ItemResource;
-import com.qbits.resources.domain.LinkOrigin;
 import com.qbits.resources.domain.ResourceHost;
 import com.qbits.resources.domain.ResourceLinkNormaliser;
 import com.qbits.resources.domain.ResourceStatus;
@@ -48,10 +48,14 @@ class ResourceCheckJobIT extends IntegrationTest {
     final Deque<CheckResult> script = new ArrayDeque<>();
     final List<String> calls = new ArrayList<>();
     CheckResult fallback = new CheckResult.Found(null);
+    String breaksOn;
 
     @Override
     public CheckResult check(Candidate c) {
       calls.add(c.url());
+      if (c.url().equals(breaksOn)) {
+        throw new IllegalStateException("broken row");
+      }
       return script.isEmpty() ? fallback : script.poll();
     }
   }
@@ -102,6 +106,80 @@ class ResourceCheckJobIT extends IntegrationTest {
     ItemResource r = resources.findByItem(a).getFirst();
     assertThat(r.url()).isEqualTo("https://github.com/new-org/new-name");
     assertThat(r.name()).isEqualTo("new-org/new-name");
+  }
+
+  @Test
+  void renameOntoALinkTheStoryAlreadyHasKeepsOneVerifiedRow() { // 005 R4.2
+    UUID a = item(NOW);
+    add(a, "https://github.com/old/name");
+    add(a, "https://github.com/new-org/new-name");
+    checker.script.add(new CheckResult.Found("new-org/new-name"));
+    checker.script.add(new CheckResult.Found("new-org/new-name"));
+    ResourceCheckJob job = job();
+
+    job.runOnce();
+    clock.advance(Duration.ofHours(1));
+    job.runOnce();
+
+    assertThat(resources.findByItem(a))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.url()).isEqualTo("https://github.com/new-org/new-name");
+              assertThat(r.name()).isEqualTo("new-org/new-name");
+              assertThat(r.status()).isEqualTo(ResourceStatus.VERIFIED);
+            });
+    assertThat(checker.calls).hasSize(2);
+  }
+
+  @Test
+  void twoSpellingsOfOneRepoMergeAfterTheCheck() { // 005 R4.2, R2.4
+    UUID a = item(NOW);
+    UUID b = item(NOW);
+    add(a, "https://github.com/OpenAI/whisper");
+    add(a, "https://github.com/openai/whisper");
+    add(b, "https://github.com/OpenAI/whisper");
+    checker.fallback = new CheckResult.Found("openai/whisper");
+
+    job().runOnce();
+
+    assertThat(resources.findByItem(a))
+        .singleElement()
+        .satisfies(
+            r -> {
+              assertThat(r.url()).isEqualTo("https://github.com/openai/whisper");
+              assertThat(r.status()).isEqualTo(ResourceStatus.VERIFIED);
+            });
+    assertThat(resources.findByItem(b))
+        .singleElement()
+        .satisfies(r -> assertThat(r.url()).isEqualTo("https://github.com/openai/whisper"));
+  }
+
+  @Test
+  void oneBrokenRowDoesNotStopTheOthers() { // 005 R4.1, R4.4
+    UUID a = item(NOW);
+    add(a, "https://github.com/a/broken");
+    add(a, "https://github.com/a/fine");
+    add(a, "https://huggingface.co/org/model");
+    checker.breaksOn = "https://github.com/a/broken";
+    ResourceCheckJob job = job();
+
+    job.runOnce();
+
+    assertThat(checker.calls)
+        .containsExactly(
+            "https://github.com/a/broken",
+            "https://github.com/a/fine",
+            "https://huggingface.co/org/model");
+    assertThat(resources.findByItem(a))
+        .extracting(ItemResource::status)
+        .containsExactly(
+            ResourceStatus.CHECK_FAILED, ResourceStatus.VERIFIED, ResourceStatus.VERIFIED);
+
+    // The broken row waits for its retry instead of blocking the front of the queue.
+    clock.advance(Duration.ofMinutes(5));
+    job.runOnce();
+    assertThat(checker.calls).hasSize(3);
   }
 
   @Test

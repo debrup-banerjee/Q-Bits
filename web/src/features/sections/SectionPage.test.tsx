@@ -1,11 +1,12 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { AppRoutes } from '../../app/AppRoutes';
 import { page, sectionsHandler, story } from '../../test/fixtures';
 import { API, renderAt } from '../../test/render';
 import { server } from '../../test/server';
 
+// 003 R5.1
 it('lists a section and loads more pages with the cursor', async () => {
   const cursors: (string | null)[] = [];
   server.use(
@@ -32,6 +33,7 @@ it('lists a section and loads more pages with the cursor', async () => {
   expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
 });
 
+// 003 R5.2
 it('shows the empty message for a quiet section', async () => {
   server.use(
     sectionsHandler,
@@ -41,11 +43,12 @@ it('shows the empty message for a quiet section', async () => {
 
   expect(
     await screen.findByText(
-      'No Innovations & Research news in the last 72 hours. Check back soon.',
+      'No AI Innovations news in the last 72 hours. Check back soon.',
     ),
   ).toBeInTheDocument();
 });
 
+// 003 R2.5
 it('treats an unknown section as not found', async () => {
   server.use(
     sectionsHandler,
@@ -58,4 +61,19 @@ it('treats an unknown section as not found', async () => {
   expect(
     await screen.findByRole('heading', { name: "We couldn't find that page." }),
   ).toBeInTheDocument();
+});
+
+// 003 R8.1
+it('shows skeleton cards while the section loads', async () => {
+  server.use(
+    sectionsHandler,
+    http.get(`${API}/api/v1/stories`, async () => {
+      await delay('infinite');
+      return HttpResponse.json(page([]));
+    }),
+  );
+  renderAt(<AppRoutes />, '/section/india-ai');
+
+  expect(await screen.findByRole('status', { name: 'Loading news' })).toBeInTheDocument();
+  expect(screen.getAllByTestId('skeleton-card').length).toBeGreaterThan(0);
 });

@@ -8,6 +8,7 @@ import com.qbits.ingestion.domain.ItemNormaliser;
 import com.qbits.ingestion.domain.NormaliseResult;
 import com.qbits.ingestion.domain.NormalisedEntry;
 import com.qbits.ingestion.domain.RawEntry;
+import com.qbits.ingestion.domain.RetryAfter;
 import com.qbits.ingestion.domain.SourceState;
 import com.qbits.ingestion.domain.StoryStatus;
 import com.qbits.ingestion.persistence.FetchLogRepository;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service;
 public class SourceIngestor {
 
   private static final Logger log = LoggerFactory.getLogger(SourceIngestor.class);
+  private static final int MAX_ERROR_MESSAGE = 200;
 
   /** What happened for one source in one run. */
   public enum Result {
@@ -85,11 +87,13 @@ public class SourceIngestor {
 
   public Result ingestIfDue(Source source) {
     Instant start = clock.instant();
-    SourceState state = states.find(source.id()).orElse(SourceState.initial(source.id()));
+    SourceState stored = states.find(source.id()).orElse(SourceState.initial(source.id()));
     Duration interval = interval(source);
-    if (!isDue(state, interval, start)) {
+    if (!isDue(stored, interval, start)) {
       return Result.NOT_DUE;
     }
+    // Any earlier Retry-After has passed; this attempt sets a new one only if asked again.
+    SourceState state = stored.withRetryAfter(null);
     try {
       RobotsDecision decision = robots.check(source.feedUrl());
       switch (decision) {
@@ -111,8 +115,9 @@ public class SourceIngestor {
       }
       fetchAndStore(source, state, start);
     } catch (RuntimeException e) {
-      log.error("source run failed source={} error={}", source.id(), e.toString());
-      finish(source, state, start, FetchStatus.FAILED, null, Counts.NONE, e.toString());
+      String error = shortError(e);
+      log.error("source run failed source={} error={}", source.id(), error);
+      finish(source, state, start, FetchStatus.FAILED, null, Counts.NONE, error);
     }
     return Result.DONE;
   }
@@ -122,8 +127,12 @@ public class SourceIngestor {
     switch (outcome) {
       case FetchOutcome.NotModified n ->
           finish(source, state, start, FetchStatus.NOT_MODIFIED, 304, Counts.NONE, null);
-      case FetchOutcome.Failed f ->
-          finish(source, state, start, FetchStatus.FAILED, f.httpStatus(), Counts.NONE, f.error());
+      case FetchOutcome.Failed f -> {
+        // A long Retry-After on 429 or 503 holds the source back until then (R7.1).
+        SourceState waiting =
+            state.withRetryAfter(RetryAfter.until(f.retryAfter(), start).orElse(null));
+        finish(source, waiting, start, FetchStatus.FAILED, f.httpStatus(), Counts.NONE, f.error());
+      }
       case FetchOutcome.Fetched f -> {
         List<RawEntry> entries;
         try {
@@ -140,16 +149,14 @@ public class SourceIngestor {
           return;
         }
         Counts counts = store(source, entries, start);
-        SourceState withValidators =
-            new SourceState(
-                state.sourceId(),
-                f.etag(),
-                f.lastModified(),
-                state.lastFetchedAt(),
-                state.lastSuccessAt(),
-                state.consecutiveFailures(),
-                state.health());
-        finish(source, withValidators, start, FetchStatus.OK, f.httpStatus(), counts, null);
+        finish(
+            source,
+            state.withValidators(f.etag(), f.lastModified()),
+            start,
+            FetchStatus.OK,
+            f.httpStatus(),
+            counts,
+            null);
       }
     }
   }
@@ -234,7 +241,24 @@ public class SourceIngestor {
   }
 
   private static boolean isDue(SourceState state, Duration interval, Instant now) {
+    if (state.retryAfter() != null && now.isBefore(state.retryAfter())) {
+      return false; // the publisher asked us to wait (Retry-After)
+    }
     return state.lastFetchedAt() == null || !now.isBefore(state.lastFetchedAt().plus(interval));
+  }
+
+  /**
+   * Exception class and the first line of its message, clipped. Database errors put the failing
+   * row's values on later lines ("Detail: Failing row contains …"), which may hold feed text, so
+   * those lines are never logged or stored.
+   */
+  static String shortError(RuntimeException e) {
+    String message = e.getMessage() == null ? "" : e.getMessage().lines().findFirst().orElse("");
+    if (message.length() > MAX_ERROR_MESSAGE) {
+      message = message.substring(0, MAX_ERROR_MESSAGE) + "…";
+    }
+    String name = e.getClass().getSimpleName();
+    return message.isBlank() ? name : name + ": " + message;
   }
 
   private static Item toItem(Source source, NormalisedEntry e, double score, Instant now) {

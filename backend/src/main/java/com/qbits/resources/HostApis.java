@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -29,8 +30,11 @@ public class HostApis implements LinkChecker {
   private final HostLimiter limiter;
 
   public HostApis(
-      RestClient feedRestClient, ResourcesProperties props, JsonMapper json, Clock clock) {
-    this.http = feedRestClient;
+      @Qualifier("linkCheckRestClient") RestClient http,
+      ResourcesProperties props,
+      JsonMapper json,
+      Clock clock) {
+    this.http = http;
     this.props = props;
     this.json = json;
     this.limiter = new HostLimiter(props.rateLimits(), clock);
@@ -49,7 +53,7 @@ public class HostApis implements LinkChecker {
         case ARXIV -> arxiv(c.name());
       };
     } catch (RuntimeException e) {
-      log.info("link check failed host={} error={}", c.host(), e.getClass().getSimpleName());
+      log.debug("link check failed host={} error={}", c.host(), e.getClass().getSimpleName());
       return new CheckResult.Failed("network: " + e.getClass().getSimpleName());
     }
   }

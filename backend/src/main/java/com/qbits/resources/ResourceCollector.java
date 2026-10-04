@@ -1,7 +1,7 @@
 package com.qbits.resources;
 
+import com.qbits.common.links.FoundLink;
 import com.qbits.resources.domain.Candidate;
-import com.qbits.resources.domain.FoundLink;
 import com.qbits.resources.domain.ResourceLinkNormaliser;
 import com.qbits.resources.domain.ResourceRelevance;
 import com.qbits.resources.persistence.ItemResourceRepository;

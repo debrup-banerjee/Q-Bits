@@ -1,8 +1,10 @@
-import { useSite, useSources } from '@qbits/api-client';
+import { useSections, useSite, useSources } from '@qbits/api-client';
 import { ErrorState } from '../../components/ErrorState';
+import { sectionDot } from '../sections/sectionTheme';
 
 /** How Q-Bits works, the sources it uses and how publishers reach us (spec 003 R7). */
 export function AboutPage() {
+  const sections = useSections();
   const sources = useSources();
   const site = useSite();
   const email = site.data?.data.contactEmail;
@@ -26,28 +28,31 @@ export function AboutPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">AI Latest and the four sections</h2>
+        <h2 className="text-lg font-semibold">AI Latest and the five sections</h2>
         <p>
-          <strong>AI Latest</strong> shows every story from the last 24 hours, newest first, and is
-          updated through the day. Each story also belongs to one of four sections, which cover the
-          last 72 hours:
+          Q-Bits is a <strong>daily digest</strong>. We read the news feeds all day, then write
+          every summary together and publish one edition each morning at 6:00 am (India time).{' '}
+          <strong>AI Latest</strong> shows today&apos;s edition: everything from the 24 hours before
+          it. Each story also belongs to one of five sections, which show the last three editions:
         </p>
-        <ul className="list-disc space-y-1 pl-5">
-          <li>
-            <strong>Global AI Tech</strong>: new AI models and products, and what they can do.
-          </li>
-          <li>
-            <strong>World Business</strong>: money, companies, chips and jobs around the world.
-          </li>
-          <li>
-            <strong>India AI</strong>: everything AI in India, including global companies&apos;
-            moves here.
-          </li>
-          <li>
-            <strong>Innovations &amp; Research</strong>: new ideas and discoveries from labs and
-            universities.
-          </li>
-        </ul>
+        {/* Section names and descriptions come from the API, never hard-coded (conventions). */}
+        {sections.isError && <ErrorState onRetry={() => void sections.refetch()} />}
+        {sections.isPending && <p className="text-muted">Loading the sections…</p>}
+        {sections.data && (
+          <ul className="space-y-1.5" aria-label="The sections">
+            {sections.data.data.map((section) => (
+              <li key={section.slug} className="flex items-start gap-2">
+                <span
+                  aria-hidden="true"
+                  className={`mt-2 h-2 w-2 shrink-0 rounded-full ${sectionDot(section.slug)}`}
+                />
+                <span>
+                  <strong>{section.name}</strong>: {section.description}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="flex flex-col gap-2" aria-labelledby="sources-heading">

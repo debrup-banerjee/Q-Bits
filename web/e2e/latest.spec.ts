@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { BREAKING, mockApi } from './mock-api';
+import { mockApi } from './mock-api';
 
+// 004 R2.1, R2.2, R3.2, R4.4, R4.5 (no horizontal scroll)
 test('opens on AI Latest with the last 24 hours only', async ({ page }) => {
   await mockApi(page);
   await page.goto('/');
@@ -23,6 +24,7 @@ test('opens on AI Latest with the last 24 hours only', async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
+// 004 R4.2
 test('a card expands in place to show the words to know', async ({ page }) => {
   await mockApi(page);
   await page.goto('/');
@@ -38,29 +40,27 @@ test('a card expands in place to show the words to know', async ({ page }) => {
   await expect(card.getByText('Words to know')).toBeVisible();
 });
 
-test('new stories wait behind a button instead of moving the feed', async ({ page }) => {
-  const state = { breaking: false };
-  await page.clock.install();
-  await mockApi(page, state);
+// 006 R5.3, R5.4
+test('shows the edition and when the next one is due, with no live updates', async ({ page }) => {
+  await mockApi(page);
   await page.goto('/');
-  await expect(page.getByRole('article')).toHaveCount(4);
-  const firstBefore = await page.getByRole('article').first().getByRole('heading').textContent();
 
-  state.breaking = true;
-  await page.clock.runFor(125_000);
-
-  const button = page.getByRole('button', { name: /1 new story/ });
-  await expect(button).toBeVisible();
-  await expect(page.getByRole('article').first().getByRole('heading')).toHaveText(firstBefore!);
-
-  await button.click();
-
-  await expect(page.getByRole('article').first().getByRole('heading')).toHaveText(
-    BREAKING.headline,
-  );
-  await expect(button).toHaveCount(0);
+  await expect(page.getByText(/digest · published/)).toBeVisible();
+  await expect(page.getByText(/Next edition around/)).toBeVisible();
+  await expect(page.getByRole('button', { name: /new stor/ })).toHaveCount(0);
 });
 
+// 006 R5.3
+test("says when today's edition is running late", async ({ page }) => {
+  await mockApi(page, { late: true });
+  await page.goto('/');
+
+  await expect(
+    page.getByText("Today's edition is running late. Here is the last one."),
+  ).toBeVisible();
+});
+
+// 003 R4.3
 test('the tab bar stays at the top while scrolling on phones', async ({ page }, info) => {
   test.skip(info.project.name !== 'phone', 'phone layout only');
   await mockApi(page);
@@ -74,4 +74,28 @@ test('the tab bar stays at the top while scrolling on phones', async ({ page }, 
   const box = await nav.boundingBox();
   expect(box?.y ?? -1).toBeGreaterThanOrEqual(-1);
   expect(box?.y ?? 99).toBeLessThanOrEqual(1);
+});
+
+// 004 R4.5
+test('card text stays readable on phones: 17px headline, 16px summary', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'phone layout only');
+  await mockApi(page);
+  await page.goto('/');
+  const cards = page.getByRole('article');
+  await expect(cards).toHaveCount(4);
+
+  for (const card of await cards.all()) {
+    const headline = await card
+      .getByRole('heading', { level: 2 })
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    const summary = await card
+      .getByTestId('feed-summary')
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(headline).toBeGreaterThanOrEqual(17);
+    expect(summary).toBeGreaterThanOrEqual(16);
+  }
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
 });

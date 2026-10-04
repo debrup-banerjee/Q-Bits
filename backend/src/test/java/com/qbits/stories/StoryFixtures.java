@@ -13,10 +13,15 @@ public final class StoryFixtures {
   private StoryFixtures() {}
 
   public static StoryWriterProperties props() {
+    return props(StoryWriterProperties.Mode.DIGEST);
+  }
+
+  public static StoryWriterProperties props(StoryWriterProperties.Mode mode) {
     return new StoryWriterProperties(
+        mode,
         "anthropic",
         "test-model",
-        "v1",
+        "v2",
         800,
         500,
         4,

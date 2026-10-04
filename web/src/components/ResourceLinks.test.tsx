@@ -1,7 +1,8 @@
+import type { ResourceLink } from '@qbits/api-client';
 import { render, screen, within } from '@testing-library/react';
 import { ResourceLinks } from './ResourceLinks';
 
-const RESOURCES = [
+const RESOURCES: ResourceLink[] = [
   {
     type: 'code',
     label: 'Code on GitHub',

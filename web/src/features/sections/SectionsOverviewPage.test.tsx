@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse, delay } from 'msw';
 import { page, sectionsHandler, story } from '../../test/fixtures';
@@ -20,12 +20,12 @@ function storiesHandler() {
           story({
             id: 'a',
             headline: 'Model A',
-            section: { slug: 'global-ai-tech', name: 'Global AI Tech' },
+            section: { slug: 'global-ai-tech', name: 'AI Wire' },
           }),
           story({
             id: 'b',
             headline: 'Model B',
-            section: { slug: 'global-ai-tech', name: 'Global AI Tech' },
+            section: { slug: 'global-ai-tech', name: 'AI Wire' },
           }),
         ]),
       );
@@ -34,7 +34,8 @@ function storiesHandler() {
   });
 }
 
-it('shows the four sections with their newest stories', async () => {
+// 003 R4.1
+it('shows the five sections with their newest stories', async () => {
   server.use(sectionsHandler, storiesHandler());
   renderAt(<SectionsOverviewPage />);
 
@@ -46,29 +47,49 @@ it('shows the four sections with their newest stories', async () => {
     '/section/india-ai',
   );
 
-  const tech = screen.getByRole('region', { name: 'Global AI Tech' });
+  const tech = screen.getByRole('region', { name: 'AI Wire' });
   expect(await within(tech).findAllByRole('article')).toHaveLength(2);
 });
 
+// 003 R5.2
 it('shows an empty message for a quiet section', async () => {
   server.use(sectionsHandler, storiesHandler());
   renderAt(<SectionsOverviewPage />);
 
-  const research = await screen.findByRole('region', { name: 'Innovations & Research' });
+  const research = await screen.findByRole('region', { name: 'AI Innovations' });
   expect(
     await within(research).findByText(
-      'No Innovations & Research news in the last 72 hours. Check back soon.',
+      'No AI Innovations news in the last 72 hours. Check back soon.',
     ),
   ).toBeInTheDocument();
 });
 
-it('says when the news was last updated', async () => {
+// 003 R4.2
+it('shows the 72-hour line together with when the news was last updated', async () => {
   server.use(sectionsHandler, storiesHandler());
   renderAt(<SectionsOverviewPage />);
 
-  expect(await screen.findByText(/^Updated/)).toBeInTheDocument();
+  const updated = await screen.findByText(/^Updated/);
+  const line = updated.closest('p');
+  expect(line).toHaveTextContent(/^AI news from the last 72 hours, sorted into five sections\./);
+  expect(line).toHaveTextContent(/Updated .+/);
 });
 
+// 003 R4.2
+it('shows the 72-hour line before the data has loaded', () => {
+  server.use(
+    http.get(`${API}/api/v1/sections`, async () => {
+      await delay('infinite');
+      return HttpResponse.json([]);
+    }),
+  );
+  renderAt(<SectionsOverviewPage />);
+
+  expect(screen.getByText(/^AI news from the last 72 hours/)).toBeInTheDocument();
+  expect(screen.queryByText(/^Updated/)).not.toBeInTheDocument();
+});
+
+// 003 R8.1
 it('shows skeleton cards while loading', async () => {
   server.use(
     http.get(`${API}/api/v1/sections`, async () => {
@@ -82,6 +103,7 @@ it('shows skeleton cards while loading', async () => {
   expect(screen.getAllByTestId('skeleton-card').length).toBeGreaterThan(0);
 });
 
+// 003 R8.2
 it('shows a plain error with a working retry', async () => {
   let fail = true;
   server.use(
@@ -97,6 +119,7 @@ it('shows a plain error with a working retry', async () => {
 
   fail = false;
   await userEvent.click(within(alert).getByRole('button', { name: 'Try again' }));
-  await screen.findByText('AI news from the last 72 hours, sorted into four sections.');
+  await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  expect(screen.getByText(/^AI news from the last 72 hours/)).toBeInTheDocument();
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

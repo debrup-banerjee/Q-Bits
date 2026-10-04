@@ -1,6 +1,7 @@
 import { ApiProvider, createQBitsApi, type QBitsApi } from '@qbits/api-client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { AuthProvider, SESSION_STORAGE_KEY } from '../features/auth/AuthContext';
 
 export function apiBaseUrl(): string {
   const configured = import.meta.env.VITE_API_BASE_URL as string | undefined;
@@ -12,6 +13,19 @@ export function newQueryClient(): QueryClient {
     defaultOptions: {
       queries: { refetchOnWindowFocus: true, retry: 1 },
     },
+    // Not a React state update, so it belongs here rather than in an effect: once a stored
+    // session token fails /me (expired or revoked), stop persisting it.
+    queryCache: new QueryCache({
+      onError: (_error, query) => {
+        if (query.queryKey[0] === 'me') {
+          try {
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+          } catch {
+            // ignore: private browsing or storage disabled
+          }
+        }
+      },
+    }),
   });
 }
 
@@ -29,7 +43,9 @@ export function Providers({
   const [resolvedApi] = useState(() => api ?? createQBitsApi(apiBaseUrl()));
   return (
     <QueryClientProvider client={client}>
-      <ApiProvider api={resolvedApi}>{children}</ApiProvider>
+      <ApiProvider api={resolvedApi}>
+        <AuthProvider>{children}</AuthProvider>
+      </ApiProvider>
     </QueryClientProvider>
   );
 }

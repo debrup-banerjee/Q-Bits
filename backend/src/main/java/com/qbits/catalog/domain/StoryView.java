@@ -2,6 +2,7 @@ package com.qbits.catalog.domain;
 
 import com.qbits.resources.domain.ResourceLink;
 import com.qbits.stories.domain.KeyTerm;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -26,8 +27,8 @@ public record StoryView(
   /** Section slug and display name. */
   public record SectionRef(String slug, String name) {}
 
-  /** Source display name and homepage. */
-  public record SourceRef(String name, String homepage) {}
+  /** Source display name and homepage; homepage is null if the source left the approved list. */
+  public record SourceRef(String name, @Schema(types = {"string", "null"}) String homepage) {}
 
   public static String attributionFor(String sourceName) {
     return "Summary written from " + sourceName + "'s headline and teaser";

@@ -1,8 +1,8 @@
 package com.qbits.resources.persistence;
 
+import com.qbits.common.links.LinkOrigin;
 import com.qbits.resources.domain.Candidate;
 import com.qbits.resources.domain.ItemResource;
-import com.qbits.resources.domain.LinkOrigin;
 import com.qbits.resources.domain.ResourceHost;
 import com.qbits.resources.domain.ResourceStatus;
 import com.qbits.resources.domain.ResourceType;
@@ -13,10 +13,12 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Candidate open-source links per item and their check state (spec 005). */
 @Repository
@@ -64,14 +66,34 @@ public class ItemResourceRepository {
         .list();
   }
 
+  /**
+   * Marks a link verified under {@code url}. If the same item already holds that URL in another row
+   * (for example after a GitHub rename, or two spellings of one repo), this row is removed and the
+   * other row is kept and marked verified, so the unique (item, url) rule always holds.
+   */
+  @Transactional
   public void markVerified(long id, String url, String name, Instant at) {
+    Optional<Long> existing =
+        jdbc.sql(
+                """
+                select o.id from item_resources o join item_resources r on r.item_id = o.item_id
+                where r.id = :id and o.url = :url and o.id <> :id
+                """)
+            .param("id", id)
+            .param("url", url)
+            .query(Long.class)
+            .optional();
+    if (existing.isPresent()) {
+      jdbc.sql("delete from item_resources where id = :id").param("id", id).update();
+    }
+    long target = existing.orElse(id);
     jdbc.sql(
             """
             update item_resources set status = 'VERIFIED', url = :url, name = :name,
               checked_at = :at
             where id = :id
             """)
-        .param("id", id)
+        .param("id", target)
         .param("url", url)
         .param("name", name)
         .param("at", Timestamp.from(at))

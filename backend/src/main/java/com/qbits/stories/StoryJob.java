@@ -1,7 +1,7 @@
 package com.qbits.stories;
 
+import com.qbits.ingestion.ItemStore;
 import com.qbits.ingestion.domain.Item;
-import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.sources.SourceRegistry;
 import com.qbits.sources.domain.Source;
 import com.qbits.stories.StoryService.Outcome;
@@ -41,7 +41,7 @@ public class StoryJob {
   static final Duration WINDOW = Duration.ofHours(72);
   static final Duration FIRST_BACKOFF = Duration.ofMinutes(2);
 
-  private final ItemRepository items;
+  private final ItemStore items;
   private final SourceRegistry registry;
   private final StoryService service;
   private final WriterBudgetRepository budget;
@@ -51,7 +51,7 @@ public class StoryJob {
   private final Clock clock;
 
   public StoryJob(
-      ItemRepository items,
+      ItemStore items,
       SourceRegistry registry,
       StoryService service,
       WriterBudgetRepository budget,
@@ -90,7 +90,7 @@ public class StoryJob {
     if (budget.used(today) >= props.dailyCallCap()) {
       return; // R9.1: cap reached; resume tomorrow
     }
-    List<Item> batch = items.findPendingNewestFirst(now.minus(WINDOW), props.batchSize());
+    List<Item> batch = items.pendingNewestFirst(now.minus(WINDOW), props.batchSize());
     if (batch.isEmpty()) {
       return;
     }

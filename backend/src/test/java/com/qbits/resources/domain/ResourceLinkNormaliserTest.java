@@ -65,4 +65,38 @@ class ResourceLinkNormaliserTest {
   void dropsEverythingElse(String input) {
     assertThat(normaliser.normalise(input)).isEmpty();
   }
+
+  @ParameterizedTest(name = "{0}") // 005 R2.2, R2.3
+  @CsvSource(
+      delimiter = '|',
+      value = {
+        "https://github.com/github/gitignore | CODE | https://github.com/github/gitignore | github/gitignore",
+        "https://github.com/GitHub/docs/blob/main/README.md | CODE | https://github.com/GitHub/docs | GitHub/docs",
+        "https://huggingface.co/huggingface/CodeBERTa-small-v1 | MODEL | https://huggingface.co/huggingface/CodeBERTa-small-v1 | huggingface/CodeBERTa-small-v1",
+        "https://huggingface.co/datasets/huggingface/documentation-images | DATASET | https://huggingface.co/datasets/huggingface/documentation-images | huggingface/documentation-images",
+      })
+  void keepsProjectsOwnedByTheHostsOwnOrganisations(
+      String input, ResourceType type, String url, String name) {
+    Candidate c = normaliser.normalise(input).orElseThrow();
+
+    assertThat(c.type()).isEqualTo(type);
+    assertThat(c.url()).isEqualTo(url);
+    assertThat(c.name()).isEqualTo(name);
+  }
+
+  @ParameterizedTest // 005 R2.3
+  @ValueSource(
+      strings = {
+        "https://github.com/github",
+        "https://github.com/features/actions",
+        "https://github.com/topics/github",
+        "https://github.com/marketplace/actions/checkout",
+        "https://huggingface.co/huggingface",
+        "https://huggingface.co/docs/huggingface_hub/index",
+        "https://huggingface.co/blog/huggingface/some-post",
+        "https://huggingface.co/organizations/huggingface/share",
+      })
+  void dropsSitePagesEvenWhenTheyNameTheHostsOrganisation(String input) {
+    assertThat(normaliser.normalise(input)).isEmpty();
+  }
 }

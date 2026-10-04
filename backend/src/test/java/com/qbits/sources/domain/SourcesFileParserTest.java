@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 class SourcesFileParserTest {
 
-  private final SourcesFileParser parser = new SourcesFileParser();
+  private final SourcesFileParser parser = new SourcesFileParser(Duration.ofMinutes(15));
 
   private static final String VALID =
       """
@@ -115,6 +115,13 @@ class SourcesFileParserTest {
   }
 
   @Test
+  void minimumIntervalComesFromTheIngestionSetting() { // 001 R2.1
+    SourcesFileParser stricter = new SourcesFileParser(Duration.ofMinutes(30));
+
+    assertThatThrownBy(() -> stricter.parse(VALID)).hasMessageContaining("must be at least 30");
+  }
+
+  @Test
   void rejectsUnknownSectionHint() {
     String yaml = VALID.replace("sectionHint: india-ai", "sectionHint: sports");
 
@@ -131,11 +138,11 @@ class SourcesFileParserTest {
   }
 
   @Test
-  void projectSourcesFileIsStructurallyValid() throws Exception {
+  void projectSourcesFileIsValid() throws Exception { // 001 R1.1, R1.2, R1.4
     String text = Files.readString(Path.of("../config/sources.yml"));
 
-    List<Source> sources = parser.parseStructureOnly(text);
+    List<Source> sources = parser.parse(text);
 
-    assertThat(sources).hasSize(24);
+    assertThat(sources).hasSize(26);
   }
 }

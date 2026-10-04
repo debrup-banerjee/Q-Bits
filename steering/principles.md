@@ -12,7 +12,7 @@ Flat rules. If a spec or a task conflicts with one of these, stop and flag it; d
 - No article bodies, full-text extraction, reader views, iframes or in-app web views. Ever. On mobile, links open in the system browser.
 - No downloaded or hot-linked images. No publisher logos. Source names are plain text.
 - Open-source links (code, model, dataset, paper) come only from URLs inside the feed entry: its links and the link targets in its description or content. Only the URL is kept, never any surrounding text. Only allowlisted hosts are accepted (GitHub, GitLab, Hugging Face, arXiv). Each link is checked through the host's official API before it is shown. Links are never generated, guessed or searched for.
-- AI Latest shows only stories published in the last 24 hours. Section tabs show the last 72 hours. Stored stories are deleted after 7 days.
+- AI Latest shows only the latest edition: stories published in the 24 hours before its cut-off. Section tabs show the 72 hours before the latest cut-off. Windows are measured from the edition's cut-off, not from the reader's clock, so stories never vanish mid-day. Stored stories are deleted after 7 days.
 - Takedown: a source can be disabled in config, which hides its stories at once. A purge removes them within 24 hours.
 - Only the source title and excerpt are sent to the summary service. No reader data is ever sent.
 
@@ -29,6 +29,7 @@ Flat rules. If a spec or a task conflicts with one of these, stop and flag it; d
 - One deployable backend (modular monolith) until a measured need says otherwise.
 - Clients (web, mobile) hold no business rules. Filtering, sectioning, summarising, link checking and the 24- and 72-hour windows live in the backend; clients only display.
 - Summaries are written once, in the background, and stored. Readers never trigger a call to the summary service.
+- Summaries are written once a day in a single batch (the daily digest). An edition becomes visible all at once, only after its batch has finished; until then readers see the previous edition.
 - A story is shown only after its summary passes validation. If the summary service is down, ingestion carries on and summaries catch up later.
 - The versioned REST API is the only way clients reach data.
 - PostgreSQL is the only state. App instances are stateless and safe to run twice.

@@ -21,7 +21,7 @@ requirements → design → tasks → approval → implement → review against 
 - Summaries are written in our own words from the feed's headline and excerpt only. Never fetch, store or summarise article pages.
 - Every story shows its source and a "Read the full story" link. No iframes, in-app web views or reader view. No images or logos.
 - Fetch only sources in `config/sources.yml` with reviewed terms, via RSS/Atom/API, after checking robots.txt.
-- Tabs: AI Latest first (last 24 hours, social-style feed), then four sections only: Global AI Tech, World Business, India AI, Innovations & Research (last 72 hours).
+- Daily digest: feeds are read all day, summaries are written once a day in one batch, and an edition goes live all at once. Tabs: AI Latest first (today's edition, social-style feed), then four sections only: Global AI Tech, World Business, India AI, Innovations & Research (last three editions).
 - Open-source links come only from URLs in the feed entry, on allowlisted hosts, checked via the host's API. Never guess or generate a link.
 - `steering/principles.md` overrides any spec. If they conflict, stop and flag it.
 - Stack: Java + Spring Boot backend, React + TypeScript front end. Details in `steering/tech-stack.md`.

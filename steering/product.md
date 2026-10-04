@@ -6,7 +6,7 @@
 ## What it is
 Q-Bits shows the AI news that happened in the **last 72 hours, anywhere in the world**, explained in plain words. It gathers headlines from well-known, trusted news outlets and official company and research blogs, writes a short, story-style summary of each in its own words, sorts them into four sections, and links every story to the original article.
 
-It opens on **AI Latest**: a fast, scrollable feed of every AI headline from the **last 24 hours**, newest first, like a social media timeline. When a story is about something open source, it also links straight to the code, model or paper.
+It opens on **AI Latest**: **today's AI digest**, every AI story from the past 24 hours, published once a day as a scrollable, newest-first feed like a social media timeline. When a story is about something open source, it also links straight to the code, model or paper.
 
 The promise to the reader: *"In ten minutes, understand what happened in AI in the last three days, even if you're not a techie, and learn the words that matter along the way."*
 
@@ -17,12 +17,15 @@ The promise to the reader: *"In ten minutes, understand what happened in AI in t
 
 The writing must work for both groups at once: simple enough for the first, accurate and complete enough that the second never feels talked down to.
 
+## Daily digest
+Q-Bits publishes **one edition a day**. Feeds are still read every 30 minutes, so busy sources lose nothing, but the summaries for everything collected are written together in one batch at a fixed cut-off time and appear at the same moment. Batching halves the cost of writing summaries. All tabs change once a day, when a new edition is published.
+
 ## Tabs
 The first tab is **AI Latest**, and the app opens on it. The four section tabs follow it.
 
 | Tab | What it shows |
 |---|---|
-| **AI Latest** (first, default) | Every published story from the last 24 hours, across all four sections, newest first, as a scrolling social-style feed. It is a view, not a fifth section: each story still belongs to exactly one section and shows that section's label. |
+| **AI Latest** (first, default) | Today's edition of the daily digest: every story published in the 24 hours before the edition's cut-off, across all four sections, newest first, as a scrolling social-style feed. It is a view, not a fifth section: each story still belongs to exactly one section and shows that section's label. |
 | Global AI Tech · World Business · India AI · Innovations & Research | One section each, last 72 hours. |
 
 The section-by-section overview (each section's five newest stories) moves from the home page to `/sections`, linked from the bottom of the feed.
@@ -31,7 +34,7 @@ The section-by-section overview (each section's five newest stories) moves from 
 - Compact cards in one column, newest at the top, endless scroll.
 - Each card leads with the source (a coloured letter badge, never a logo), the time ("12 min ago") and the section label, then the headline.
 - The summary shows its first three lines; "Show more" expands it in place, with the words to know.
-- While you read, new stories don't jump in. A "N new stories" button appears at the top; tapping it adds them and scrolls up.
+- The page says which edition it is ("Today's digest · published 6:42 am") and when the next one is due.
 - No likes, comments, shares or images, and no tracking. This is the feel of a timeline, not a social network.
 
 ## Sections
@@ -69,7 +72,8 @@ Each story appears in exactly one section. **India first:** if a story has a rea
 - **Not a full-article summariser.** The app never fetches or reads article pages.
 - **Not a reader view.** No iframes, in-app web views, extracted article text or "read here" mode.
 - **Not a scraper.** Only feeds and official APIs from an approved list. No page scraping, no paywall or login workarounds.
-- **Not an archive.** AI Latest shows the last 24 hours; the section tabs show the last 72 hours.
+- **Not an archive.** AI Latest shows today's edition (24 hours); the section tabs show the last three editions (72 hours).
+- **Not live.** Q-Bits is a daily digest. Feeds are read through the day, but stories are written and published together once a day, which halves the summary cost.
 - **Not a general news app.** Non-AI stories are filtered out.
 - **Not opinion.** Summaries explain; they do not take sides, predict markets or give investment advice.
 - **Not a social network.** AI Latest looks like a timeline, but there are no comments, likes, shares, followers or user-submitted links.

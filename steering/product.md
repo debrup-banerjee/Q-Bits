@@ -13,7 +13,7 @@ The promise to the reader: *"In ten minutes, understand what happened in AI in t
 ## Who uses it
 - **Curious non-technical readers** — managers, students, parents, professionals in any field — who hear about AI everywhere and want to understand it without wading through jargon.
 - **Tech-savvy readers** — engineers, tech leads, founders — who want a fast, trustworthy scan of the last three days and will click through for depth.
-- **First user:** the owner and his team. A public release is a later decision and will trigger a fresh legal review.
+- **First users:** the owner's team. **Public release:** qbitsnews.com is public and open to search engines (owner decision, 2026-10-05, spec 007).
 
 The writing must work for both groups at once: simple enough for the first, accurate and complete enough that the second never feels talked down to.
 

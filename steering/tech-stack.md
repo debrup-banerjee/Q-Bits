@@ -33,7 +33,7 @@ Chosen because the product needs a responsive web app now and a mobile app later
 | Area | Choice | Why | Not chosen |
 |---|---|---|---|
 | Language | TypeScript (strict) | Types generated from the API catch contract breaks at build time, in web and mobile alike. | Plain JavaScript. |
-| Web UI | React + Vite (static SPA) | Responsive web from one codebase; skills and patterns carry over to React Native. | Next.js — server rendering and SEO are not goals for a team reader; revisit if it goes public. Thymeleaf + HTMX — nothing reusable for mobile. |
+| Web UI | React + Vite (SPA), with server-filled first responses | Responsive web from one codebase; skills and patterns carry over to React Native. For search engines and link previews, the backend fills the built `index.html` with each page's metadata, readable content and initial data (spec 007); React then takes over with no hydration. | Next.js / Node SSR — needs Node on a 1 GB instance beside the JVM and Postgres. Build-time pre-render — stories are written on the server after the build. Thymeleaf + HTMX — nothing reusable for mobile. |
 | Routing | React Router | Standard, small. | — |
 | Server state | TanStack Query | Caching, background refresh and pagination for the item list; also works in React Native. | Redux — no client-side state complex enough to need it. |
 | Styling | Tailwind CSS, mobile-first | Responsive layouts by default, no stylesheet sprawl. | CSS-in-JS — runtime cost, no gain here. |

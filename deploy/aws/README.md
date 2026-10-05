@@ -1,7 +1,7 @@
 # Deploying Q-Bits to a free-tier AWS EC2 instance
 
 One `t3.micro` instance runs everything: Postgres (Docker), the Spring Boot backend (systemd),
-and the web app (static files served by nginx, which also proxies `/api` to the backend). No
+and the web app (built JS/CSS served by nginx, which sends `/api` and every page to the backend). No
 Anthropic API key is stored on the instance -- it authenticates via AWS workload identity
 federation instead.
 
@@ -86,6 +86,36 @@ Two things worth knowing:
   certificate to install or renew. If your registrar isn't Cloudflare, you can still point its
   nameservers at Cloudflare to get the same effect, or install a cert directly on the instance with
   [Certbot](https://certbot.eff.org/) instead.
+
+## Pages and search engines (spec 007)
+
+nginx serves only the built files (`/assets/*`, `favicon.svg`) itself. Every page (`/`,
+`/story/...`, `/section/...`, `/about`, unknown paths) plus `robots.txt`, `sitemap.xml` and
+`sitemap-news.xml` goes to the backend. The backend fills in the built `index.html` with that
+page's title, description, canonical link, structured data, readable content and initial data,
+then the React app takes over as usual. If the backend is down, nginx serves the plain
+`index.html` with a 503 so the app still loads. `/actuator` and `/v3/` stay private.
+
+- The nginx config is `nginx-qbits.conf` (plus `qbits-proxy.conf`). `deploy-app.sh` installs it
+  on **every** deploy and tests it with `nginx -t` first, restoring the previous config if the
+  test fails. `cloud-init.yaml`'s nginx block is only the first-boot config.
+- The backend reads `QBITS_SHELL_FILE` (the deployed `web/dist/index.html`) once at startup. The
+  deploy copies the web build before restarting the backend, so new asset names are picked up.
+  `deploy-app.sh` adds the variable to the instance's `.env` if your local `.env` lacks it.
+- `QBITS_SITE_URL` (default `https://qbitsnews.com`) is used for canonical links and sitemaps.
+- After restarting, `deploy-app.sh` checks that the home page comes from the backend and loads
+  the bundle, that `robots.txt` is served, and that unknown pages answer 404.
+
+One-time steps outside the code:
+
+1. Cloudflare: SSL/TLS → Edge Certificates → turn on **Always Use HTTPS** (http → https), and keep
+   the `www` DNS record proxied so nginx can redirect `www.qbitsnews.com` to `qbitsnews.com`.
+2. [Google Search Console](https://search.google.com/search-console): add `qbitsnews.com` as a
+   domain property (verify with the DNS TXT record in Cloudflare), then submit
+   `https://qbitsnews.com/sitemap.xml` and `https://qbitsnews.com/sitemap-news.xml`.
+3. Use Search Console's URL Inspection on a story page to confirm Google sees the headline.
+4. Optional: add the site to [Bing Webmaster Tools](https://www.bing.com/webmasters) (it can import
+   from Search Console), and apply in Google News Publisher Center.
 
 ## Costs and limits
 

@@ -85,6 +85,8 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 
+  # First-boot config only: static files plus /api. deploy-app.sh replaces it on every deploy with
+  # deploy/aws/nginx-qbits.conf, which also sends pages to the backend (spec 007 R8).
   - path: /etc/nginx/sites-available/qbits
     content: |
       server {

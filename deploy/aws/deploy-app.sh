@@ -113,12 +113,47 @@ scp $SSH_OPTS "$REPO_ROOT/docker-compose.yml" "ubuntu@$PUBLIC_IP:/opt/qbits/app/
 
 echo "== Copying .env =="
 scp $SSH_OPTS .env "ubuntu@$PUBLIC_IP:/opt/qbits/.env"
+# The backend runs in /opt/qbits/app, so the local default (../web/dist/index.html) doesn't
+# resolve there. Added to the instance's copy only if the local .env doesn't set it (spec 007).
+$SSH "grep -q '^QBITS_SHELL_FILE=' /opt/qbits/.env \
+  || echo 'QBITS_SHELL_FILE=/opt/qbits/app/web/dist/index.html' >> /opt/qbits/.env"
+
+echo "== Installing the nginx config =="
+# Tested before it replaces the running config; on a failed test the previous config is put
+# back and the deploy stops, so nginx keeps serving.
+scp $SSH_OPTS nginx-qbits.conf qbits-proxy.conf "ubuntu@$PUBLIC_IP:/tmp/"
+$SSH 'set -e
+  sudo cp /etc/nginx/sites-available/qbits /tmp/qbits.nginx.previous
+  sudo install -m 644 /tmp/qbits-proxy.conf /etc/nginx/snippets/qbits-proxy.conf
+  sudo install -m 644 /tmp/nginx-qbits.conf /etc/nginx/sites-available/qbits
+  if ! sudo nginx -t; then
+    sudo cp /tmp/qbits.nginx.previous /etc/nginx/sites-available/qbits
+    echo "nginx config test failed -- the previous config was restored" >&2
+    exit 1
+  fi'
 
 echo "== Starting Postgres =="
 $SSH 'cd /opt/qbits/app && docker compose up -d'
 
 echo "== Restarting services =="
 $SSH 'sudo systemctl restart qbits-backend && sudo systemctl reload nginx'
+
+echo "== Checking the pages =="
+# Any HTTP answer from the backend means it is up (health may report DOWN for a degraded source).
+$SSH 'for i in $(seq 1 90); do
+    curl -s -o /dev/null http://127.0.0.1:8080/actuator/health && break
+    sleep 2
+  done
+  home=$(curl -s http://127.0.0.1/)
+  echo "$home" | grep -q "rel=\"canonical\"" \
+    || { echo "the home page is not coming from the backend -- check the backend logs" >&2; exit 1; }
+  echo "$home" | grep -q "/assets/" \
+    || { echo "the home page does not load the web app bundle -- check QBITS_SHELL_FILE" >&2; exit 1; }
+  curl -s http://127.0.0.1/robots.txt | grep -q "^Sitemap:" \
+    || { echo "robots.txt is not coming from the backend -- check the nginx config" >&2; exit 1; }
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1/no-such-page)
+  [ "$code" = 404 ] || { echo "unknown pages answer $code, expected 404" >&2; exit 1; }
+  echo "pages OK"'
 
 cat <<EOF
 

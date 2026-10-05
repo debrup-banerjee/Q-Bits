@@ -11,6 +11,15 @@ the backend jar and the web app's static build are produced **locally** (where y
 JDK 21 / Maven / Node installed) and only the build output is shipped to the instance --
 `deploy-app.sh` does this for you.
 
+## Current deployment
+
+- **Domain**: `https://qbitsnews.com` (registered via Cloudflare)
+- **Instance**: `i-0edf8718127ae876b`, Elastic IP `54.157.171.57` (stable -- won't change on
+  stop/start)
+- **HTTPS**: handled entirely by Cloudflare's proxy (orange-cloud DNS records + SSL/TLS mode
+  "Flexible") -- the origin nginx still only serves plain HTTP on port 80; no certificate is
+  installed on the instance itself.
+
 ## Prerequisites
 
 - AWS CLI v2, configured (`aws configure`) for the account you want to deploy into.
@@ -66,13 +75,17 @@ Two things worth knowing:
   [Elastic IP](https://console.aws.amazon.com/ec2/home#Addresses) and associate it with the
   instance -- a few clicks in the EC2 console, free as long as it's attached to a running
   instance.
-- **To use a real domain** (e.g. `news.yourdomain.com`): buy one anywhere (Route 53, Namecheap,
-  whatever), then create a DNS **A record** pointing it at the instance's (Elastic) IP -- that's
-  done at your registrar or in Route 53, not in this repo. Once DNS resolves, update
-  `QBITS_WEB_ORIGINS` in `deploy/aws/.env` to `http://news.yourdomain.com` and redeploy
+- **To use a real domain**: buy one anywhere, then create a DNS **A record** pointing it at the
+  instance's (Elastic) IP -- that's done at your registrar, not in this repo. Once DNS resolves,
+  update `QBITS_WEB_ORIGINS` in `deploy/aws/.env` to `https://yourdomain.com` and redeploy
   (`deploy-app.sh`). nginx's config here already answers any hostname (`server_name _;`), so no
-  nginx change is needed for HTTP. For HTTPS, you'd add a free cert via
-  [Certbot](https://certbot.eff.org/) once the domain resolves -- not set up yet in this config.
+  nginx change is needed.
+- **For HTTPS**, the easiest path (what this deployment actually uses) is registering through
+  **Cloudflare** and turning on its proxy (orange-cloud) with SSL/TLS mode "Flexible" -- Cloudflare
+  terminates HTTPS at the edge for free and talks to the plain-HTTP origin behind the scenes, no
+  certificate to install or renew. If your registrar isn't Cloudflare, you can still point its
+  nameservers at Cloudflare to get the same effect, or install a cert directly on the instance with
+  [Certbot](https://certbot.eff.org/) instead.
 
 ## Costs and limits
 
@@ -93,10 +106,17 @@ disk on either side.
 
 ## Troubleshooting
 
-- `ssh -i deploy/aws/qbits-key.pem ubuntu@<ip> 'cloud-init status --wait'` -- confirms the
-  one-time instance bootstrap finished.
-- `ssh -i deploy/aws/qbits-key.pem ubuntu@<ip> 'sudo journalctl -u qbits-backend -f'` -- backend
-  logs.
-- `ssh -i deploy/aws/qbits-key.pem ubuntu@<ip> 'sudo journalctl -u qbits-refresh-token -f'` --
-  confirms the identity token is refreshing; if this errors, double check step 2 and that
+SSH from WSL using the key `deploy-app.sh` stages at `~/.ssh/qbits-key.pem` (not the copy in this
+repo directory -- that one lives on the Windows-mounted drive, which can't carry the restrictive
+permissions SSH requires; see `deploy-app.sh`'s comments).
+
+- `ssh -i ~/.ssh/qbits-key.pem ubuntu@<ip> 'cloud-init status --wait'` -- confirms the one-time
+  instance bootstrap finished.
+- `ssh -i ~/.ssh/qbits-key.pem ubuntu@<ip> 'sudo journalctl -u qbits-backend -f'` -- backend logs.
+- `ssh -i ~/.ssh/qbits-key.pem ubuntu@<ip> 'sudo journalctl -u qbits-refresh-token -f'` -- confirms
+  the identity token is refreshing; if this errors, double check step 2 and that
   `aws iam enable-outbound-web-identity-federation` succeeded during provisioning.
+- A `stories_section_check` (or similar) constraint violation in the backend logs means a new
+  `Section` enum value was added in Java without a matching Flyway migration updating the
+  database's check constraint -- this silently aborts the whole digest job transaction on every
+  tick. Add a migration like `V8__new_releases_section.sql` to fix it.

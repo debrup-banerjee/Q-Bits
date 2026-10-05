@@ -18,7 +18,9 @@ packages:
 write_files:
   - path: /opt/qbits/refresh-identity-token.sh
     permissions: '0750'
-    owner: ubuntu:ubuntu
+    # No owner: here -- write_files runs before the `ubuntu` user exists on a fresh boot, so
+    # chowning to it here fails the whole write_files module. runcmd's `chown -R ubuntu:ubuntu
+    # /opt/qbits` (after the user exists) fixes ownership instead.
     content: |
       #!/usr/bin/env bash
       # Re-fetches a short-lived AWS STS web identity token for Anthropic workload identity

@@ -14,13 +14,23 @@ REPO_ROOT="$(cd ../.. && pwd)"
 WIN_REPO_ROOT="$(wslpath -w "$REPO_ROOT")"
 
 REGION="${AWS_REGION:-us-east-1}"
-KEY_FILE="qbits-key.pem"
+REPO_KEY_FILE="qbits-key.pem"
 TAG_NAME="qbits-server"
 
-if [ ! -f "$KEY_FILE" ]; then
-  echo "missing $KEY_FILE -- run provision.sh first" >&2
+if [ ! -f "$REPO_KEY_FILE" ]; then
+  echo "missing $REPO_KEY_FILE -- run provision.sh first" >&2
   exit 1
 fi
+
+# SSH refuses a key with loose permissions, but a file on a Windows-mounted drive (anything
+# under /mnt/* in WSL) can't carry real Unix permission bits -- chmod on it is a no-op. So stage
+# a copy on WSL's own filesystem, where chmod actually sticks, and use that copy for every
+# ssh/scp/rsync call below.
+KEY_FILE="$HOME/.ssh/qbits-key.pem"
+mkdir -p "$HOME/.ssh"
+rm -f "$KEY_FILE"
+cp "$REPO_KEY_FILE" "$KEY_FILE"
+chmod 400 "$KEY_FILE"
 if [ ! -f ".env" ]; then
   echo "missing deploy/aws/.env -- copy env.example to .env and fill it in first" >&2
   exit 1
@@ -79,7 +89,16 @@ SSH="ssh $SSH_OPTS ubuntu@$PUBLIC_IP"
 echo "== Deploying to $PUBLIC_IP =="
 
 echo "== Waiting for cloud-init to finish (first deploy only takes a few minutes) =="
-$SSH 'cloud-init status --wait'
+# `|| true`: cloud-init's exit status is a permanent record of its first boot and never changes
+# afterward, even if something was fixed later -- so a stale error here shouldn't block deploys
+# forever. The real readiness check is the systemd units existing, checked next.
+$SSH 'cloud-init status --wait' || true
+if ! $SSH 'test -f /etc/systemd/system/qbits-backend.service'; then
+  echo "qbits-backend.service is missing on the instance -- cloud-init did not finish setting" >&2
+  echo "up the instance. SSH in and check 'cloud-init status --long' and" >&2
+  echo "/var/log/cloud-init.log before retrying." >&2
+  exit 1
+fi
 
 echo "== Copying the backend jar =="
 $SSH 'mkdir -p /opt/qbits/app/web /opt/qbits/app/config'

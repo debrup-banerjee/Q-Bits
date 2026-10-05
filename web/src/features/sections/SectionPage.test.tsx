@@ -42,9 +42,7 @@ it('shows the empty message for a quiet section', async () => {
   renderAt(<AppRoutes />, '/section/innovations-research');
 
   expect(
-    await screen.findByText(
-      'No AI Innovations news in the last 72 hours. Check back soon.',
-    ),
+    await screen.findByText('No AI Innovations news in the last 72 hours. Check back soon.'),
   ).toBeInTheDocument();
 });
 
@@ -76,4 +74,16 @@ it('shows skeleton cards while the section loads', async () => {
 
   expect(await screen.findByRole('status', { name: 'Loading news' })).toBeInTheDocument();
   expect(screen.getAllByTestId('skeleton-card').length).toBeGreaterThan(0);
+});
+
+// 007 R5.1
+it('titles the page with the section name', async () => {
+  server.use(
+    sectionsHandler,
+    http.get(`${API}/api/v1/stories`, () => HttpResponse.json(page([story()]))),
+  );
+  renderAt(<AppRoutes />, '/section/india-ai');
+
+  await screen.findByRole('heading', { level: 1, name: 'India AI' });
+  expect(document.title).toBe('India AI: AI news from the last 72 hours | Q-Bits');
 });

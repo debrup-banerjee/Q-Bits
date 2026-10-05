@@ -40,7 +40,10 @@ export function SectionNav() {
                   s.name
                 ) : (
                   <>
-                    <span aria-hidden="true" className={`h-2 w-2 rounded-full ${sectionDot(s.slug)}`} />
+                    <span
+                      aria-hidden="true"
+                      className={`h-2 w-2 rounded-full ${sectionDot(s.slug)}`}
+                    />
                     {s.name}
                   </>
                 )

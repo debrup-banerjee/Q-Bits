@@ -1,5 +1,7 @@
 import { useSections, useSite, useSources } from '@qbits/api-client';
+import { pageTitles } from '../../app/page-titles';
 import { ErrorState } from '../../components/ErrorState';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { sectionDot } from '../sections/sectionTheme';
 
 /** How Q-Bits works, the sources it uses and how publishers reach us (spec 003 R7). */
@@ -8,6 +10,7 @@ export function AboutPage() {
   const sources = useSources();
   const site = useSite();
   const email = site.data?.data.contactEmail;
+  usePageTitle(pageTitles.about);
 
   return (
     <article className="mx-auto flex max-w-[65ch] flex-col gap-6 text-base leading-relaxed">

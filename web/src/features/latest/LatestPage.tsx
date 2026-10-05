@@ -1,8 +1,10 @@
 import { useEdition, useLatestFeed } from '@qbits/api-client';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
+import { pageTitles } from '../../app/page-titles';
 import { ErrorState } from '../../components/ErrorState';
 import { useNow } from '../../hooks/useNow';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
 import { editionLabel, nextEditionText, timeOf } from './editionText';
@@ -14,6 +16,7 @@ export function LatestPage() {
   const now = useNow();
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = feed;
+  usePageTitle(pageTitles.home);
   const items = feed.data?.pages.flatMap((p) => p.data.data) ?? [];
 
   useEffect(() => {

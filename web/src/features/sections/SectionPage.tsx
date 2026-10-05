@@ -2,10 +2,12 @@ import { useSections, useStories } from '@qbits/api-client';
 import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
 import { NotFoundPage } from '../../app/NotFoundPage';
+import { pageTitles } from '../../app/page-titles';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { SkeletonList } from '../../components/SkeletonCard';
 import { useNow } from '../../hooks/useNow';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { StoryCard } from '../stories/StoryCard';
 
 /** All stories of one section from the last 72 hours, loading more on scroll (spec 003 R5). */
@@ -17,6 +19,7 @@ export function SectionPage() {
   const now = useNow();
   const sentinel = useRef<HTMLDivElement>(null);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = stories;
+  usePageTitle(section ? pageTitles.section(section.name) : undefined);
 
   useEffect(() => {
     const el = sentinel.current;

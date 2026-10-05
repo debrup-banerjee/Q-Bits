@@ -1,18 +1,26 @@
 import { ApiError, useStory } from '@qbits/api-client';
 import { Link, useParams } from 'react-router';
+import { pageTitles } from '../../app/page-titles';
 import { ErrorState } from '../../components/ErrorState';
 import { SkeletonList } from '../../components/SkeletonCard';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { StoryCard } from './StoryCard';
 
 /** A single, shareable story (spec 003 R6.6). */
 export function StoryPage() {
   const { id = '' } = useParams();
   const story = useStory(id);
+  const gone =
+    story.error instanceof ApiError && (story.error.status === 404 || story.error.status === 400);
+  usePageTitle(
+    gone
+      ? pageTitles.storyNotFound
+      : story.data
+        ? pageTitles.story(story.data.data.headline)
+        : undefined,
+  );
 
-  if (
-    story.error instanceof ApiError &&
-    (story.error.status === 404 || story.error.status === 400)
-  ) {
+  if (gone) {
     return (
       <section className="py-16 text-center">
         <h1 className="text-2xl font-semibold">This story isn&apos;t available.</h1>

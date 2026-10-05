@@ -1,10 +1,12 @@
 import { useSections, useStories, type SectionView } from '@qbits/api-client';
 import { Link } from 'react-router';
+import { pageTitles } from '../../app/page-titles';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { RelativeTime } from '../../components/RelativeTime';
 import { SkeletonList } from '../../components/SkeletonCard';
 import { useNow } from '../../hooks/useNow';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { StoryCard } from '../stories/StoryCard';
 import { sectionDot } from './sectionTheme';
 
@@ -15,6 +17,7 @@ const GRID = 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3';
 export function SectionsOverviewPage() {
   const sections = useSections();
   const now = useNow();
+  usePageTitle(pageTitles.sections);
 
   return (
     <div className="flex flex-col gap-10">

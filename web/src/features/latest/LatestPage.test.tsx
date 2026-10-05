@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router';
 import { AppRoutes } from '../../app/AppRoutes';
 import { Providers } from '../../app/providers';
 import { page, sectionsHandler, story } from '../../test/fixtures';
-import { API, renderAt } from '../../test/render';
+import { API, renderAt, testQueryClient } from '../../test/render';
 import { server } from '../../test/server';
 
 // 004 R3.2
@@ -203,3 +203,19 @@ function setVisibility(state: DocumentVisibilityState) {
   Object.defineProperty(document, 'visibilityState', { configurable: true, value: state });
   fireEvent(window, new Event('visibilitychange'));
 }
+
+// 007 R4.2: the server-seeded first page shows at once, without the skeleton.
+it('renders a seeded feed at once', () => {
+  server.use(sectionsHandler);
+  const client = testQueryClient();
+  client.setQueryData(['stories', 'all', 20, 24], {
+    pages: [{ data: page([story({ headline: 'Seeded story' })]), dataAsOf: null }],
+    pageParams: [undefined],
+  });
+
+  renderAt(<AppRoutes />, '/', client);
+
+  expect(screen.getByRole('heading', { name: 'Seeded story' })).toBeInTheDocument();
+  expect(screen.queryByTestId('feed-skeleton')).not.toBeInTheDocument();
+  expect(document.title).toBe("Q-Bits: today's AI news, explained in plain words"); // 007 R5.1
+});

@@ -1,6 +1,8 @@
 import { ApiError, useRegister } from '@qbits/api-client';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { pageTitles } from '../../app/page-titles';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { useAuth } from './AuthContext';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { passwordError, usernameError } from './passwordPolicy';
@@ -13,6 +15,7 @@ export function RegisterPage() {
   const register = useRegister();
   const { setSession } = useAuth();
   const navigate = useNavigate();
+  usePageTitle(pageTitles.register);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();

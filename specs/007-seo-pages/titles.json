@@ -1,0 +1,11 @@
+{
+  "home": "Q-Bits: today's AI news, explained in plain words",
+  "sections": "AI news by section | Q-Bits",
+  "about": "About Q-Bits",
+  "login": "Log in | Q-Bits",
+  "register": "Create an account | Q-Bits",
+  "storyNotFound": "Story not available | Q-Bits",
+  "notFound": "Page not found | Q-Bits",
+  "story": { "input": "Chips & <models> \"ship\"", "title": "Chips & <models> \"ship\" | Q-Bits" },
+  "section": { "input": "India AI", "title": "India AI: AI news from the last 72 hours | Q-Bits" }
+}

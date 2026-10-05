@@ -1,4 +1,7 @@
 qbits:
+  pages:
+    site-url: https://qbitsnews.example
+    shell-file: src/test/resources/pages/index.html
   sources-file: src/test/resources/sources/valid.yml
   ingestion:
     timeout: PT2S

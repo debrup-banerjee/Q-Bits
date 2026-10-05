@@ -25,7 +25,19 @@ public class EditionController {
       Instant publishedAt,
       int storyCount,
       Instant nextCutoffAt,
-      boolean late) {}
+      boolean late) {
+
+    /** The view of an edition; also embedded in server-filled pages (spec 007 R4.1). */
+    public static EditionView of(Edition e, EditionQueries editions) {
+      return new EditionView(
+          e.id(),
+          e.cutoffAt(),
+          e.publishedAt(),
+          e.published(),
+          editions.nextCutoff(),
+          editions.isLate(e));
+    }
+  }
 
   private final EditionQueries editions;
 
@@ -43,13 +55,6 @@ public class EditionController {
     return ResponseEntity.ok()
         .cacheControl(CacheControl.maxAge(Duration.ofSeconds(60)).cachePublic())
         .header(CatalogController.DATA_AS_OF, e.publishedAt().toString())
-        .body(
-            new EditionView(
-                e.id(),
-                e.cutoffAt(),
-                e.publishedAt(),
-                e.published(),
-                editions.nextCutoff(),
-                editions.isLate(e)));
+        .body(EditionView.of(e, editions));
   }
 }

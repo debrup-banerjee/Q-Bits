@@ -12,6 +12,8 @@ spring:
 springdoc:
   api-docs:
     path: /v3/api-docs
+  # The contract is the client API only; pages, robots.txt and sitemaps are not part of it.
+  paths-to-match: /api/**
 
 management:
   endpoints:
@@ -31,6 +33,11 @@ qbits:
   contact-email: debrup28.nitdgp@gmail.com
   web:
     allowed-origins: ${QBITS_WEB_ORIGINS:http://localhost:5173}
+  pages:
+    site-url: ${QBITS_SITE_URL:https://qbitsnews.com}
+    # The web build's index.html. Relative to the working directory: backend/ locally; on the
+    # server the backend runs in /opt/qbits/app, so deploy sets QBITS_SHELL_FILE (spec 007).
+    shell-file: ${QBITS_SHELL_FILE:../web/dist/index.html}
   auth:
     secret: ${QBITS_AUTH_SECRET:}
     google-client-id: ${QBITS_GOOGLE_CLIENT_ID:}

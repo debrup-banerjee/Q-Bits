@@ -74,12 +74,18 @@ The prompt defines "same event" as in R1.2, with examples of what is not one (sa
 different launch; a launch and a later reaction). It asks for groups only when sure. Model:
 the configured `qbits.story-writer.model`; `max-output-tokens` 1000; timeout 60 s.
 
+Prompt **v2** (2026-10-06): the first live clean-up with v1 merged related but separate Trump AI
+stories (a pact signed a day later, a podcast discussing the news, a later interview). v2 adds the
+"would a reader learn nothing new" test, treats later developments and analysis or podcasts as
+separate events, uses publish time as a clue, and lists those stories as "do not group" examples.
+`StoryGrouperLiveIT` carries them as regression cases. The three stories were put back by hand.
+
 ### Config
 ```yaml
 qbits:
   dedupe:
     enabled: true
-    prompt-version: v1
+    prompt-version: v2
     timeout: PT60S
 ```
 `enabled: false` publishes as today (an off switch if grouping misbehaves).

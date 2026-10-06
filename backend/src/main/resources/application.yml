@@ -90,7 +90,8 @@ qbits:
   dedupe:
     # One story per event (spec 008): group same-event stories before an edition is published.
     enabled: true
-    prompt-version: v1
+    # v2 (2026-10-06): stricter after the first clean-up merged related Trump AI stories.
+    prompt-version: v2
     timeout: PT60S
     max-output-tokens: 1000
   digest:

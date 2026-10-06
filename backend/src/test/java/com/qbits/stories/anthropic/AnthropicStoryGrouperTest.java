@@ -37,7 +37,7 @@ class AnthropicStoryGrouperTest {
           .build();
 
   private static final DedupeProperties PROPS =
-      new DedupeProperties(true, "v1", Duration.ofSeconds(5), 1000);
+      new DedupeProperties(true, "v2", Duration.ofSeconds(5), 1000);
 
   private static final List<GroupCandidate> CANDIDATES =
       List.of(
@@ -91,7 +91,8 @@ class AnthropicStoryGrouperTest {
     assertThat(body.get("model").asString()).isEqualTo("test-model");
     assertThat(body.get("max_tokens").asInt()).isEqualTo(1000);
     assertThat(body.get("tool_choice").get("name").asString()).isEqualTo("group_stories");
-    assertThat(body.get("system").toString()).contains("SAME EVENT", "Only group stories when");
+    assertThat(body.get("system").toString())
+        .contains("SAME EVENT", "Only group stories when", "news and an analysis");
     String text = body.get("messages").get(0).get("content").asString();
     assertThat(text)
         .startsWith("[1] section=AI Wire source=OpenAI published=2026-10-05T16:00:00Z")

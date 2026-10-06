@@ -43,7 +43,7 @@ class StoryGrouperLiveIT {
   }
 
   @Test
-  void groupsTheWatermarkTrioAndNothingElse() {
+  void groupsTheWatermarkTrioAndNotRelatedPolitics() { // 008 R1.2
     String key = System.getenv("ANTHROPIC_API_KEY");
     String model = System.getenv("QBITS_STORY_MODEL");
     assumeTrue(
@@ -98,14 +98,50 @@ class StoryGrouperLiveIT {
                 6,
                 "Critics say AI text watermarks are easy to remove",
                 "Researchers argue that invisible watermarks in AI-written text can be stripped"
-                    + " by paraphrasing, questioning how useful the new EU rules will be."));
+                    + " by paraphrasing, questioning how useful the new EU rules will be."),
+            // 2026-10-06 clean-up: v1 merged these related but separate Trump AI stories.
+            c(
+                6,
+                "TechCrunch",
+                0,
+                "Trump Launches New Task Force on AI Safety",
+                "A new government task force on AI, called the Super Intelligence Force, signals"
+                    + " that AI safety remains a hot political topic."),
+            c(
+                7,
+                "Mint",
+                28,
+                "Trump signs 'morally binding' pact with tech leaders on AI",
+                "Trump signed a non-binding agreement with top technology executives at the White"
+                    + " House and announced that AI is being renamed Super Intelligence."),
+            c(
+                8,
+                "TechCrunch",
+                5,
+                "Trump Administration Tries to Rebrand AI as 'Super Intelligence'",
+                "A podcast episode discusses whether the administration's super intelligence"
+                    + " rebrand and safety pact can fix AI's image problem."),
+            c(
+                9,
+                "The Guardian",
+                -2,
+                "Trump Picks Intelligence Chief Clayton as AI Czar",
+                "Trump has put Jay Clayton, the director of national intelligence, in charge of AI"
+                    + " policy at the White House."),
+            c(
+                10,
+                "The Economic Times (ETtech)",
+                11,
+                "White House AI Task Force Aims to Avoid Overregulation",
+                "Task force leader Jay Clayton told the Wall Street Journal the group wants to avoid"
+                    + " rules so strict they slow down innovation."));
 
     AnthropicClient client =
         AnthropicOkHttpClient.builder().fromEnv().timeout(Duration.ofSeconds(60)).build();
     try {
       List<Set<UUID>> groups =
           new AnthropicStoryGrouper(
-                  client, writer, new DedupeProperties(true, "v1", Duration.ofSeconds(60), 1000))
+                  client, writer, new DedupeProperties(true, "v2", Duration.ofSeconds(60), 1000))
               .group(candidates);
 
       assertThat(groups).containsExactly(Set.of(new UUID(0, 1), new UUID(0, 2), new UUID(0, 3)));

@@ -59,10 +59,10 @@
 - Labels are fixed strings built from type and host ("Code on GitHub", "Model on Hugging Face", "Paper on arXiv"), never generated text.
 
 ## Summary service calls
-- Only through the `StoryWriter` interface. No other code calls the provider SDK.
+- Only through the `StoryWriter` and `StoryGrouper` interfaces (`StoryGrouper` finds same-event stories, spec 008). No other code calls the provider SDK.
 - Prompt text lives in `backend/src/main/resources/prompts/` as versioned files (`story-writer.v1.md`). Each stored story records the prompt version and model name.
 - Ask for JSON matching a schema; validate before saving. Invalid output is retried once, then the story is marked `REJECTED` with a reason.
-- Tests use `FakeStoryWriter`. Live calls run only in a manual `*LiveIT` suite that needs `ANTHROPIC_API_KEY`.
+- Tests use `FakeStoryWriter` and `FakeStoryGrouper`. Live calls run only in a manual `*LiveIT` suite that needs `ANTHROPIC_API_KEY`.
 - Never log prompts, excerpts or model responses at INFO. Log story id, status, tokens and latency.
 
 ## Naming

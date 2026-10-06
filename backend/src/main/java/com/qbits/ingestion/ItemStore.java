@@ -75,6 +75,11 @@ public class ItemStore {
   }
 
   /** Every WRITTEN item of the edition becomes PUBLISHED (spec 006 R3.1). Returns the count. */
+  /** Holds a written or published story back as a repeat of another (spec 008 R2.1). */
+  public boolean markDuplicate(UUID id, UUID keptId) {
+    return items.markDuplicate(id, keptId);
+  }
+
   public int publishEdition(UUID editionId) {
     return items.publishEdition(editionId);
   }

@@ -31,9 +31,18 @@ public class EditionPublisher {
   }
 
   public int publish(UUID editionId, Instant at) {
+    return publish(editionId, at, Map.of());
+  }
+
+  /**
+   * Holds back {@code duplicates} (each id mapped to the story kept in its place, spec 008 R2.1)
+   * and publishes the rest of the edition, all in one transaction.
+   */
+  public int publish(UUID editionId, Instant at, Map<UUID, UUID> duplicates) {
     Integer published =
         tx.execute(
             status -> {
+              duplicates.forEach(items::markDuplicate);
               items.publishEdition(editionId);
               int released = items.releaseUnfinished(editionId);
               Map<StoryStatus, Integer> counts = items.countsInEdition(editionId);
@@ -44,6 +53,7 @@ public class EditionPublisher {
                   counts.getOrDefault(StoryStatus.NOT_AI, 0),
                   counts.getOrDefault(StoryStatus.REJECTED, 0),
                   at);
+              editions.setDuplicates(editionId, counts.getOrDefault(StoryStatus.DUPLICATE, 0));
               if (released > 0) {
                 log.warn(
                     "edition published with unfinished items edition={} released={}",
@@ -52,7 +62,11 @@ public class EditionPublisher {
               }
               return count;
             });
-    log.info("edition published edition={} stories={}", editionId, published);
+    log.info(
+        "edition published edition={} stories={} duplicates={}",
+        editionId,
+        published,
+        duplicates.size());
     return published == null ? 0 : published;
   }
 }

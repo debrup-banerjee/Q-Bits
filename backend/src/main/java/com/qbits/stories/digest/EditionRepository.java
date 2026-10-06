@@ -152,6 +152,21 @@ public class EditionRepository {
         .update();
   }
 
+  /** How many stories the edition held back as repeats of another (spec 008 R2.5). */
+  public void setDuplicates(UUID id, int duplicates) {
+    jdbc.sql("update editions set duplicates = :d where id = :id")
+        .param("d", duplicates)
+        .param("id", id)
+        .update();
+  }
+
+  /** One more failed grouping attempt before publishing (spec 008 R3.1). */
+  public void incrementDedupeAttempts(UUID id) {
+    jdbc.sql("update editions set dedupe_attempts = dedupe_attempts + 1 where id = :id")
+        .param("id", id)
+        .update();
+  }
+
   private static Timestamp ts(Instant i) {
     return i == null ? null : Timestamp.from(i);
   }

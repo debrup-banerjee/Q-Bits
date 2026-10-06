@@ -3,7 +3,10 @@ package com.qbits.stories.persistence;
 import com.qbits.stories.domain.KeyTerm;
 import com.qbits.stories.domain.Section;
 import com.qbits.stories.domain.Story;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,6 +55,59 @@ public class StoryRepository {
         .param("outputTokens", s.outputTokens())
         .param("attempts", s.attempts())
         .update();
+  }
+
+  /** A story's own text and timing, for same-event grouping (spec 008 R1.3). */
+  public record CandidateRow(
+      UUID id,
+      String sourceId,
+      Instant publishedAt,
+      boolean published,
+      Section section,
+      String headline,
+      String summary) {}
+
+  private static final String CANDIDATES =
+      """
+      select i.id, i.source_id, i.published_at, i.story_status, s.section, s.headline, s.summary
+      from items i join stories s on s.item_id = i.id
+      where not i.hidden and (%s)
+      order by i.published_at, i.id
+      """;
+
+  /**
+   * An edition's written stories plus the published stories since {@code windowStart}: what a new
+   * edition is checked against (spec 008 R1.1).
+   */
+  public List<CandidateRow> editionCandidates(UUID editionId, Instant windowStart) {
+    return jdbc.sql(
+            CANDIDATES.formatted(
+                "(i.edition_id = :e and i.story_status = 'WRITTEN')"
+                    + " or (i.story_status = 'PUBLISHED' and i.published_at >= :since)"))
+        .param("e", editionId)
+        .param("since", Timestamp.from(windowStart))
+        .query(StoryRepository::candidate)
+        .list();
+  }
+
+  /** The published stories since {@code windowStart} (spec 008 R4.1). */
+  public List<CandidateRow> publishedCandidates(Instant windowStart) {
+    return jdbc.sql(
+            CANDIDATES.formatted("i.story_status = 'PUBLISHED' and i.published_at >= :since"))
+        .param("since", Timestamp.from(windowStart))
+        .query(StoryRepository::candidate)
+        .list();
+  }
+
+  private static CandidateRow candidate(ResultSet rs, int row) throws SQLException {
+    return new CandidateRow(
+        rs.getObject("id", UUID.class),
+        rs.getString("source_id"),
+        rs.getTimestamp("published_at").toInstant(),
+        "PUBLISHED".equals(rs.getString("story_status")),
+        Section.valueOf(rs.getString("section")),
+        rs.getString("headline"),
+        rs.getString("summary"));
   }
 
   public Optional<Story> find(UUID itemId) {

@@ -40,7 +40,8 @@ import org.springframework.stereotype.Service;
 /**
  * Runs the daily digest (spec 006): at the cut-off, puts waiting items into an edition and submits
  * one batch; polls it; validates results; runs one retry round with feedback; then publishes the
- * whole edition at once. Each tick does whatever step is due, so restarts are safe.
+ * whole edition at once, one story per event (spec 008). Each tick does whatever step is due, so
+ * restarts are safe.
  */
 @Service
 public class EditionJob {
@@ -54,7 +55,7 @@ public class EditionJob {
   private final StoryService stories;
   private final StoryInputs inputs;
   private final WriterBudgetRepository budget;
-  private final EditionPublisher publisher;
+  private final EditionDeduplicator deduplicator;
   private final StoryWriterProperties writerProps;
   private final DigestProperties props;
   private final LockingTaskExecutor locks;
@@ -68,7 +69,7 @@ public class EditionJob {
       StoryService stories,
       StoryInputs inputs,
       WriterBudgetRepository budget,
-      EditionPublisher publisher,
+      EditionDeduplicator deduplicator,
       StoryWriterProperties writerProps,
       DigestProperties props,
       LockingTaskExecutor locks,
@@ -79,7 +80,7 @@ public class EditionJob {
     this.stories = stories;
     this.inputs = inputs;
     this.budget = budget;
-    this.publisher = publisher;
+    this.deduplicator = deduplicator;
     this.writerProps = writerProps;
     this.props = props;
     this.locks = locks;
@@ -148,7 +149,7 @@ public class EditionJob {
     if (now.isAfter(e.cutoffAt().plus(props.publishDeadline()))) {
       readEndedBatch(e, now); // a batch that ended since the last poll still counts
       log.warn("edition past its deadline; publishing what is ready edition={}", e.id());
-      publisher.publish(e.id(), now); // R3.3
+      deduplicator.publish(e, now); // R3.3
       return;
     }
     switch (e.status()) {
@@ -163,7 +164,7 @@ public class EditionJob {
               .ifPresent(
                   retry -> {
                     if (retry.isEmpty()) {
-                      publisher.publish(e.id(), now);
+                      deduplicator.publish(e, now);
                     } else {
                       submitRetry(e, retry, now);
                     }
@@ -177,7 +178,7 @@ public class EditionJob {
           }
         } else if (pollDue(e, now) && ended(e, e.retryBatchId(), now)) {
           if (process(e, e.retryBatchId(), 2).isPresent()) {
-            publisher.publish(e.id(), now);
+            deduplicator.publish(e, now);
           }
         }
       }
@@ -241,7 +242,7 @@ public class EditionJob {
     }
     List<Item> chosen = items.pendingInEdition(e.id());
     if (chosen.isEmpty()) {
-      publisher.publish(e.id(), now); // nothing to write: an empty edition
+      deduplicator.publish(e, now); // nothing to write: an empty edition
       return;
     }
     List<BatchRequest> requests =
@@ -279,7 +280,7 @@ public class EditionJob {
       log.info("edition retry over the daily cap edition={} released={}", e.id(), overCap.size());
     }
     if (sending.isEmpty()) {
-      publisher.publish(e.id(), now);
+      deduplicator.publish(e, now);
       return;
     }
     List<BatchRequest> requests =
@@ -302,7 +303,7 @@ public class EditionJob {
     } catch (StoryWriter.WriterRejected ex) {
       // The retry batch was refused outright: publish what is valid, the rest waits for tomorrow.
       log.warn("edition retry batch rejected edition={} reason={}", e.id(), ex.getMessage());
-      publisher.publish(e.id(), now);
+      deduplicator.publish(e, now);
     }
   }
 

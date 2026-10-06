@@ -203,6 +203,22 @@ public class ItemRepository {
         .update();
   }
 
+  /**
+   * Holds a story back as a repeat of {@code keptId} (spec 008 R2.1). Only a written or published
+   * story changes; returns whether it did.
+   */
+  public boolean markDuplicate(UUID id, UUID keptId) {
+    return jdbc.sql(
+                """
+                update items set story_status = 'DUPLICATE', duplicate_of = :kept
+                where id = :id and story_status in ('WRITTEN', 'PUBLISHED')
+                """)
+            .param("kept", keptId)
+            .param("id", id)
+            .update()
+        == 1;
+  }
+
   /** Publishes every WRITTEN story of an edition at once (spec 006 R3.1). Returns the count. */
   public int publishEdition(UUID editionId) {
     return jdbc.sql(

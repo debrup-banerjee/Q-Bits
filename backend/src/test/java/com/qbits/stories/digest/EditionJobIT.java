@@ -12,7 +12,9 @@ import com.qbits.ingestion.persistence.ItemRepository;
 import com.qbits.sources.SourceRegistry;
 import com.qbits.stories.BatchStoryWriter.BatchOutcome;
 import com.qbits.stories.BatchStoryWriter.BatchRequest;
+import com.qbits.stories.DedupeProperties;
 import com.qbits.stories.FakeBatchStoryWriter;
+import com.qbits.stories.FakeStoryGrouper;
 import com.qbits.stories.FakeStoryWriter;
 import com.qbits.stories.StoryFixtures;
 import com.qbits.stories.StoryInputs;
@@ -91,11 +93,27 @@ class EditionJobIT extends IntegrationTest {
         service,
         new StoryInputs(new SourceRegistry(List.of())),
         budget,
-        new EditionPublisher(itemStore(), editions, tx),
+        deduplicator(new EditionPublisher(itemStore(), editions, tx)),
         writerProps,
         props(),
         locks,
         clock);
+  }
+
+  /** Grouping off: these tests cover spec 006; EditionDeduplicatorIT covers spec 008. */
+  private EditionDeduplicator deduplicator(EditionPublisher publisher) {
+    return new EditionDeduplicator(
+        publisher,
+        editions,
+        storyRepo,
+        itemStore(),
+        new SourceRegistry(List.of()),
+        new FakeStoryGrouper(),
+        budget,
+        StoryFixtures.props(),
+        new DedupeProperties(false, "v1", Duration.ofSeconds(60), 1000),
+        props(),
+        tx);
   }
 
   private ItemStore itemStore() {

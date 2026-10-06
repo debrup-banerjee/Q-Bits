@@ -117,6 +117,28 @@ One-time steps outside the code:
 4. Optional: add the site to [Bing Webmaster Tools](https://www.bing.com/webmasters) (it can import
    from Search Console), and apply in Google News Publisher Center.
 
+## One story per event (spec 008)
+
+Before each daily edition goes live, the backend asks the summary service which stories report the
+same event, compared with the stories already live in the last 72 hours. For each event it
+publishes one: a story that is already live first, then one from an `official: true` source in
+`config/sources.yml`, then the earliest. The others are stored as `DUPLICATE` and never shown. It
+takes one call from the daily cap. If the call fails it retries on the next poll, and near the
+publish deadline it publishes without de-duplicating. `qbits.dedupe.enabled: false` turns it off.
+
+To hold back repeats that are **already live** (for example after first deploying this), run the
+clean-up once on the instance. It starts a second, small JVM next to the running backend, with no
+web server, does one call, prints each group and exits:
+
+```bash
+ssh -i ~/.ssh/qbits-key.pem ubuntu@<ip> 'cd /opt/qbits/app && set -a && . /opt/qbits/.env && set +a \
+  && java -Xmx256m -jar backend.jar --spring.profiles.active=admin \
+       --spring.main.web-application-type=none --dedupe-now'
+```
+
+A held-back story can be put back with
+`update items set story_status = 'PUBLISHED', duplicate_of = null where id = '<id>';`.
+
 ## Costs and limits
 
 - `t3.micro` + 30 GB gp3 EBS fits in AWS's free tier (first 12 months on the classic free tier;

@@ -87,7 +87,19 @@ class SourceAdminIT extends IntegrationTest {
   private static Source source(String id, boolean enabled) {
     URI uri = URI.create("https://" + id + ".example/feed");
     return new Source(
-        id, id, uri, uri, SourceType.RSS, uri, null, enabled, true, Region.GLOBAL, null, null);
+        id,
+        id,
+        uri,
+        uri,
+        SourceType.RSS,
+        uri,
+        null,
+        enabled,
+        true,
+        Region.GLOBAL,
+        null,
+        null,
+        false);
   }
 
   private static Item item(String sourceId, String url) {

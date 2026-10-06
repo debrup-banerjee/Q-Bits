@@ -87,6 +87,12 @@ qbits:
       GITLAB: { per-hour: 100, min-spacing: PT1S }
       HUGGINGFACE: { per-hour: 100, min-spacing: PT1S }
       ARXIV: { per-hour: 300, min-spacing: PT3S }
+  dedupe:
+    # One story per event (spec 008): group same-event stories before an edition is published.
+    enabled: true
+    prompt-version: v1
+    timeout: PT60S
+    max-output-tokens: 1000
   digest:
     cutoff-time: "06:00"
     zone: Asia/Kolkata

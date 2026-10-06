@@ -20,6 +20,9 @@
 #   region:       global | india   (a hint for the India AI section, not a rule)
 #   sectionHint:  optional default section; the summary step can override it
 #   intervalMinutes: optional fetch interval override, 15 or more (default 30)
+#   official:     optional, true for the organisation's own channel (company, lab, university,
+#                 government). When several sources report the same event, an official one is
+#                 published and the others held back (spec 008). Default false.
 #
 # Deliberately not listed: Reuters, Bloomberg, Financial Times, Wall Street Journal, The Information
 # (no public RSS, paywalled, or terms that forbid aggregation). Revisit only through a licensed API.
@@ -37,6 +40,7 @@ sources:
     feedUrl: https://openai.com/news/rss.xml
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: global-ai-tech
     termsUrl: https://openai.com/policies/row-terms-of-use/
@@ -49,6 +53,7 @@ sources:
     feedUrl: https://deepmind.google/blog/rss.xml
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: global-ai-tech
     termsUrl: https://policies.google.com/terms
@@ -63,6 +68,7 @@ sources:
     feedUrl: https://blog.google/innovation-and-ai/technology/ai/rss/
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: global-ai-tech
     termsUrl: https://policies.google.com/terms
@@ -75,6 +81,7 @@ sources:
     feedUrl: https://blogs.microsoft.com/ai/feed/
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: global-ai-tech
     termsUrl: https://www.microsoft.com/en-us/legal/terms-of-use
@@ -87,6 +94,7 @@ sources:
     feedUrl: https://blogs.nvidia.com/feed/
     type: rss
     aiNative: false
+    official: true
     region: global
     termsUrl: https://www.nvidia.com/en-us/about-nvidia/terms-of-service/
     termsReviewedOn: 2026-10-04
@@ -98,6 +106,7 @@ sources:
     feedUrl: https://huggingface.co/blog/feed.xml
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: global-ai-tech
     termsUrl: https://huggingface.co/terms-of-service
@@ -257,6 +266,7 @@ sources:
     feedUrl: https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3
     type: rss
     aiNative: false
+    official: true
     region: india
     sectionHint: india-ai
     termsUrl: https://pib.gov.in/content/102_2_Copyright-Policy.aspx
@@ -272,6 +282,7 @@ sources:
     feedUrl: https://www.sarvam.ai/rss.xml
     type: rss
     aiNative: true
+    official: true
     region: india
     sectionHint: india-ai
     termsUrl: https://www.sarvam.ai/terms-of-service
@@ -297,6 +308,7 @@ sources:
     feedUrl: https://news.mit.edu/rss/topic/artificial-intelligence2
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: innovations-research
     termsUrl: https://news.mit.edu/terms-of-use
@@ -309,6 +321,7 @@ sources:
     feedUrl: https://research.google/blog/rss/
     type: rss
     aiNative: true
+    official: true
     region: global
     sectionHint: innovations-research
     termsUrl: https://policies.google.com/terms

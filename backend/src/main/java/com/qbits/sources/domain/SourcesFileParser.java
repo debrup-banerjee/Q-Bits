@@ -97,7 +97,8 @@ public final class SourcesFileParser {
               e.requiredBoolean("aiNative"),
               e.requiredEnum("region", Region.class),
               e.optionalSectionHint(),
-              e.optionalInterval(minInterval));
+              e.optionalInterval(minInterval),
+              e.optionalBoolean("official"));
       sources.add(source);
     }
     return sources;
@@ -168,6 +169,15 @@ public final class SourcesFileParser {
         return b;
       }
       add(field, v == null ? "is required" : "must be true or false");
+      return false;
+    }
+
+    boolean optionalBoolean(String field) {
+      Object v = values.get(field);
+      if (v == null || v instanceof Boolean) {
+        return Boolean.TRUE.equals(v);
+      }
+      add(field, "must be true or false");
       return false;
     }
 

@@ -108,6 +108,23 @@ class SourcesFileParserTest {
   }
 
   @Test
+  void officialIsOptionalAndDefaultsToFalse() { // 008 R2.6
+    String yaml = VALID.replace("intervalMinutes: 20", "intervalMinutes: 20\n    official: true");
+
+    List<Source> sources = parser.parse(yaml);
+
+    assertThat(sources.get(0).official()).isTrue();
+    assertThat(sources.get(1).official()).isFalse();
+  }
+
+  @Test
+  void rejectsANonBooleanOfficial() { // 008 R2.6
+    String yaml = VALID.replace("intervalMinutes: 20", "intervalMinutes: 20\n    official: maybe");
+
+    assertThatThrownBy(() -> parser.parse(yaml)).hasMessageContaining("'official'");
+  }
+
+  @Test
   void rejectsIntervalBelowFifteenMinutes() { // 001 R2.1
     String yaml = VALID.replace("intervalMinutes: 20", "intervalMinutes: 5");
 

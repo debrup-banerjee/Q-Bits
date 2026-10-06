@@ -468,7 +468,8 @@ class IngestionJobIT extends IntegrationTest {
         aiNative,
         Region.GLOBAL,
         null,
-        null);
+        null,
+        false);
   }
 
   private static void stubFeed(String path, String fixture) {

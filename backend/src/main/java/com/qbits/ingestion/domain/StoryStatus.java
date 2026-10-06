@@ -8,5 +8,7 @@ public enum StoryStatus {
   PUBLISHED,
   NOT_AI,
   REJECTED,
-  EXPIRED
+  EXPIRED,
+  /** Same event as another story, which is published instead (spec 008). */
+  DUPLICATE
 }

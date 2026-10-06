@@ -192,7 +192,8 @@ class StoryJobIT extends IntegrationTest {
                 false,
                 Region.INDIA,
                 "india-ai",
-                null)));
+                null,
+                false)));
   }
 
   private UUID item(Instant published) {

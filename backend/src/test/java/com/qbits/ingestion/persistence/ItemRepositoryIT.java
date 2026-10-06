@@ -70,7 +70,8 @@ class ItemRepositoryIT extends IntegrationTest {
             "hidden",
             "story_note",
             "edition_id",
-            "retry_feedback");
+            "retry_feedback",
+            "duplicate_of"); // 008: an item id, nothing from the article
   }
 
   @Test

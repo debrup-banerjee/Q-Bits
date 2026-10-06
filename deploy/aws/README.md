@@ -87,6 +87,14 @@ Two things worth knowing:
   nameservers at Cloudflare to get the same effect, or install a cert directly on the instance with
   [Certbot](https://certbot.eff.org/) instead.
 
+## SSH access from a changing home IP
+
+The security group allows SSH (port 22) from one address only. A home connection's public IP
+changes on reconnects, which makes SSH time out (deploy-app.sh then wrongly suggests cloud-init
+did not finish). `deploy-app.sh` now points the rule at your current IP before it connects: it adds
+the new address, then removes the old one. Set `QBITS_KEEP_SSH_RULE=1` to skip this, for example
+when deploying from a second place you want to keep allowed.
+
 ## Pages and search engines (spec 007)
 
 nginx serves only the built files (`/assets/*`, `favicon.svg`) itself. Every page (`/`,

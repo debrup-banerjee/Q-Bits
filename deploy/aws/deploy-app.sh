@@ -84,6 +84,36 @@ if [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" = "None" ]; then
   exit 1
 fi
 
+# The security group allows SSH from one address only, and a home connection's public IP changes
+# (on reconnect, or overnight). Point the rule at this machine's current IP before connecting:
+# add it first, then remove any other port-22 address, so SSH is never left open to more than one.
+# Set QBITS_KEEP_SSH_RULE=1 to leave the rule alone (e.g. when deploying from a second location).
+if [ "${QBITS_KEEP_SSH_RULE:-}" != "1" ]; then
+  MY_IP=$(curl -s --max-time 10 https://checkip.amazonaws.com | tr -d '[:space:]')
+  if [[ ! "$MY_IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "could not find this machine's public IP (got '$MY_IP') -- check the connection" >&2
+    exit 1
+  fi
+  SG_ID=$(aws ec2 describe-instances --region "$REGION" \
+    --filters "Name=tag:Name,Values=$TAG_NAME" "Name=instance-state-name,Values=running" \
+    --query 'Reservations[0].Instances[0].SecurityGroups[0].GroupId' --output text)
+  SSH_CIDRS=$(aws ec2 describe-security-groups --region "$REGION" --group-ids "$SG_ID" \
+    --query 'SecurityGroups[0].IpPermissions[?FromPort==`22`].IpRanges[].CidrIp' --output text)
+  if [ "$SSH_CIDRS" != "$MY_IP/32" ]; then
+    echo "== Allowing SSH from this machine ($MY_IP); was: ${SSH_CIDRS:-none} =="
+    if ! grep -qw "$MY_IP/32" <<<"$SSH_CIDRS"; then
+      aws ec2 authorize-security-group-ingress --region "$REGION" --group-id "$SG_ID" \
+        --protocol tcp --port 22 --cidr "$MY_IP/32" >/dev/null
+    fi
+    for cidr in $SSH_CIDRS; do
+      if [ "$cidr" != "$MY_IP/32" ]; then
+        aws ec2 revoke-security-group-ingress --region "$REGION" --group-id "$SG_ID" \
+          --protocol tcp --port 22 --cidr "$cidr" >/dev/null
+      fi
+    done
+  fi
+fi
+
 SSH_OPTS="-i $KEY_FILE -o StrictHostKeyChecking=accept-new"
 SSH="ssh $SSH_OPTS ubuntu@$PUBLIC_IP"
 echo "== Deploying to $PUBLIC_IP =="

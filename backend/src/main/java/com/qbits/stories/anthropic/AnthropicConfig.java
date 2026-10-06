@@ -3,6 +3,8 @@ package com.qbits.stories.anthropic;
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.qbits.stories.BatchStoryWriter;
+import com.qbits.stories.DedupeProperties;
+import com.qbits.stories.StoryGrouper;
 import com.qbits.stories.StoryWriter;
 import com.qbits.stories.StoryWriterProperties;
 import org.slf4j.Logger;
@@ -64,6 +66,12 @@ class AnthropicConfig {
   @Bean
   StoryWriter anthropicStoryWriter(AnthropicClient client, StoryRequests requests) {
     return new AnthropicStoryWriter(client, requests);
+  }
+
+  @Bean
+  StoryGrouper anthropicStoryGrouper(
+      AnthropicClient client, StoryWriterProperties writer, DedupeProperties dedupe) {
+    return new AnthropicStoryGrouper(client, writer, dedupe);
   }
 
   @Bean

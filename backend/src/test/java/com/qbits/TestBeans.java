@@ -2,8 +2,10 @@ package com.qbits;
 
 import com.qbits.stories.BatchStoryWriter;
 import com.qbits.stories.FakeBatchStoryWriter;
+import com.qbits.stories.FakeStoryGrouper;
 import com.qbits.stories.FakeStoryWriter;
 import com.qbits.stories.StoryFixtures;
+import com.qbits.stories.StoryGrouper;
 import com.qbits.stories.StoryWriter;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +19,12 @@ public class TestBeans {
   @Primary
   StoryWriter fakeStoryWriter() {
     return new FakeStoryWriter(StoryFixtures::validDraft);
+  }
+
+  @Bean
+  @Primary
+  StoryGrouper fakeStoryGrouper() {
+    return new FakeStoryGrouper();
   }
 
   @Bean

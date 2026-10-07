@@ -98,7 +98,8 @@ public final class SourcesFileParser {
               e.requiredEnum("region", Region.class),
               e.optionalSectionHint(),
               e.optionalInterval(minInterval),
-              e.optionalBoolean("official"));
+              e.optionalBoolean("official"),
+              e.optionalImages());
       sources.add(source);
     }
     return sources;
@@ -221,6 +222,35 @@ public final class SourcesFileParser {
         return null;
       }
       return hint;
+    }
+
+    /**
+     * The optional {@code images} block (spec 009 R3.1). Every field is required when the block is
+     * present, so a permission can always be traced back to its evidence.
+     */
+    ImagePermission optionalImages() {
+      Object v = values.get("images");
+      if (v == null) {
+        return null;
+      }
+      if (!(v instanceof Map<?, ?> block)) {
+        add("images", "must be a mapping with basis, evidence, reviewedOn and credit");
+        return null;
+      }
+      Entry inner = new Entry(block, index, problems);
+      inner.label = who() + ".images"; // problems read "source 'x.images': field 'basis' ..."
+      ImagePermission.Basis basis = inner.requiredEnum("basis", ImagePermission.Basis.class);
+      URI evidence = inner.requiredUrl("evidence");
+      Object reviewed = block.get("reviewedOn");
+      LocalDate reviewedOn = reviewed == null ? null : inner.optionalDate("reviewedOn");
+      if (reviewed == null) {
+        inner.add("reviewedOn", "is required");
+      }
+      String credit = inner.requiredString("credit");
+      if (basis == null || evidence == null || reviewedOn == null || credit == null) {
+        return null;
+      }
+      return new ImagePermission(basis, evidence, reviewedOn, credit);
     }
 
     Duration optionalInterval(Duration minInterval) {

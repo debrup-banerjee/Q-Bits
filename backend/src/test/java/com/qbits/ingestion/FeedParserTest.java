@@ -75,4 +75,60 @@ class FeedParserTest {
       throw new IllegalStateException(e);
     }
   }
+
+  private static byte[] rss(String item) {
+    return ("""
+        <?xml version="1.0"?>
+        <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+          <channel><title>T</title><link>https://lab.example/</link><description>D</description>
+            <item><title>A</title><link>https://lab.example/a</link>%s</item>
+          </channel>
+        </rss>
+        """
+            .formatted(item))
+        .strip()
+        .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+  }
+
+  @Test
+  void readsTheImageTheFeedAttachesToAnEntry() { // 009 R3.2
+    assertThat(
+            parser
+                .parse(
+                    rss(
+                        "<enclosure url=\"https://lab.example/e.jpg\" type=\"image/jpeg\" length=\"1\"/>"))
+                .getFirst()
+                .imageUrl())
+        .isEqualTo("https://lab.example/e.jpg");
+    assertThat(
+            parser
+                .parse(
+                    rss(
+                        "<media:thumbnail url=\"https://lab.example/t.jpg\"/>"
+                            + "<media:group><media:content url=\"https://lab.example/c.jpg\""
+                            + " medium=\"image\"/></media:group>"))
+                .getFirst()
+                .imageUrl())
+        .isEqualTo("https://lab.example/c.jpg");
+    assertThat(
+            parser
+                .parse(rss("<media:thumbnail url=\"https://lab.example/t.jpg\"/>"))
+                .getFirst()
+                .imageUrl())
+        .isEqualTo("https://lab.example/t.jpg");
+  }
+
+  @Test
+  void ignoresNonHttpsAndNonImageMedia() { // 009 R3.2
+    assertThat(
+            parser
+                .parse(
+                    rss(
+                        "<enclosure url=\"https://lab.example/a.mp3\" type=\"audio/mpeg\" length=\"1\"/>"
+                            + "<media:content url=\"http://lab.example/c.jpg\" medium=\"image\"/>"
+                            + "<description>&lt;img src=\"https://lab.example/inline.jpg\"&gt;</description>"))
+                .getFirst()
+                .imageUrl())
+        .isNull();
+  }
 }

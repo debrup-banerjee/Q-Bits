@@ -4,11 +4,12 @@ import { ExternalLink } from '../../components/ExternalLink';
 import { RelativeTime } from '../../components/RelativeTime';
 import { ResourceLinks } from '../../components/ResourceLinks';
 import { sectionPill } from '../sections/sectionTheme';
+import { StoryPicture } from './StoryPicture';
 import { WordsToKnow } from './WordsToKnow';
 
 /**
- * One story: headline, section, source and time, our summary, words to know, the link out and the
- * attribution line. No images or embedded content (spec 003 R6).
+ * One story: its picture or cover art, headline, section, source and time, our summary, words to
+ * know, the link out and the attribution line. No embedded content (spec 003 R6, 009 R5).
  */
 export function StoryCard({
   story,
@@ -24,6 +25,7 @@ export function StoryCard({
     <article
       className={`card flex flex-col gap-3.5 p-5 sm:p-6 ${headingLevel === 1 ? 'sm:p-8' : 'card-hover'}`}
     >
+      <StoryPicture story={story} />
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-wide text-muted">
         <Link
           to={`/section/${story.section.slug}`}

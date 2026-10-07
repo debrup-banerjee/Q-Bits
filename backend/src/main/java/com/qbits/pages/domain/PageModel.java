@@ -15,6 +15,7 @@ import java.util.List;
  * @param jsonLd JSON-LD documents, already serialised
  * @param body HTML placed inside {@code <div id="root">}, already escaped
  * @param initialData serialised initial data for the web app; empty for none
+ * @param imageUrl the page's picture for link previews (spec 009 R6); empty for none
  */
 public record PageModel(
     int status,
@@ -25,10 +26,31 @@ public record PageModel(
     boolean noindex,
     List<String> jsonLd,
     String body,
-    String initialData) {
+    String initialData,
+    String imageUrl) {
 
   public PageModel {
     jsonLd = List.copyOf(jsonLd);
+    imageUrl = imageUrl == null ? "" : imageUrl;
+  }
+
+  public PageModel(
+      int status,
+      String title,
+      String description,
+      String canonicalPath,
+      String ogType,
+      boolean noindex,
+      List<String> jsonLd,
+      String body,
+      String initialData) {
+    this(status, title, description, canonicalPath, ogType, noindex, jsonLd, body, initialData, "");
+  }
+
+  /** The same page with a picture for link previews. */
+  public PageModel withImage(String url) {
+    return new PageModel(
+        status, title, description, canonicalPath, ogType, noindex, jsonLd, body, initialData, url);
   }
 
   /** An indexable page with content. */

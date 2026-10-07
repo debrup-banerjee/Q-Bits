@@ -28,6 +28,7 @@ export function story(overrides: Partial<StoryView> = {}): StoryView {
     dateEstimated: false,
     attribution: "Summary written from The Hindu's headline and teaser",
     resources: [],
+    image: null,
     ...overrides,
   };
 }

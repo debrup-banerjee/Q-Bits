@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectOnlyCreditedImages } from './images';
 import { mockApi } from './mock-api';
 
 // 004 R2.1, R2.2, R3.2, R4.4, R4.5 (no horizontal scroll)
@@ -16,7 +17,8 @@ test('opens on AI Latest with the last 24 hours only', async ({ page }) => {
 
   await expect(page.getByRole('article')).toHaveCount(4);
   await expect(page.getByText('A day-old story about AI chip prices')).toHaveCount(0);
-  await expect(page.locator('img, iframe')).toHaveCount(0);
+  await expect(page.locator('iframe, video, embed, object')).toHaveCount(0);
+  await expectOnlyCreditedImages(page); // 009 R5.2
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

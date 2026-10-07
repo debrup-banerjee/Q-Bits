@@ -3,6 +3,7 @@ package com.qbits.pages.domain;
 import static com.qbits.pages.domain.Html.text;
 
 import com.qbits.catalog.domain.StoryView;
+import com.qbits.images.domain.StoryImage;
 import com.qbits.resources.domain.ResourceLink;
 import com.qbits.stories.domain.KeyTerm;
 import com.qbits.stories.domain.Section;
@@ -160,6 +161,8 @@ public final class PageContent {
         .append("<nav aria-label=\"Footer\" class=\"flex flex-col gap-2 text-sm\">")
         .append("<a href=\"/sections\" class=\"link-arrow\">Browse by section</a>")
         .append("<a href=\"/about\" class=\"link-arrow\">How Q-Bits works</a>")
+        .append("<a href=\"https://www.pexels.com\" class=\"text-muted underline\"")
+        .append(" target=\"_blank\" rel=\"noopener noreferrer\">Photos provided by Pexels</a>")
         .append("</nav></div></footer></div>");
     return html.toString();
   }
@@ -169,6 +172,7 @@ public final class PageContent {
     String h = "h" + headingLevel;
     StringBuilder html =
         new StringBuilder("<article class=\"card flex flex-col gap-3.5 p-5 sm:p-6\">");
+    html.append(picture(s.image()));
     html.append("<div class=\"flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium")
         .append(" uppercase tracking-wide text-muted\">")
         .append(sectionLink(s))
@@ -195,6 +199,7 @@ public final class PageContent {
   /** A compact timeline item, like the web app's {@code FeedCard}. */
   static String feedItem(StoryView s) {
     return "<article class=\"flex flex-col gap-1.5 border-b border-line py-5 last:border-b-0\">"
+        + picture(s.image())
         + "<div class=\"flex flex-wrap items-center gap-x-1.5 text-sm text-muted\">"
         + "<span class=\"font-semibold text-ink\">"
         + text(s.source().name())
@@ -210,6 +215,31 @@ public final class PageContent {
         + resources(s.resources())
         + readMore(s)
         + "</article>";
+  }
+
+  /**
+   * The story's picture with its credit (spec 009 R5), like the web app's {@code StoryPicture}.
+   * Stories without one get no picture here; the web app draws their cover art once it loads.
+   */
+  static String picture(StoryImage image) {
+    if (image == null) {
+      return "";
+    }
+    return "<figure class=\"story-figure\"><img src=\""
+        + text(image.url())
+        + "\" alt=\""
+        + text(image.alt())
+        + "\" loading=\"lazy\" decoding=\"async\" referrerpolicy=\"no-referrer\""
+        + " class=\"story-img\" /><figcaption class=\"story-credit\">"
+        + text(creditLine(image))
+        + "</figcaption></figure>";
+  }
+
+  /** "Illustrative photo by X on Pexels" or "Image: credit" (spec 009 R5.2). */
+  public static String creditLine(StoryImage image) {
+    return "photo".equals(image.kind())
+        ? "Illustrative photo by " + image.credit() + " on " + image.provider()
+        : "Image: " + image.credit();
   }
 
   private static String sectionLink(StoryView s) {

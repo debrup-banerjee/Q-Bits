@@ -85,6 +85,15 @@ export function AppShell() {
                 →
               </span>
             </Link>
+            {/* Pexels asks apps that use its photos to link to it prominently (spec 009 R5.2). */}
+            <a
+              href="https://www.pexels.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted underline underline-offset-2 hover:text-ink"
+            >
+              Photos provided by Pexels
+            </a>
           </nav>
         </div>
       </footer>

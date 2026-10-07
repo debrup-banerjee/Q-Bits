@@ -93,12 +93,70 @@ it('shows no open-source row when there are no links', () => {
   expect(screen.queryByLabelText('Open source')).not.toBeInTheDocument();
 });
 
-// 004 R4.4
-it('has no images, embeds or social buttons', () => {
+// 004 R4.4, 009 R1
+it('has no embeds or social buttons, and draws cover art when there is no picture', () => {
   const { container } = renderAt(<FeedCard story={story()} now={NOW} />);
 
   expect(container.querySelector('img, iframe, video, embed, object')).toBeNull();
+  expect(screen.getByTestId('cover-art')).toHaveAttribute('aria-hidden', 'true');
   for (const name of [/like/i, /share/i, /comment/i, /follow/i]) {
     expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
   }
+});
+
+// 009 R5.1, R5.2
+it('shows a photo with the photographer and library credited', () => {
+  renderAt(
+    <FeedCard
+      story={story({
+        image: {
+          kind: 'photo',
+          url: 'https://images.pexels.com/p',
+          alt: 'a computer chip',
+          credit: 'Asha Rao',
+          creditUrl: 'https://www.pexels.com/@asha',
+          provider: 'Pexels',
+          providerUrl: 'https://www.pexels.com',
+          color: '#112233',
+        },
+      })}
+      now={NOW}
+    />,
+  );
+
+  expect(screen.getByRole('img', { name: 'a computer chip' })).toHaveAttribute(
+    'src',
+    'https://images.pexels.com/p',
+  );
+  expect(screen.getByText(/Illustrative photo by/)).toHaveTextContent(
+    'Illustrative photo by Asha Rao on Pexels',
+  );
+  expect(screen.getByRole('link', { name: 'Asha Rao' })).toHaveAttribute(
+    'href',
+    'https://www.pexels.com/@asha',
+  );
+  expect(screen.queryByTestId('cover-art')).not.toBeInTheDocument();
+});
+
+// 009 R3.3
+it('credits a publisher image to the publisher', () => {
+  renderAt(
+    <FeedCard
+      story={story({
+        image: {
+          kind: 'publisher',
+          url: 'https://lab.example/img.png',
+          alt: 'Image supplied by Lab',
+          credit: 'Lab press kit',
+          creditUrl: null,
+          provider: 'Lab',
+          providerUrl: 'https://lab.example/',
+          color: null,
+        },
+      })}
+      now={NOW}
+    />,
+  );
+
+  expect(screen.getByText(/^Image:/)).toHaveTextContent('Image: Lab press kit');
 });

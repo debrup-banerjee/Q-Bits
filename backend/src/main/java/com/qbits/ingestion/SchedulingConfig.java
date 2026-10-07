@@ -1,5 +1,6 @@
 package com.qbits.ingestion;
 
+import com.qbits.images.ImageJob;
 import com.qbits.resources.ResourceCheckJob;
 import com.qbits.stories.StoryJob;
 import com.qbits.stories.StoryWriterProperties;
@@ -48,6 +49,7 @@ class SchedulingConfig {
     private final StoryJob stories;
     private final ResourceCheckJob links;
     private final EditionJob editions;
+    private final ImageJob images;
     private final boolean digestMode;
 
     Triggers(
@@ -56,12 +58,14 @@ class SchedulingConfig {
         StoryJob stories,
         ResourceCheckJob links,
         EditionJob editions,
+        ImageJob images,
         StoryWriterProperties writer) {
       this.ingestion = ingestion;
       this.retention = retention;
       this.stories = stories;
       this.links = links;
       this.editions = editions;
+      this.images = images;
       this.digestMode = !writer.realtime();
     }
 
@@ -76,6 +80,12 @@ class SchedulingConfig {
     @Scheduled(fixedDelayString = "${qbits.resources.tick}", initialDelayString = "PT90S")
     void checkLinks() {
       links.runOnce();
+    }
+
+    /** Story pictures (spec 009). */
+    @Scheduled(fixedDelayString = "${qbits.images.tick}", initialDelayString = "PT2M")
+    void findImages() {
+      images.runOnce();
     }
 
     @Scheduled(fixedDelayString = "${qbits.story-writer.tick}", initialDelayString = "PT60S")

@@ -1,5 +1,6 @@
 package com.qbits;
 
+import com.qbits.images.ImageQueryWriter;
 import com.qbits.stories.BatchStoryWriter;
 import com.qbits.stories.FakeBatchStoryWriter;
 import com.qbits.stories.FakeStoryGrouper;
@@ -7,6 +8,7 @@ import com.qbits.stories.FakeStoryWriter;
 import com.qbits.stories.StoryFixtures;
 import com.qbits.stories.StoryGrouper;
 import com.qbits.stories.StoryWriter;
+import java.util.Optional;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -25,6 +27,13 @@ public class TestBeans {
   @Primary
   StoryGrouper fakeStoryGrouper() {
     return new FakeStoryGrouper();
+  }
+
+  /** No photo phrase from the model: the job uses its key-term fallback (spec 009 R2.3). */
+  @Bean
+  @Primary
+  ImageQueryWriter fakeImageQueryWriter() {
+    return (headline, summary, keyTerms) -> Optional.empty();
   }
 
   @Bean

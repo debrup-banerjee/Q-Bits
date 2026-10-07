@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { expectOnlyCreditedImages } from './images';
 import { FIRST_INDIA_STORY, mockApi } from './mock-api';
 
 test.beforeEach(async ({ page }) => mockApi(page));
@@ -23,7 +24,8 @@ test('section overview shows the five sections without horizontal scrolling', as
   await expect(
     page.getByText('No AI Innovations news in the last 72 hours. Check back soon.'),
   ).toBeVisible();
-  await expect(page.locator('img, iframe')).toHaveCount(0);
+  await expect(page.locator('iframe, video, embed, object')).toHaveCount(0);
+  await expectOnlyCreditedImages(page); // 009 R5.2
   await expectNoHorizontalScroll(page);
 });
 

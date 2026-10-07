@@ -14,7 +14,13 @@ export type EditionView = Schemas['EditionView'];
 export type ResourceLink = Schemas['ResourceLink'];
 /** A source's homepage is null if the source was removed from the approved list. */
 export type SourceRef = Schemas['SourceRef'];
-export type StoryView = Schemas['StoryView'];
+/**
+ * A story's picture (spec 009): a credited photo-library photo or a publisher image shown with
+ * recorded permission. Always show `credit` with it.
+ */
+export type StoryImage = Schemas['StoryImage'];
+/** `image` is null until a safe picture is found; draw the story's cover art instead. */
+export type StoryView = Omit<Schemas['StoryView'], 'image'> & { image: StoryImage | null };
 export type StoryPage = { data: StoryView[]; nextCursor: string | null };
 /** A signed session token plus the username it belongs to (optional accounts). */
 export type Session = Schemas['SessionView'];

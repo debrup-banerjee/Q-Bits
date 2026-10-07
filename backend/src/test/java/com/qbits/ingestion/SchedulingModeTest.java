@@ -23,6 +23,7 @@ class SchedulingModeTest {
         stories,
         mock(ResourceCheckJob.class),
         editions,
+        mock(com.qbits.images.ImageJob.class),
         new StoryWriterProperties(
             mode,
             "anthropic",

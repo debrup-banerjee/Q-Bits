@@ -23,6 +23,14 @@
 #   official:     optional, true for the organisation's own channel (company, lab, university,
 #                 government). When several sources report the same event, an official one is
 #                 published and the others held back (spec 008). Default false.
+#   images:       optional; ONLY after a person has checked that this source allows its feed
+#                 images to be shown (spec 009). Leave it out otherwise. All four fields required:
+#                   images:
+#                     basis: press_kit            # or written_permission
+#                     evidence: https://...       # press-kit terms page, or where the permission is kept
+#                     reviewedOn: 2026-10-07
+#                     credit: OpenAI press kit    # shown under the image as "Image: <credit>"
+#                 No source has this yet; stories get a credited Pexels photo or cover art instead.
 #
 # Deliberately not listed: Reuters, Bloomberg, Financial Times, Wall Street Journal, The Information
 # (no public RSS, paywalled, or terms that forbid aggregation). Revisit only through a licensed API.

@@ -65,7 +65,12 @@ public final class PageRenderer {
     meta(tags, "property", "og:type", page.ogType());
     meta(tags, "property", "og:title", page.title());
     meta(tags, "property", "og:description", page.description());
-    meta(tags, "name", "twitter:card", "summary");
+    if (page.imageUrl().isEmpty()) {
+      meta(tags, "name", "twitter:card", "summary");
+    } else {
+      meta(tags, "property", "og:image", page.imageUrl());
+      meta(tags, "name", "twitter:card", "summary_large_image");
+    }
     for (String ld : page.jsonLd()) {
       tags.append("    <script type=\"application/ld+json\">")
           .append(Html.scriptJson(ld))

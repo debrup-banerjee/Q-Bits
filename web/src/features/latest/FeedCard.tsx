@@ -5,13 +5,14 @@ import { ExternalLink } from '../../components/ExternalLink';
 import { RelativeTime } from '../../components/RelativeTime';
 import { ResourceLinks } from '../../components/ResourceLinks';
 import { sectionDot } from '../sections/sectionTheme';
+import { StoryPicture } from '../stories/StoryPicture';
 import { WordsToKnow } from '../stories/WordsToKnow';
 import { SourceBadge } from './SourceBadge';
 
 /**
  * A compact, timeline-style story (spec 004 R4): source badge, source, time, section, headline,
- * a three-line summary that expands in place with the words to know, the link out and the
- * attribution. No images and no social buttons.
+ * its picture or cover art (spec 009), a three-line summary that expands in place with the words to
+ * know, the link out and the attribution. No social buttons.
  */
 export function FeedCard({ story, now }: { story: StoryView; now?: Date }) {
   const [expanded, setExpanded] = useState(false);
@@ -42,6 +43,9 @@ export function FeedCard({ story, now }: { story: StoryView; now?: Date }) {
             {story.headline}
           </Link>
         </h2>
+        <div className="mt-1">
+          <StoryPicture story={story} />
+        </div>
         <div id={bodyId} className="flex flex-col gap-2">
           <p
             data-testid="feed-summary"

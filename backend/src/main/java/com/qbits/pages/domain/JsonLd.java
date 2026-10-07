@@ -32,6 +32,13 @@ public final class JsonLd {
     ld.put("inLanguage", "en");
     ld.put("author", organizationRef(siteUrl));
     ld.put("publisher", organizationRef(siteUrl));
+    if (s.image() != null) {
+      Map<String, Object> image = new LinkedHashMap<>();
+      image.put("@type", "ImageObject");
+      image.put("url", s.image().url());
+      image.put("creditText", PageContent.creditLine(s.image()));
+      ld.put("image", image);
+    }
     return ld;
   }
 

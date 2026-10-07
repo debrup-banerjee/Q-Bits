@@ -162,42 +162,4 @@ class SourcesFileParserTest {
 
     assertThat(sources).hasSize(26);
   }
-
-  private static final String IMAGES =
-      """
-          images:
-            basis: press_kit
-            evidence: https://example.com/press
-            reviewedOn: 2026-10-07
-            credit: Example AI press kit
-      """;
-
-  @Test
-  void readsARecordedImagePermission() { // 009 R3.1
-    String yaml = VALID.replace("    enabled: true\n", "    enabled: true\n" + IMAGES);
-
-    Source source = parser.parse(yaml).getFirst();
-
-    assertThat(source.imagePermission())
-        .contains(
-            new ImagePermission(
-                ImagePermission.Basis.PRESS_KIT,
-                java.net.URI.create("https://example.com/press"),
-                LocalDate.parse("2026-10-07"),
-                "Example AI press kit"));
-    assertThat(parser.parse(VALID).getFirst().imagePermission()).isEmpty();
-  }
-
-  @Test
-  void rejectsAnImagePermissionWithoutEvidence() { // 009 R3.1
-    String yaml =
-        VALID.replace(
-            "    enabled: true\n",
-            "    enabled: true\n"
-                + IMAGES.replace("      evidence: https://example.com/press\n", ""));
-
-    assertThatThrownBy(() -> parser.parse(yaml))
-        .isInstanceOf(SourceConfigException.class)
-        .hasMessageContaining("source 'example-ai.images': field 'evidence' is required");
-  }
 }

@@ -226,17 +226,6 @@ export interface components {
             homepage: string;
             name: string;
         };
-        StoryImage: {
-            alt: string;
-            color: string | null;
-            credit: string;
-            creditUrl: string | null;
-            /** @enum {string} */
-            kind: "photo" | "publisher";
-            provider: string;
-            providerUrl: string | null;
-            url: string;
-        };
         StoryPage: {
             data: components["schemas"]["StoryView"][];
             nextCursor: string;
@@ -247,7 +236,6 @@ export interface components {
             headline: string;
             /** Format: uuid */
             id: string;
-            image: components["schemas"]["StoryImage"];
             keyTerms: components["schemas"]["KeyTerm"][];
             originalUrl: string;
             /** Format: date-time */

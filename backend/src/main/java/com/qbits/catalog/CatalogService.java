@@ -6,8 +6,6 @@ import com.qbits.catalog.domain.StoryPage;
 import com.qbits.catalog.domain.StoryView;
 import com.qbits.catalog.persistence.StoryQueryRepository;
 import com.qbits.catalog.persistence.StoryQueryRepository.Row;
-import com.qbits.images.ImageQueries;
-import com.qbits.images.domain.StoryImage;
 import com.qbits.resources.ResourceQueries;
 import com.qbits.resources.domain.ResourceLink;
 import com.qbits.sources.SourceRegistry;
@@ -32,19 +30,16 @@ public class CatalogService {
   private final SourceRegistry registry;
   private final ResourceQueries resources;
   private final EditionQueries editions;
-  private final ImageQueries images;
 
   public CatalogService(
       StoryQueryRepository queries,
       SourceRegistry registry,
       ResourceQueries resources,
-      EditionQueries editions,
-      ImageQueries images) {
+      EditionQueries editions) {
     this.queries = queries;
     this.registry = registry;
     this.resources = resources;
     this.editions = editions;
-    this.images = images;
   }
 
   public StoryPage list(Optional<Section> section, Optional<Cursor> after, int limit) {
@@ -68,25 +63,16 @@ public class CatalogService {
         more
             ? CursorCodec.encode(new Cursor(page.getLast().publishedAt(), page.getLast().id()))
             : null;
-    List<UUID> ids = page.stream().map(Row::id).toList();
-    Map<UUID, List<ResourceLink>> links = resources.verifiedFor(ids);
-    Map<UUID, StoryImage> pictures = images.forStories(ids);
+    Map<UUID, List<ResourceLink>> links =
+        resources.verifiedFor(page.stream().map(Row::id).toList());
     return new StoryPage(
-        page.stream()
-            .map(r -> view(r, links.getOrDefault(r.id(), List.of()), pictures.get(r.id())))
-            .toList(),
-        next);
+        page.stream().map(r -> view(r, links.getOrDefault(r.id(), List.of()))).toList(), next);
   }
 
   public Optional<StoryView> find(UUID id) {
     return queries
         .find(id, windowStart())
-        .map(
-            r ->
-                view(
-                    r,
-                    resources.verifiedFor(List.of(r.id())).getOrDefault(r.id(), List.of()),
-                    images.forStories(List.of(r.id())).get(r.id())));
+        .map(r -> view(r, resources.verifiedFor(List.of(r.id())).getOrDefault(r.id(), List.of())));
   }
 
   public Map<Section, Long> counts() {
@@ -110,7 +96,7 @@ public class CatalogService {
     return editions.windowEnd().minus(WINDOW);
   }
 
-  private StoryView view(Row r, List<ResourceLink> links, StoryImage image) {
+  private StoryView view(Row r, List<ResourceLink> links) {
     Optional<Source> source = registry.find(r.sourceId());
     String name = source.map(Source::name).orElse(r.sourceId());
     String homepage = source.map(s -> s.homepage().toString()).orElse(null);
@@ -125,7 +111,6 @@ public class CatalogService {
         r.publishedAt(),
         r.dateEstimated(),
         StoryView.attributionFor(name),
-        links,
-        image);
+        links);
   }
 }

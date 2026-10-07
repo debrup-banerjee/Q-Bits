@@ -98,14 +98,4 @@ class PageRendererTest {
     assertThatThrownBy(() -> new PageRenderer("<html><head></head><body></body></html>", SITE))
         .isInstanceOf(IllegalArgumentException.class);
   }
-
-  @Test
-  void aPageWithAPictureAnnouncesItForLinkPreviews() { // 009 R6.1
-    String html = renderer.render(page().withImage("https://images.pexels.com/p?a=1&b=2"));
-
-    assertThat(html)
-        .contains(
-            "<meta property=\"og:image\" content=\"https://images.pexels.com/p?a=1&amp;b=2\" />")
-        .contains("<meta name=\"twitter:card\" content=\"summary_large_image\" />");
-  }
 }

@@ -45,38 +45,8 @@ function story(id: string, slug: string, name: string, headline: string, hoursAg
     dateEstimated: false,
     attribution: "Summary written from The Hindu's headline and teaser",
     resources: [] as { type: string; label: string; url: string; name: string }[],
-    image: null as StoryImage | null,
   };
 }
-
-type StoryImage = {
-  kind: 'photo' | 'publisher';
-  url: string;
-  alt: string;
-  credit: string;
-  creditUrl: string | null;
-  provider: string;
-  providerUrl: string | null;
-  color: string | null;
-};
-
-/** A credited Pexels photo, as the backend returns it (spec 009). */
-export const PHOTO: StoryImage = {
-  kind: 'photo',
-  url: 'https://images.pexels.com/photos/101/pexels-photo-101.jpeg?fit=crop&h=627&w=1200',
-  alt: 'a computer chip on a circuit board',
-  credit: 'Asha Rao',
-  creditUrl: 'https://www.pexels.com/@asha',
-  provider: 'Pexels',
-  providerUrl: 'https://www.pexels.com',
-  color: '#0c2340',
-};
-
-/** A 1×1 PNG served in place of the photo, so tests never reach the real image CDN. */
-const PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
-  'base64',
-);
 
 function withLinks<T extends { resources: unknown[] }>(s: T): T {
   return {
@@ -108,17 +78,14 @@ export const LINKED_STORY_ID = '0192f0c4-0000-7000-8000-000000000011';
 
 const STORIES: Record<string, ReturnType<typeof story>[]> = {
   'global-ai-tech': [
-    {
-      ...withLinks(
-        story(
-          '0192f0c4-0000-7000-8000-000000000011',
-          'global-ai-tech',
-          'AI Wire',
-          'A new AI model can read a whole bookshelf at once',
-        ),
+    withLinks(
+      story(
+        '0192f0c4-0000-7000-8000-000000000011',
+        'global-ai-tech',
+        'AI Wire',
+        'A new AI model can read a whole bookshelf at once',
       ),
-      image: PHOTO,
-    },
+    ),
     story(
       '0192f0c4-0000-7000-8000-000000000012',
       'global-ai-tech',
@@ -176,9 +143,6 @@ export const BREAKING = story(
  * running late (spec 006).
  */
 export async function mockApi(page: Page, state: { breaking?: boolean; late?: boolean } = {}) {
-  await page.route('https://images.pexels.com/**', (route) =>
-    route.fulfill({ status: 200, contentType: 'image/png', body: PNG }),
-  );
   await page.route('**/api/v1/**', async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;

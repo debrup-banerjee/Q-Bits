@@ -75,7 +75,6 @@ class IngestionJobIT extends IntegrationTest {
   @Autowired IngestionProperties props;
   @Autowired LockingTaskExecutor locks;
   @Autowired com.qbits.resources.ResourceCollector resourceCollector;
-  @Autowired com.qbits.images.FeedImageCollector feedImages;
   @Autowired com.qbits.resources.persistence.ItemResourceRepository itemResources;
   @Autowired StoryRepository stories;
   @Autowired WriterBudgetRepository budget;
@@ -428,7 +427,6 @@ class IngestionJobIT extends IntegrationTest {
             health,
             props,
             resourceCollector,
-            feedImages,
             clock);
     SourceRegistry registry = new SourceRegistry(sources);
     return new IngestionJob(

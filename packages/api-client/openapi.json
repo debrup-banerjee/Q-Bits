@@ -150,36 +150,6 @@
         },
         "type" : "object"
       },
-      "StoryImage" : {
-        "properties" : {
-          "alt" : {
-            "type" : "string"
-          },
-          "color" : {
-            "type" : [ "string", "null" ]
-          },
-          "credit" : {
-            "type" : "string"
-          },
-          "creditUrl" : {
-            "type" : [ "string", "null" ]
-          },
-          "kind" : {
-            "enum" : [ "photo", "publisher" ],
-            "type" : "string"
-          },
-          "provider" : {
-            "type" : "string"
-          },
-          "providerUrl" : {
-            "type" : [ "string", "null" ]
-          },
-          "url" : {
-            "type" : "string"
-          }
-        },
-        "type" : "object"
-      },
       "StoryPage" : {
         "properties" : {
           "data" : {
@@ -208,10 +178,6 @@
           "id" : {
             "format" : "uuid",
             "type" : "string"
-          },
-          "image" : {
-            "$ref" : "#/components/schemas/StoryImage",
-            "type" : [ "object", "null" ]
           },
           "keyTerms" : {
             "items" : {

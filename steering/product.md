@@ -35,8 +35,7 @@ The section-by-section overview (each section's five newest stories) moves from 
 - Each card leads with the source (a coloured letter badge, never a logo), the time ("12 min ago") and the section label, then the headline.
 - The summary shows its first three lines; "Show more" expands it in place, with the words to know.
 - The page says which edition it is ("Today's digest · published 6:42 am") and when the next one is due.
-- Each card shows one picture: a credited illustrative photo, a publisher image used with recorded permission, or the story's own generated cover art (spec 009).
-- No likes, comments or shares, and no tracking. This is the feel of a timeline, not a social network.
+- No likes, comments, shares or images, and no tracking. This is the feel of a timeline, not a social network.
 
 ## Sections
 Each story appears in exactly one section. **India first:** if a story has a real India angle it goes to India AI, whatever its topic. A passing mention (India as one of twenty launch countries) does not count.
@@ -78,7 +77,7 @@ Each story appears in exactly one section. **India first:** if a story has a rea
 - **Not a general news app.** Non-AI stories are filtered out.
 - **Not opinion.** Summaries explain; they do not take sides, predict markets or give investment advice.
 - **Not a social network.** AI Latest looks like a timeline, but there are no comments, likes, shares, followers or user-submitted links.
-- **Not an image gallery.** One credited picture per story, never a publisher's photo without recorded permission, no hosted images and no publisher logos.
+- **Not an image gallery.** No hosted images or publisher logos.
 - **Not collecting personal data in v1.** No accounts, no tracking beyond basic server logs.
 
 ## Success looks like

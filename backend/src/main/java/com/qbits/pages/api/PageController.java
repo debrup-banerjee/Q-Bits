@@ -182,14 +182,13 @@ public class PageController {
           String canonical = "/story/" + s.id();
           String url = renderer().url(canonical);
           return PageModel.page(
-                  PageTitles.story(s.headline()),
-                  PageContent.describe(s.summary()),
-                  canonical,
-                  "article",
-                  List.of(write(JsonLd.newsArticle(s, url, renderer().siteUrl()))),
-                  PageContent.storyPage(s),
-                  initialData(path, List.of(new Query(List.of("story", id), false, s, asOf()))))
-              .withImage(s.image() == null ? "" : s.image().url());
+              PageTitles.story(s.headline()),
+              PageContent.describe(s.summary()),
+              canonical,
+              "article",
+              List.of(write(JsonLd.newsArticle(s, url, renderer().siteUrl()))),
+              PageContent.storyPage(s),
+              initialData(path, List.of(new Query(List.of("story", id), false, s, asOf()))));
         });
   }
 

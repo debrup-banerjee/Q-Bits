@@ -1,7 +1,6 @@
 package com.qbits.ingestion;
 
 import com.qbits.common.Ids;
-import com.qbits.images.FeedImageCollector;
 import com.qbits.ingestion.domain.FetchLogEntry;
 import com.qbits.ingestion.domain.FetchStatus;
 import com.qbits.ingestion.domain.Item;
@@ -55,7 +54,6 @@ public class SourceIngestor {
   private final SourceHealthTracker health;
   private final IngestionProperties props;
   private final ResourceCollector resourceCollector;
-  private final FeedImageCollector feedImages;
   private final Clock clock;
   private final ItemNormaliser normaliser;
 
@@ -71,7 +69,6 @@ public class SourceIngestor {
       SourceHealthTracker health,
       IngestionProperties props,
       ResourceCollector resourceCollector,
-      FeedImageCollector feedImages,
       Clock clock) {
     this.robots = robots;
     this.fetcher = fetcher;
@@ -84,7 +81,6 @@ public class SourceIngestor {
     this.health = health;
     this.props = props;
     this.resourceCollector = resourceCollector;
-    this.feedImages = feedImages;
     this.clock = clock;
     this.normaliser = new ItemNormaliser(props.maxAge());
   }
@@ -201,7 +197,6 @@ public class SourceIngestor {
       return false;
     }
     resourceCollector.collect(item.id(), raw.links(), e.title(), e.excerpt(), now); // spec 005
-    feedImages.offer(item.id(), source, raw.imageUrl(), now); // spec 009 R3.2
     return true;
   }
 

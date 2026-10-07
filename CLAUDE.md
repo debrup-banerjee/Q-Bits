@@ -19,8 +19,7 @@ requirements → design → tasks → approval → implement → review against 
 
 ## Non-negotiables
 - Summaries are written in our own words from the feed's headline and excerpt only. Never fetch, store or summarise article pages.
-- Every story shows its source and a "Read the full story" link. No iframes, in-app web views or reader view. No logos.
-- Pictures only as `steering/principles.md` allows (spec 009): permitted publisher feed image, else credited Pexels photo, else generated cover art. Never download or re-host images.
+- Every story shows its source and a "Read the full story" link. No iframes, in-app web views or reader view. No images or logos.
 - Fetch only sources in `config/sources.yml` with reviewed terms, via RSS/Atom/API, after checking robots.txt.
 - Daily digest: feeds are read all day, summaries are written once a day in one batch, and an edition goes live all at once. Tabs: AI Latest first (today's edition, social-style feed), then four sections only: Global AI Tech, World Business, India AI, Innovations & Research (last three editions).
 - Open-source links come only from URLs in the feed entry, on allowlisted hosts, checked via the host's API. Never guess or generate a link.

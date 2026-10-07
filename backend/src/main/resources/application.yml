@@ -87,27 +87,6 @@ qbits:
       GITLAB: { per-hour: 100, min-spacing: PT1S }
       HUGGINGFACE: { per-hour: 100, min-spacing: PT1S }
       ARXIV: { per-hour: 300, min-spacing: PT3S }
-  images:
-    # A picture for every story (spec 009): a source's own feed image only with recorded
-    # permission, else a free Pexels photo, else cover art drawn by the client.
-    tick: PT5M
-    batch-size: 20
-    reuse-window: P7D
-    retry-delays: [PT30M, PT3H]
-    pexels:
-      api-key: ${QBITS_PEXELS_API_KEY:}
-      base-url: https://api.pexels.com
-      # Pexels' default limits are 200 an hour and 20,000 a month; stay well inside them.
-      per-hour: 150
-      min-spacing: PT1S
-      timeout: ${qbits.ingestion.timeout}
-      user-agent: ${qbits.ingestion.user-agent}
-    query:
-      model: ${QBITS_STORY_MODEL:}
-      prompt-version: v1
-      max-output-tokens: 100
-      timeout: PT20S
-      daily-call-cap: 300
   dedupe:
     # One story per event (spec 008): group same-event stories before an edition is published.
     enabled: true

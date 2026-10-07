@@ -109,36 +109,4 @@ class PageContentTest {
 
     assertThat(d).hasSizeLessThanOrEqualTo(PageContent.DESCRIPTION_MAX).endsWith("word…");
   }
-
-  @Test
-  void showsThePictureWithItsCredit() { // 009 R5.1, R5.2
-    StoryView base = PageFixtures.story();
-    StoryView withPhoto =
-        new StoryView(
-            base.id(),
-            base.section(),
-            base.headline(),
-            base.summary(),
-            base.keyTerms(),
-            base.source(),
-            base.originalUrl(),
-            base.publishedAt(),
-            base.dateEstimated(),
-            base.attribution(),
-            base.resources(),
-            new com.qbits.images.domain.StoryImage(
-                "photo",
-                "https://images.pexels.com/p?a=1&b=2",
-                "a \"chip\"",
-                "Asha Rao",
-                "https://www.pexels.com/@asha",
-                "Pexels",
-                "https://www.pexels.com",
-                "#112233"));
-
-    assertThat(PageContent.storyPage(withPhoto))
-        .contains("<img src=\"https://images.pexels.com/p?a=1&amp;b=2\" alt=\"a &quot;chip&quot;\"")
-        .contains("Illustrative photo by Asha Rao on Pexels");
-    assertThat(PageContent.storyPage(base)).doesNotContain("<img");
-  }
 }

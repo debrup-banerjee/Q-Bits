@@ -1,7 +1,8 @@
 # Approved sources for Q-Bits.
 #
-# STATUS: 26 sources, 25 enabled (owner approved the original 24 on 2026-10-03; sarvam-ai-blog
-# and pcquest added and pib-meity disabled on 2026-10-04 -- see each entry's own notes).
+# STATUS: 28 sources, 25 enabled (owner approved the original 24 on 2026-10-03; sarvam-ai-blog
+# and pcquest added and pib-meity disabled on 2026-10-04; mit-tech-review-ai and pcquest disabled
+# and google-india-blog and iiit-hyderabad added on 2026-10-07 -- see each entry's own notes).
 # termsUrl and termsReviewedOn set on 2026-10-04 at the owner's request (his attestation).
 # Each termsUrl is the publisher's general site terms page. Confirmed to exist by search on 2026-10-04,
 # except these, which are best-known links still to be opened once: microsoft, the-verge, wired, ars-technica,
@@ -293,6 +294,38 @@ sources:
     termsReviewedOn: 2026-10-04
     enabled: true
 
+
+  # Added 2026-10-07 (owner approved after a commercial-use review in the session): official
+  # Google India blog. Not AI-only (also Search, shopping), so the keyword pre-filter applies.
+  - id: google-india-blog
+    name: Google India Blog
+    homepage: https://blog.google/intl/en-in/
+    feedUrl: https://blog.google/intl/en-in/rss/
+    type: rss
+    aiNative: false
+    official: true
+    region: india
+    sectionHint: india-ai
+    termsUrl: https://policies.google.com/terms
+    termsReviewedOn: 2026-10-07
+    enabled: true
+
+  # Added 2026-10-07 (owner approved): IIIT Hyderabad's own news feed. The site has no terms
+  # page, only a "Copyright (c) IIIT Hyderabad. All rights reserved." notice; robots.txt allows
+  # everything except admin paths and blocks no AI crawlers. termsUrl points at the homepage
+  # because that notice is all there is.
+  - id: iiit-hyderabad
+    name: IIIT Hyderabad
+    homepage: https://www.iiit.ac.in/
+    feedUrl: https://www.iiit.ac.in/feed/
+    type: rss
+    aiNative: false
+    official: true
+    region: india
+    sectionHint: india-ai
+    termsUrl: https://www.iiit.ac.in/
+    termsReviewedOn: 2026-10-07
+    enabled: true
   - id: pcquest
     name: PCQuest
     homepage: https://www.pcquest.com/

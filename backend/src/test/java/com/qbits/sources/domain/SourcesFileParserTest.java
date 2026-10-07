@@ -160,6 +160,6 @@ class SourcesFileParserTest {
 
     List<Source> sources = parser.parse(text);
 
-    assertThat(sources).hasSize(26);
+    assertThat(sources).hasSize(28);
   }
 }

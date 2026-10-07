@@ -145,7 +145,11 @@ sources:
     region: global
     termsUrl: https://www.technologyreview.com/terms-of-service/
     termsReviewedOn: 2026-10-04
-    enabled: true
+    # Disabled 2026-10-07 (owner decision): the terms forbid "any use of the Content to create,
+    # train, enhance... any... artificial intelligence (AI) services or system" without written
+    # consent, and any commercial use. Q-Bits writes its summaries with an AI model. Re-enable only
+    # with written permission from MIT Technology Review.
+    enabled: false
 
   - id: wired-ai
     name: WIRED
@@ -299,7 +303,10 @@ sources:
     sectionHint: india-ai
     termsUrl: https://www.pcquest.com/terms-of-use
     termsReviewedOn: 2026-10-04
-    enabled: true
+    # Disabled 2026-10-07 (owner decision): the terms forbid using bots, scrapers or AI tools to
+    # access or index the site's content, and any reproduction. Re-enable only with written
+    # permission from PCQuest / CyberMedia.
+    enabled: false
 
   # ── Research (Innovations & Research) ────────────────────────────────────
   - id: mit-news-ai

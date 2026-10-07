@@ -9,10 +9,12 @@ export function ExternalLink({ href, sourceName }: { href: string; sourceName: s
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`Read the full story at ${sourceName} (opens in a new tab)`}
-      className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-ink shadow-sm hover:opacity-90"
+      className="btn-primary"
     >
       Read the full story at {sourceName}
-      <span aria-hidden="true">↗</span>
+      <span aria-hidden="true" className="btn-arrow">
+        ↗
+      </span>
     </a>
   );
 }

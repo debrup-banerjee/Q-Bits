@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { pageTitles } from '../../app/page-titles';
 import { ErrorState } from '../../components/ErrorState';
+import { PageHero } from '../../components/PageHero';
 import { useNow } from '../../hooks/useNow';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { FeedCard } from './FeedCard';
@@ -34,10 +35,9 @@ export function LatestPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <div className="mx-auto flex max-w-xl flex-col">
-      <div className="pb-2">
-        <h1 className="text-2xl font-bold sm:text-3xl">AI Latest</h1>
-        <p className="mt-1 text-sm text-muted">
+    <div className="mx-auto flex max-w-2xl flex-col gap-5">
+      <PageHero title="AI Latest" eyebrow="Daily digest">
+        <p>
           {edition ? (
             <>
               {editionLabel(edition.data.publishedAt, now)} · published{' '}
@@ -51,54 +51,52 @@ export function LatestPage() {
             'Every AI story from the last 24 hours, newest first'
           )}
         </p>
-      </div>
+      </PageHero>
 
       {edition?.data.late && (
-        <p
-          role="status"
-          className="mb-2 rounded-lg border border-line bg-chip px-3 py-2 text-sm font-medium"
-        >
+        <p role="status" className="card bg-chip px-4 py-3 text-sm font-medium">
           Today&apos;s edition is running late. Here is the last one.
         </p>
       )}
 
       {feed.isError && <ErrorState onRetry={() => void feed.refetch()} />}
-      {feed.isPending && <FeedSkeleton />}
+      {feed.isPending && (
+        <div className="card px-4 sm:px-6">
+          <FeedSkeleton />
+        </div>
+      )}
       {feed.isSuccess && items.length === 0 && (
-        <div className="rounded-xl border border-dashed border-line p-6 text-center text-muted">
+        <div className="rounded-2xl border border-dashed border-line bg-surface/60 p-8 text-center text-muted">
           <p>No AI news in the last 24 hours yet. Check back soon.</p>
-          <Link
-            to="/sections"
-            className="mt-3 inline-block font-semibold text-accent hover:underline"
-          >
+          <Link to="/sections" className="btn-secondary mt-4">
             Browse by section
           </Link>
         </div>
       )}
 
-      <div>
-        {items.map((s) => (
-          <FeedCard key={s.id} story={s} now={now} />
-        ))}
-      </div>
-
-      {isFetchingNextPage && <FeedSkeleton count={1} />}
+      {items.length > 0 && (
+        <div className="card overflow-hidden px-4 sm:px-6">
+          {items.map((s) => (
+            <FeedCard key={s.id} story={s} now={now} />
+          ))}
+          {isFetchingNextPage && <FeedSkeleton count={1} />}
+        </div>
+      )}
       {hasNextPage && !isFetchingNextPage && (
-        <div ref={sentinel} className="flex justify-center py-4">
-          <button
-            type="button"
-            onClick={() => void fetchNextPage()}
-            className="rounded-lg border border-line px-4 py-2 text-sm font-semibold hover:bg-chip"
-          >
+        <div ref={sentinel} className="flex justify-center py-2">
+          <button type="button" onClick={() => void fetchNextPage()} className="btn-secondary">
             Load more
           </button>
         </div>
       )}
       {feed.isSuccess && items.length > 0 && !hasNextPage && (
-        <p className="py-6 text-center text-sm text-muted">
+        <p className="py-4 text-center text-sm text-muted">
           That&apos;s everything from the last 24 hours.{' '}
-          <Link to="/sections" className="font-semibold text-accent hover:underline">
-            Browse by section
+          <Link to="/sections" className="link-arrow">
+            Browse by section{' '}
+            <span aria-hidden="true" className="btn-arrow">
+              →
+            </span>
           </Link>
         </p>
       )}

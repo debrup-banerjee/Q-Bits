@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { pageTitles } from '../../app/page-titles';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
+import { PageHero } from '../../components/PageHero';
 import { RelativeTime } from '../../components/RelativeTime';
 import { SkeletonList } from '../../components/SkeletonCard';
 import { useNow } from '../../hooks/useNow';
@@ -21,10 +22,9 @@ export function SectionsOverviewPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">Browse by section</h1>
+      <PageHero title="Browse by section" eyebrow="Last 72 hours">
         {/* 003 R4.2: the 72-hour line always shows; "Updated …" joins it once data has loaded. */}
-        <p className="mt-1 text-sm text-muted">
+        <p>
           AI news from the last 72 hours, sorted into five sections.
           {sections.data?.dataAsOf && (
             <>
@@ -35,7 +35,7 @@ export function SectionsOverviewPage() {
             </>
           )}
         </p>
-      </div>
+      </PageHero>
 
       {sections.isError && <ErrorState onRetry={() => void sections.refetch()} />}
       {sections.isPending && (
@@ -57,24 +57,24 @@ function SectionBlock({ section, now }: { section: SectionView; now: Date }) {
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-line pb-2">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
         <div className="flex items-start gap-2.5">
           <span
             aria-hidden="true"
             className={`mt-2 h-3 w-3 shrink-0 rounded-full ${sectionDot(section.slug)}`}
           />
           <div>
-            <h2 id={headingId} className="text-xl font-bold">
+            <h2 id={headingId} className="text-xl font-bold sm:text-2xl">
               {section.name}
             </h2>
             <p className="text-sm text-muted">{section.description}</p>
           </div>
         </div>
-        <Link
-          to={`/section/${section.slug}`}
-          className="text-sm font-semibold text-accent hover:underline"
-        >
-          See all {section.name}
+        <Link to={`/section/${section.slug}`} className="link-arrow text-sm">
+          See all {section.name}{' '}
+          <span aria-hidden="true" className="btn-arrow">
+            →
+          </span>
         </Link>
       </div>
       {stories.isError && <ErrorState onRetry={() => void stories.refetch()} />}

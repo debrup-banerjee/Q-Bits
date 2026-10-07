@@ -22,7 +22,7 @@ export function WordsToKnow({ terms, defaultOpen }: { terms: KeyTerm[]; defaultO
     <details
       open={open}
       onToggle={(e) => setOpen(e.currentTarget.open)}
-      className="rounded-lg bg-chip/60 px-3 py-2"
+      className="rounded-xl border border-line bg-chip/60 px-3.5 py-2.5"
     >
       <summary className="cursor-pointer text-sm font-semibold">
         Words to know

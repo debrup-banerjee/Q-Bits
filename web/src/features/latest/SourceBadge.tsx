@@ -25,7 +25,7 @@ export function SourceBadge({ name }: { name: string }) {
     <span
       aria-hidden="true"
       data-testid="source-badge"
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-bold text-white ${badgeColour(name)}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-bold text-white shadow-sm ${badgeColour(name)}`}
     >
       {letter}
     </span>

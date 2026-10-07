@@ -5,6 +5,7 @@ import { NotFoundPage } from '../../app/NotFoundPage';
 import { pageTitles } from '../../app/page-titles';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
+import { PageHero } from '../../components/PageHero';
 import { SkeletonList } from '../../components/SkeletonCard';
 import { useNow } from '../../hooks/useNow';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -42,11 +43,10 @@ export function SectionPage() {
   const name = section?.name ?? '';
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">{name || ' '}</h1>
-        {section && <p className="mt-1 text-muted">{section.description}</p>}
-      </div>
+    <div className="mx-auto flex max-w-3xl flex-col gap-5">
+      <PageHero title={name} eyebrow="Last 72 hours">
+        {section && <p>{section.description}</p>}
+      </PageHero>
       {stories.isError && <ErrorState onRetry={() => void stories.refetch()} />}
       {stories.isPending && <SkeletonList count={3} />}
       {stories.isSuccess && items.length === 0 && name && <EmptyState sectionName={name} />}
@@ -56,11 +56,7 @@ export function SectionPage() {
       {isFetchingNextPage && <SkeletonList count={1} />}
       {hasNextPage && !isFetchingNextPage && (
         <div ref={sentinel} className="flex justify-center py-4">
-          <button
-            type="button"
-            onClick={() => void fetchNextPage()}
-            className="rounded-lg border border-line px-4 py-2 text-sm font-semibold hover:bg-chip"
-          >
+          <button type="button" onClick={() => void fetchNextPage()} className="btn-secondary">
             Load more
           </button>
         </div>

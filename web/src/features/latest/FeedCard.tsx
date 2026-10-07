@@ -18,7 +18,7 @@ export function FeedCard({ story, now }: { story: StoryView; now?: Date }) {
   const bodyId = useId();
 
   return (
-    <article className="flex gap-3 border-b border-line px-1 py-4">
+    <article className="flex gap-3.5 border-b border-line py-5 last:border-b-0">
       <SourceBadge name={story.source.name} />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
@@ -38,7 +38,7 @@ export function FeedCard({ story, now }: { story: StoryView; now?: Date }) {
           </Link>
         </div>
         <h2 className="text-[17px] font-semibold leading-snug sm:text-lg">
-          <Link to={`/story/${story.id}`} className="hover:underline">
+          <Link to={`/story/${story.id}`} className="hover:text-accent">
             {story.headline}
           </Link>
         </h2>

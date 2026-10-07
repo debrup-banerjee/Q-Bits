@@ -3,9 +3,9 @@ import { NavLink } from 'react-router';
 import { sectionDot, sectionPill } from './sectionTheme';
 
 const base =
-  'whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors sm:px-3.5';
+  'inline-flex items-center whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold transition-colors sm:px-3.5';
 const idle = 'text-muted hover:bg-chip hover:text-ink';
-const active = 'bg-accent text-accent-ink';
+const active = 'bg-ink text-surface shadow-sm';
 
 /**
  * Tabs: AI Latest first (a fixed label; spec 004 R2.1), then the sections from the API.
@@ -19,7 +19,7 @@ export function SectionNav() {
   return (
     <nav
       aria-label="Sections"
-      className="sticky top-0 z-10 border-b border-line bg-page sm:static sm:border-0 sm:bg-transparent"
+      className="site-header sticky top-0 z-10 sm:static sm:border-0 sm:bg-transparent"
     >
       <ul className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:flex-wrap sm:overflow-visible sm:px-0 sm:py-0">
         <li>
@@ -32,7 +32,7 @@ export function SectionNav() {
             <NavLink
               to={`/section/${s.slug}`}
               className={({ isActive }) =>
-                `${base} flex items-center gap-1.5 ${isActive ? sectionPill(s.slug) : idle}`
+                `${base} flex items-center gap-1.5 ${isActive ? `${sectionPill(s.slug)} shadow-sm` : idle}`
               }
             >
               {({ isActive }) =>

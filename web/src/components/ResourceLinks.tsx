@@ -21,7 +21,7 @@ export function ResourceLinks({ resources }: { resources: ResourceLink[] }) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${r.label}: ${r.name} (opens in a new tab)`}
-              className="flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-sm hover:bg-chip"
+              className="flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-sm transition-colors hover:border-accent hover:bg-chip"
             >
               <span aria-hidden="true" className="shrink-0 text-muted">
                 {ICON[r.type] ?? '↗'}

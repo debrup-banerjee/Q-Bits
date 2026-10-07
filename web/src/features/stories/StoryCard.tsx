@@ -21,11 +21,13 @@ export function StoryCard({
 }) {
   const Heading = (['h1', 'h2', 'h3'] as const)[headingLevel - 1]!;
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-sm sm:p-5">
+    <article
+      className={`card flex flex-col gap-3.5 p-5 sm:p-6 ${headingLevel === 1 ? 'sm:p-8' : 'card-hover'}`}
+    >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium uppercase tracking-wide text-muted">
         <Link
           to={`/section/${story.section.slug}`}
-          className={`rounded-full px-2 py-0.5 tracking-wide hover:opacity-90 ${sectionPill(story.section.slug)}`}
+          className={`rounded-full px-2.5 py-0.5 tracking-wide hover:opacity-90 ${sectionPill(story.section.slug)}`}
         >
           {story.section.name}
         </Link>
@@ -35,7 +37,7 @@ export function StoryCard({
         <RelativeTime iso={story.publishedAt} estimated={story.dateEstimated} now={now} />
       </div>
       <Heading className="text-lg font-bold leading-snug sm:text-xl">
-        <Link to={`/story/${story.id}`} className="hover:underline">
+        <Link to={`/story/${story.id}`} className="hover:text-accent">
           {story.headline}
         </Link>
       </Heading>

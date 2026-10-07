@@ -38,8 +38,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-sm flex-col gap-6">
-      <h1 className="text-2xl font-bold sm:text-3xl">Log in</h1>
+    <div className="card mx-auto flex w-full max-w-md flex-col gap-6 p-6 sm:mt-6 sm:p-10">
+      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Log in</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         <label className="flex flex-col gap-1.5">
@@ -49,7 +49,7 @@ export function LoginPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
-            className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
+            className="field"
             required
           />
         </label>
@@ -60,7 +60,7 @@ export function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            className="rounded-lg border border-line bg-surface px-3 py-2 text-base"
+            className="field"
             required
           />
         </label>
@@ -71,11 +71,7 @@ export function LoginPage() {
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={login.isPending}
-          className="rounded-lg bg-accent px-4 py-2 font-semibold text-accent-ink hover:opacity-90 disabled:opacity-60"
-        >
+        <button type="submit" disabled={login.isPending} className="btn-primary py-2.5 text-base">
           {login.isPending ? 'Logging in…' : 'Log in'}
         </button>
       </form>

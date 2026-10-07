@@ -7,7 +7,7 @@ export function FeedSkeleton({ count = 4 }: { count?: number }) {
           key={i}
           aria-hidden="true"
           data-testid="feed-skeleton"
-          className="flex animate-pulse gap-3 border-b border-line px-1 py-4"
+          className="flex animate-pulse gap-3.5 border-b border-line py-5 last:border-b-0"
         >
           <div className="h-10 w-10 shrink-0 rounded-full bg-line" />
           <div className="flex flex-1 flex-col gap-2">

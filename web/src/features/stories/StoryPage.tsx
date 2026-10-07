@@ -22,11 +22,14 @@ export function StoryPage() {
 
   if (gone) {
     return (
-      <section className="py-16 text-center">
+      <section className="card mx-auto max-w-xl px-6 py-14 text-center">
         <h1 className="text-2xl font-semibold">This story isn&apos;t available.</h1>
         <p className="mt-2 text-muted">Q-Bits only keeps stories from the last 72 hours.</p>
-        <Link to="/" className="mt-6 inline-block font-medium text-accent hover:underline">
-          See the latest AI news
+        <Link to="/" className="btn-primary mt-6">
+          See the latest AI news{' '}
+          <span aria-hidden="true" className="btn-arrow">
+            →
+          </span>
         </Link>
       </section>
     );

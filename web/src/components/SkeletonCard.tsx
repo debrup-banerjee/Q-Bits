@@ -4,14 +4,14 @@ export function SkeletonCard() {
     <div
       aria-hidden="true"
       data-testid="skeleton-card"
-      className="flex animate-pulse flex-col gap-3 rounded-xl border border-line bg-surface p-4 sm:p-5"
+      className="flex animate-pulse flex-col gap-3 card p-5 sm:p-6"
     >
       <div className="h-3 w-1/3 rounded bg-line" />
       <div className="h-5 w-5/6 rounded bg-line" />
       <div className="h-3 w-full rounded bg-line" />
       <div className="h-3 w-full rounded bg-line" />
       <div className="h-3 w-2/3 rounded bg-line" />
-      <div className="h-8 w-48 rounded-lg bg-line" />
+      <div className="h-9 w-52 rounded-full bg-line" />
     </div>
   );
 }

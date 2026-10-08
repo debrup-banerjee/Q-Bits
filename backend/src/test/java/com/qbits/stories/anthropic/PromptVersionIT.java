@@ -16,7 +16,7 @@ class PromptVersionIT extends IntegrationTest {
 
   @Test
   void configuredPromptKeepsProductAndModelNamesAsWritten() { // 002 R6.2
-    assertThat(props.promptVersion()).isEqualTo("v3");
+    assertThat(props.promptVersion()).isEqualTo("v4");
     assertThat(StoryRequests.loadPrompt(props.promptVersion())).contains(NAMES_RULE);
   }
 
@@ -28,5 +28,12 @@ class PromptVersionIT extends IntegrationTest {
     String v2WithoutNamesRule =
         v2.replaceAll("(?m)^ {3}Write every product[\\s\\S]*?different name\\.\\n", "");
     assertThat(v2WithoutNamesRule).isEqualTo(v1);
+  }
+
+  @Test
+  void configuredPromptCountsAiCompanyBusinessNewsAsAi() { // owner request 2026-10-07
+    assertThat(StoryRequests.loadPrompt(props.promptVersion()))
+        .contains("leadership appointments and senior hires, funding");
+    assertThat(StoryRequests.loadPrompt("v3")).doesNotContain("leadership appointments");
   }
 }

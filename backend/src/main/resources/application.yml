@@ -59,7 +59,8 @@ qbits:
     provider: anthropic
     model: ${QBITS_STORY_MODEL:}
     mode: ${QBITS_STORY_MODE:digest}
-    prompt-version: v3
+    # v4 (2026-10-07): business news about AI companies (appointments, funding, deals) is AI news.
+    prompt-version: v4
     max-output-tokens: 800
     daily-call-cap: 500
     parallelism: 4
@@ -142,3 +143,33 @@ qbits:
       - { term: "IndiaAI", weight: 1.0 }
       - { term: "deepfake", weight: 1.0 }
       - { term: "AGI", weight: 1.0 }
+      # Added 2026-10-07: business news about AI companies (hires, funding, deals) often says only
+      # the company name plus "AI", which scored 0.6 and was dropped before the model saw it.
+      # Indian AI companies and public AI programmes:
+      - { term: "Sarvam", weight: 1.0 }
+      - { term: "Krutrim", weight: 1.0 }
+      - { term: "BharatGPT", weight: 1.0 }
+      - { term: "CoRover", weight: 1.0 }
+      - { term: "AI4Bharat", weight: 1.0 }
+      - { term: "Gnani", weight: 1.0 }
+      - { term: "Bhashini", weight: 1.0 }
+      - { term: "Hanooman", weight: 1.0 }
+      - { term: "Yotta", weight: 0.5 }
+      # AI labs and products not covered above:
+      - { term: "Perplexity", weight: 1.0 }
+      - { term: "xAI", weight: 1.0 }
+      - { term: "Grok", weight: 0.6 }
+      - { term: "DeepSeek", weight: 1.0 }
+      - { term: "Qwen", weight: 1.0 }
+      - { term: "Midjourney", weight: 1.0 }
+      - { term: "Stability AI", weight: 1.0 }
+      - { term: "Scale AI", weight: 1.0 }
+      - { term: "Character.AI", weight: 1.0 }
+      - { term: "Meta AI", weight: 1.0 }
+      - { term: "Cohere", weight: 0.6 }
+      # Common AI phrases:
+      - { term: "GenAI", weight: 1.0 }
+      - { term: "agentic", weight: 1.0 }
+      - { term: "AI agent", weight: 1.0 }
+      - { term: "AI agents", weight: 1.0 }
+      - { term: "chatbots", weight: 0.6 }

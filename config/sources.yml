@@ -1,9 +1,9 @@
 # Approved sources for Q-Bits.
 #
-# STATUS: 29 sources, 25 enabled (owner approved the original 24 on 2026-10-03; sarvam-ai-blog
+# STATUS: 28 sources, 25 enabled (owner approved the original 24 on 2026-10-03; sarvam-ai-blog
 # and pcquest added and pib-meity disabled on 2026-10-04; mit-tech-review-ai and pcquest disabled
-# and google-india-blog and iiit-hyderabad added on 2026-10-07; yourstory listed but disabled
-# pending the owner's terms review -- see each entry's own notes).
+# and google-india-blog and iiit-hyderabad added on 2026-10-07 -- see each entry's own notes).
+# YourStory was considered on 2026-10-07 and left out: its robots.txt blocks AI crawlers.
 # termsUrl and termsReviewedOn set on 2026-10-04 at the owner's request (his attestation).
 # Each termsUrl is the publisher's general site terms page. Confirmed to exist by search on 2026-10-04,
 # except these, which are best-known links still to be opened once: microsoft, the-verge, wired, ars-technica,
@@ -266,25 +266,6 @@ sources:
     termsReviewedOn: 2026-10-04
     enabled: true
 
-
-  # Requested by the owner 2026-10-07; NOT enabled yet. The feed works (https, ~20 items, mostly
-  # AI and startups) and robots.txt allows "QBits", but it explicitly blocks AI crawlers
-  # (ClaudeBot, anthropic-ai, Claude-Web, GPTBot, CCBot, Google-Extended: Disallow /), and its
-  # terms page (https://yourstory.com/terms-and-conditions) could not be read automatically.
-  # Enable only after the owner reads those terms and finds no ban on commercial or AI use of
-  # feed headlines and teasers, or after YourStory gives written permission. Then set
-  # termsUrl, termsReviewedOn and enabled: true.
-  - id: yourstory
-    name: YourStory
-    homepage: https://yourstory.com/
-    feedUrl: https://yourstory.com/feed
-    type: rss
-    aiNative: false
-    region: india
-    sectionHint: india-ai
-    termsUrl: https://yourstory.com/terms-and-conditions
-    termsReviewedOn: null
-    enabled: false
   - id: pib-meity
     name: Press Information Bureau (Govt. of India)
     homepage: https://pib.gov.in/

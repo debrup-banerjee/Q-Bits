@@ -82,6 +82,17 @@ export function useStory(id: string) {
   return useQuery({ queryKey: ['story', id], queryFn: () => api.story(id), staleTime: STALE_MS });
 }
 
+/** The top stories slider on AI Latest (spec 009). Failures just hide the slider (R3.4). */
+export function useTopStories() {
+  const api = useApi();
+  return useQuery({
+    queryKey: ['top-stories'],
+    queryFn: () => api.topStories(),
+    staleTime: STALE_MS,
+    retry: false,
+  });
+}
+
 export function useSources() {
   const api = useApi();
   return useQuery({ queryKey: ['sources'], queryFn: () => api.sources(), staleTime: STALE_MS });

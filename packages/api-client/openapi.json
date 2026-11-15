@@ -209,6 +209,57 @@
           }
         },
         "type" : "object"
+      },
+      "TopStoryView" : {
+        "properties" : {
+          "attribution" : {
+            "type" : "string"
+          },
+          "coverage" : {
+            "description" : "Distinct sources that reported this event, at least 2.",
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "dateEstimated" : {
+            "type" : "boolean"
+          },
+          "headline" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "keyTerms" : {
+            "items" : {
+              "$ref" : "#/components/schemas/KeyTerm"
+            },
+            "type" : "array"
+          },
+          "originalUrl" : {
+            "type" : "string"
+          },
+          "publishedAt" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "resources" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ResourceLink"
+            },
+            "type" : "array"
+          },
+          "section" : {
+            "$ref" : "#/components/schemas/SectionRef"
+          },
+          "source" : {
+            "$ref" : "#/components/schemas/SourceRef"
+          },
+          "summary" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
       }
     }
   },
@@ -448,6 +499,27 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/StoryPage"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "catalog-controller" ]
+      }
+    },
+    "/api/v1/stories/top" : {
+      "get" : {
+        "operationId" : "topStories",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/TopStoryView"
+                  },
+                  "type" : "array"
                 }
               }
             },

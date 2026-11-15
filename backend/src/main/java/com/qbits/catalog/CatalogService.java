@@ -4,6 +4,8 @@ import com.qbits.catalog.domain.Cursor;
 import com.qbits.catalog.domain.CursorCodec;
 import com.qbits.catalog.domain.StoryPage;
 import com.qbits.catalog.domain.StoryView;
+import com.qbits.catalog.domain.TopStoryRules;
+import com.qbits.catalog.domain.TopStoryView;
 import com.qbits.catalog.persistence.StoryQueryRepository;
 import com.qbits.catalog.persistence.StoryQueryRepository.Row;
 import com.qbits.resources.ResourceQueries;
@@ -67,6 +69,39 @@ public class CatalogService {
         resources.verifiedFor(page.stream().map(Row::id).toList());
     return new StoryPage(
         page.stream().map(r -> view(r, links.getOrDefault(r.id(), List.of()))).toList(), next);
+  }
+
+  /**
+   * The stories reported by the most sources inside the AI Latest window (spec 009 R2). Coverage is
+   * read from the stored duplicate links; no summary-service call is made.
+   */
+  public List<TopStoryView> top(int minCoverage, int limit) {
+    Instant from = editions.windowEnd().minus(Duration.ofHours(24));
+    List<TopStoryRules.Candidate> candidates =
+        queries.coverage(from, minCoverage).stream()
+            .map(
+                c ->
+                    new TopStoryRules.Candidate(
+                        c.id(),
+                        c.sourceId(),
+                        registry.find(c.sourceId()).map(Source::official).orElse(false),
+                        c.publishedAt(),
+                        c.coverage()))
+            .toList();
+    List<TopStoryRules.Candidate> picked = TopStoryRules.pick(candidates, minCoverage, limit);
+    Map<UUID, List<ResourceLink>> links =
+        resources.verifiedFor(picked.stream().map(TopStoryRules.Candidate::id).toList());
+    return picked.stream()
+        .flatMap(
+            c ->
+                queries
+                    .find(c.id(), from)
+                    .map(
+                        r ->
+                            TopStoryView.of(
+                                view(r, links.getOrDefault(r.id(), List.of())), c.coverage()))
+                    .stream())
+        .toList();
   }
 
   public Optional<StoryView> find(UUID id) {

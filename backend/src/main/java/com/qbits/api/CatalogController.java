@@ -4,10 +4,12 @@ import com.qbits.api.ApiModels.SectionView;
 import com.qbits.api.ApiModels.SiteView;
 import com.qbits.api.ApiModels.SourceView;
 import com.qbits.catalog.CatalogService;
+import com.qbits.catalog.TopStoriesProperties;
 import com.qbits.catalog.domain.Cursor;
 import com.qbits.catalog.domain.CursorCodec;
 import com.qbits.catalog.domain.StoryPage;
 import com.qbits.catalog.domain.StoryView;
+import com.qbits.catalog.domain.TopStoryView;
 import com.qbits.common.AppException;
 import com.qbits.config.QBitsProperties;
 import com.qbits.stories.domain.Section;
@@ -40,10 +42,13 @@ public class CatalogController {
 
   private final CatalogService catalog;
   private final QBitsProperties props;
+  private final TopStoriesProperties topProps;
 
-  public CatalogController(CatalogService catalog, QBitsProperties props) {
+  public CatalogController(
+      CatalogService catalog, QBitsProperties props, TopStoriesProperties topProps) {
     this.catalog = catalog;
     this.props = props;
+    this.topProps = topProps;
   }
 
   @GetMapping("/sections")
@@ -113,6 +118,13 @@ public class CatalogController {
         "INVALID_HOURS",
         HttpStatus.BAD_REQUEST,
         "hours must be a whole number from 1 to " + MAX_HOURS + ".");
+  }
+
+  /** Stories reported by the most sources in the AI Latest window (spec 009 R2). */
+  @GetMapping("/stories/top")
+  public ResponseEntity<List<TopStoryView>> topStories() {
+    return ok(
+        topProps.enabled() ? catalog.top(topProps.minCoverage(), topProps.limit()) : List.of());
   }
 
   @GetMapping("/stories/{id}")

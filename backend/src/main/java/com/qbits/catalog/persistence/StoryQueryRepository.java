@@ -33,6 +33,9 @@ public class StoryQueryRepository {
       String summary,
       List<KeyTerm> keyTerms) {}
 
+  /** A published story and how many distinct sources reported it (spec 009 R1.1). */
+  public record Coverage(UUID id, String sourceId, Instant publishedAt, int coverage) {}
+
   private static final TypeReference<List<KeyTerm>> KEY_TERMS = new TypeReference<>() {};
 
   private static final String SELECT =
@@ -116,6 +119,37 @@ public class StoryQueryRepository {
         .optional()
         .filter(ts -> ts != null)
         .map(Timestamp::toInstant);
+  }
+
+  /**
+   * Published stories inside the window with at least {@code min} distinct sources: the story's own
+   * source plus the sources of the DUPLICATE stories that point at it. Several copies from one
+   * source count once (spec 009 R1.1, R1.2).
+   */
+  public List<Coverage> coverage(Instant windowStart, int min) {
+    return jdbc.sql(
+            """
+            select i.id, i.source_id, i.published_at,
+                   1 + count(distinct d.source_id) filter (where d.source_id <> i.source_id)
+                     as coverage
+            from items i
+            join stories s on s.item_id = i.id
+            left join items d on d.duplicate_of = i.id and d.story_status = 'DUPLICATE'
+            where i.story_status = 'PUBLISHED' and not i.hidden and i.published_at >= :windowStart
+            group by i.id, i.source_id, i.published_at
+            having 1 + count(distinct d.source_id) filter (where d.source_id <> i.source_id)
+                   >= :min
+            """)
+        .param("windowStart", Timestamp.from(windowStart))
+        .param("min", min)
+        .query(
+            (rs, n) ->
+                new Coverage(
+                    rs.getObject("id", UUID.class),
+                    rs.getString("source_id"),
+                    rs.getTimestamp("published_at").toInstant(),
+                    rs.getInt("coverage")))
+        .list();
   }
 
   private Row map(java.sql.ResultSet rs, int n) throws java.sql.SQLException {

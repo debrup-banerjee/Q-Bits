@@ -148,6 +148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/stories/top": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["topStories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/stories/{id}": {
         parameters: {
             query?: never;
@@ -232,6 +248,26 @@ export interface components {
         };
         StoryView: {
             attribution: string;
+            dateEstimated: boolean;
+            headline: string;
+            /** Format: uuid */
+            id: string;
+            keyTerms: components["schemas"]["KeyTerm"][];
+            originalUrl: string;
+            /** Format: date-time */
+            publishedAt: string;
+            resources: components["schemas"]["ResourceLink"][];
+            section: components["schemas"]["SectionRef"];
+            source: components["schemas"]["SourceRef"];
+            summary: string;
+        };
+        TopStoryView: {
+            attribution: string;
+            /**
+             * Format: int32
+             * @description Distinct sources that reported this event, at least 2.
+             */
+            coverage: number;
             dateEstimated: boolean;
             headline: string;
             /** Format: uuid */
@@ -450,6 +486,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StoryPage"];
+                };
+            };
+        };
+    };
+    topStories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TopStoryView"][];
                 };
             };
         };

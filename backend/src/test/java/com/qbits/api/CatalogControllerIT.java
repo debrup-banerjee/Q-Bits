@@ -346,6 +346,46 @@ class CatalogControllerIT extends ApiTest {
     assertThat(status).isEqualTo(403);
   }
 
+  @Test
+  void topStoriesReturnsMostReportedWithCoverage() { // 009 R2.1-R2.4
+    UUID big = seed.published("a", Section.GLOBAL_AI_TECH, now.minus(Duration.ofHours(3)));
+    UUID mid = seed.published("a", Section.INDIA_AI, now.minus(Duration.ofHours(2)));
+    UUID solo = seed.published("a", Section.INDIA_AI, now.minus(Duration.ofHours(1)));
+    hold("b", big);
+    hold("c", big);
+    hold("d", big);
+    hold("b", mid);
+
+    Result r = get("/api/v1/stories/top");
+
+    assertThat(r.status).isEqualTo(200);
+    JsonNode data = r.body;
+    assertThat(data.size()).isEqualTo(2);
+    assertThat(data.get(0).get("id").asString()).isEqualTo(big.toString());
+    assertThat(data.get(0).get("coverage").asInt()).isEqualTo(4);
+    assertThat(data.get(1).get("id").asString()).isEqualTo(mid.toString());
+    assertThat(data.get(1).get("headline").asString()).startsWith("Headline");
+    assertThat(r.raw).doesNotContain(solo.toString()).doesNotContain("SOURCE TITLE");
+  }
+
+  @Test
+  void topStoriesIsEmptyWithoutRepeatedStoriesAndExcludesOldOnes() { // 009 R2.2
+    UUID old = seed.published("a", Section.INDIA_AI, now.minus(Duration.ofHours(30)));
+    hold("b", old);
+    seed.published("a", Section.INDIA_AI, now.minus(Duration.ofHours(1)));
+
+    assertThat(get("/api/v1/stories/top").body.size()).isZero();
+  }
+
+  private void hold(String sourceId, UUID keptId) {
+    UUID dup =
+        seed.withStatus(
+            sourceId,
+            com.qbits.ingestion.domain.StoryStatus.PUBLISHED,
+            now.minus(Duration.ofMinutes(30)));
+    assertThat(items.markDuplicate(dup, keptId)).isTrue();
+  }
+
   private record Result(
       int status,
       String contentType,

@@ -143,6 +143,70 @@ class StoryQueryRepositoryIT extends IntegrationTest {
     assertThat(catalog.dataAsOf()).contains(NOW.minus(Duration.ofHours(1)));
   }
 
+  @Test
+  void coverageCountsDistinctDuplicateSources() { // 009 R1.1
+    UUID kept = seed.published("a", Section.GLOBAL_AI_TECH, NOW.minusSeconds(600));
+    heldBack("b", kept);
+    heldBack("c", kept);
+    UUID alone = seed.published("d", Section.GLOBAL_AI_TECH, NOW.minusSeconds(500));
+
+    var all = queries.coverage(NOW.minus(Duration.ofHours(24)), 1);
+
+    assertThat(all)
+        .filteredOn(c -> c.id().equals(kept))
+        .extracting(c -> c.coverage())
+        .containsExactly(3);
+    assertThat(all)
+        .filteredOn(c -> c.id().equals(alone))
+        .extracting(c -> c.coverage())
+        .containsExactly(1);
+    assertThat(queries.coverage(NOW.minus(Duration.ofHours(24)), 2))
+        .extracting(c -> c.id())
+        .containsExactly(kept);
+  }
+
+  @Test
+  void severalCopiesFromOneSourceCountOnce() { // 009 R1.1
+    UUID kept = seed.published("a", Section.GLOBAL_AI_TECH, NOW.minusSeconds(600));
+    heldBack("b", kept);
+    heldBack("b", kept);
+    heldBack("a", kept);
+
+    assertThat(queries.coverage(NOW.minus(Duration.ofHours(24)), 1))
+        .filteredOn(c -> c.id().equals(kept))
+        .extracting(c -> c.coverage())
+        .containsExactly(2);
+  }
+
+  @Test
+  void coverageRisesWhenLaterDuplicatesArriveAndIsStableOnReread() { // 009 R1.2, R1.3
+    UUID kept = seed.published("a", Section.GLOBAL_AI_TECH, NOW.minusSeconds(600));
+    heldBack("b", kept);
+    Instant from = NOW.minus(Duration.ofHours(24));
+
+    assertThat(queries.coverage(from, 1)).isEqualTo(queries.coverage(from, 1));
+    int before = queries.coverage(from, 1).getFirst().coverage();
+    heldBack("c", kept);
+
+    assertThat(queries.coverage(from, 1).getFirst().coverage()).isEqualTo(before + 1);
+  }
+
+  @Test
+  void coverageIgnoresHiddenAndOutOfWindowStories() { // 009 R2.4
+    UUID old = seed.published("a", Section.GLOBAL_AI_TECH, NOW.minus(Duration.ofHours(30)));
+    heldBack("b", old);
+    UUID hidden = seed.published("off", Section.GLOBAL_AI_TECH, NOW.minusSeconds(60));
+    heldBack("b", hidden);
+    items.setHiddenForSource("off", true);
+
+    assertThat(queries.coverage(NOW.minus(Duration.ofHours(24)), 1)).isEmpty();
+  }
+
+  private void heldBack(String sourceId, UUID keptId) {
+    UUID dup = seed.withStatus(sourceId, StoryStatus.PUBLISHED, NOW.minusSeconds(300));
+    assertThat(items.markDuplicate(dup, keptId)).isTrue();
+  }
+
   private static List<UUID> ids(StoryPage page) {
     return page.data().stream().map(StoryView::id).toList();
   }

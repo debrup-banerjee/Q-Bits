@@ -15,6 +15,8 @@ export type ResourceLink = Schemas['ResourceLink'];
 /** A source's homepage is null if the source was removed from the approved list. */
 export type SourceRef = Schemas['SourceRef'];
 export type StoryView = Schemas['StoryView'];
+/** A story reported by several sources, with how many (spec 009). */
+export type TopStoryView = Schemas['TopStoryView'];
 export type StoryPage = { data: StoryView[]; nextCursor: string | null };
 /** A signed session token plus the username it belongs to (optional accounts). */
 export type Session = Schemas['SessionView'];
@@ -42,6 +44,8 @@ export interface QBitsApi {
   sections(): Promise<WithAsOf<SectionView[]>>;
   stories(query?: StoriesQuery): Promise<WithAsOf<StoryPage>>;
   story(id: string): Promise<WithAsOf<StoryView>>;
+  /** Up to three stories reported by the most sources in the AI Latest window (spec 009). */
+  topStories(): Promise<WithAsOf<TopStoryView[]>>;
   sources(): Promise<WithAsOf<SourceView[]>>;
   site(): Promise<WithAsOf<SiteView>>;
   /** Latest published edition; rejects with code NO_EDITION before the first one. */
@@ -108,20 +112,17 @@ export function createQBitsApi(baseUrl: string, fetchImpl?: typeof fetch): QBits
     stories: (query = {}) =>
       unwrap(client.GET('/api/v1/stories', { params: { query } })) as Promise<WithAsOf<StoryPage>>,
     story: (id) => unwrap(client.GET('/api/v1/stories/{id}', { params: { path: { id } } })),
+    topStories: () => unwrap(client.GET('/api/v1/stories/top')),
     sources: () => unwrap(client.GET('/api/v1/sources')),
     site: () => unwrap(client.GET('/api/v1/site')),
     edition: () => unwrap(client.GET('/api/v1/edition')),
     register: (username, password) =>
-      unwrapPlain(
-        client.POST('/api/v1/auth/register', { body: { username, password } }),
-      ),
+      unwrapPlain(client.POST('/api/v1/auth/register', { body: { username, password } })),
     login: (username, password) =>
       unwrapPlain(client.POST('/api/v1/auth/login', { body: { username, password } })),
     googleSignIn: (idToken) =>
       unwrapPlain(client.POST('/api/v1/auth/google', { body: { idToken } })),
     me: (token) =>
-      unwrapPlain(
-        client.GET('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
-      ),
+      unwrapPlain(client.GET('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } })),
   };
 }

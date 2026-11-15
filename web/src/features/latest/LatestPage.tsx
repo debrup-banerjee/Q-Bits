@@ -8,6 +8,7 @@ import { useNow } from '../../hooks/useNow';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
+import { TopStories } from './TopStories';
 import { editionLabel, nextEditionText, timeOf } from './editionText';
 
 /** AI Latest: today's daily edition, newest first, as a timeline (spec 004 R3, 006 R5). */
@@ -58,6 +59,8 @@ export function LatestPage() {
           Today&apos;s edition is running late. Here is the last one.
         </p>
       )}
+
+      <TopStories />
 
       {feed.isError && <ErrorState onRetry={() => void feed.refetch()} />}
       {feed.isPending && (

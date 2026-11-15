@@ -219,3 +219,21 @@ it('renders a seeded feed at once', () => {
   expect(screen.queryByTestId('feed-skeleton')).not.toBeInTheDocument();
   expect(document.title).toBe("Q-Bits: today's AI news, explained in plain words"); // 007 R5.1
 });
+
+// 009 R3.1, R3.6
+it('shows the top stories above the feed and keeps them in the feed too', async () => {
+  const big = story({ id: 'big', headline: 'Big story everyone covered' });
+  server.use(
+    sectionsHandler,
+    http.get(`${API}/api/v1/stories/top`, () => HttpResponse.json([{ ...big, coverage: 3 }])),
+    http.get(`${API}/api/v1/stories`, () => HttpResponse.json(page([big]))),
+  );
+  renderAt(<AppRoutes />, '/');
+
+  const top = await screen.findByRole('region', { name: 'Top stories' });
+  const feedHeading = await screen.findAllByRole('heading', { name: 'Big story everyone covered' });
+  expect(feedHeading).toHaveLength(2);
+  expect(
+    top.compareDocumentPosition(feedHeading[1]!) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+});

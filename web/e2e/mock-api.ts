@@ -142,7 +142,10 @@ export const BREAKING = story(
  * Serves a small, fixed news set for every /api/v1 call. `state.late` marks today's edition as
  * running late (spec 006).
  */
-export async function mockApi(page: Page, state: { breaking?: boolean; late?: boolean } = {}) {
+export async function mockApi(
+  page: Page,
+  state: { breaking?: boolean; late?: boolean; top?: boolean } = {},
+) {
   await page.route('**/api/v1/**', async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;
@@ -164,6 +167,13 @@ export async function mockApi(page: Page, state: { breaking?: boolean; late?: bo
       return route.fulfill(json([{ name: 'The Hindu', homepage: 'https://www.thehindu.com/' }]));
     if (path === '/api/v1/site')
       return route.fulfill(json({ name: 'Q-Bits', contactEmail: 'debrup28.nitdgp@gmail.com' }));
+    if (path === '/api/v1/stories/top') {
+      const top = Object.values(STORIES)
+        .flat()
+        .slice(0, 3)
+        .map((s, i) => ({ ...s, coverage: 4 - i }));
+      return route.fulfill(json(state.top ? top : []));
+    }
     if (path === '/api/v1/stories') {
       const section = url.searchParams.get('section');
       const hours = Number(url.searchParams.get('hours') ?? '72');
